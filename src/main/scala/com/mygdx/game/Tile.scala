@@ -1,6 +1,5 @@
 package com.mygdx.game
 
-import com.badlogic.gdx.graphics.Texture.TextureFilter
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.mygdx.game.Tile.{convertIsometricCoordinates, textureMapping}
 import com.mygdx.game.TileType.TileType

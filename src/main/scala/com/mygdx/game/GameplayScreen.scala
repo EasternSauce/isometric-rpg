@@ -1,25 +1,16 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.Input.Keys
-import com.badlogic.gdx.{Gdx, Screen}
-import com.badlogic.gdx.graphics.{GL20, OrthographicCamera}
+import com.badlogic.gdx.Screen
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.{Sprite, SpriteBatch, TextureRegion}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.{FitViewport, Viewport}
-import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt, modify}
+import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.Random
 
 object GameplayScreen extends Screen {
-
-  var gameState: GameState = _
-  var worldViewport: Viewport = _
-  var worldCamera: OrthographicCamera = _
-  protected var batch: SpriteBatch = _
-
-  var sprite: Sprite = _
-
-  var creatureRenderers: Map[String, CreatureRenderer] = _
 
   val baseTiles: List[Tile] = {
     for {
@@ -29,7 +20,6 @@ object GameplayScreen extends Screen {
       Tile(TilePos(j, i), TileType.Ground)
     }
   }
-
   val overgroundTiles: List[Tile] = {
     (for {
       i <- (0 until 15).toList
@@ -42,6 +32,12 @@ object GameplayScreen extends Screen {
       }
     }).flatten
   }
+  var gameState: GameState = _
+  var worldViewport: Viewport = _
+  var worldCamera: OrthographicCamera = _
+  var sprite: Sprite = _
+  var creatureRenderers: Map[String, CreatureRenderer] = _
+  protected var batch: SpriteBatch = _
 
   override def show(): Unit = {
     val creature = Creature(
@@ -60,7 +56,7 @@ object GameplayScreen extends Screen {
       ),
       animationTimer = SimpleTimer(isRunning = true),
       moving = false,
-      lastMovementDir = (0,0)
+      lastMovementDir = (0, 0)
     )
 
     gameState = GameState(creatures =
@@ -140,13 +136,29 @@ object GameplayScreen extends Screen {
     updateCamera(gameState)
   }
 
+  def updateCamera(gameState: GameState): Unit = {
+
+    val camPosition = worldCamera.position
+
+    val creature = gameState.creatures("creature1")
+    val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
+
+    camPosition.x = (math.floor(x * 100) / 100).toFloat
+    camPosition.y = (math.floor(y * 100) / 100).toFloat
+
+    worldCamera.update()
+
+  }
+
   def updateGameState(delta: Float): Unit = {
     import com.badlogic.gdx.Gdx.input
 
-    println(gameState.creatures("creature1").lastMovementDir)
-
-
-    val (left, right, down, up) = (input.isKeyPressed(Keys.A), input.isKeyPressed(Keys.D), input.isKeyPressed(Keys.S), input.isKeyPressed(Keys.W))
+    val (left, right, down, up) = (
+      input.isKeyPressed(Keys.A),
+      input.isKeyPressed(Keys.D),
+      input.isKeyPressed(Keys.S),
+      input.isKeyPressed(Keys.W)
+    )
 
     val diagonalMovement = (left || right) && (up || down)
 
@@ -160,14 +172,14 @@ object GameplayScreen extends Screen {
       (left, right) match {
         case (true, false) => -speed
         case (false, true) => speed
-        case _ => 0
+        case _             => 0
       }
 
     val deltaY =
       (down, up) match {
         case (true, false) => -speed
         case (false, true) => speed
-        case _ => 0
+        case _             => 0
       }
 
     gameState = gameState
@@ -175,7 +187,6 @@ object GameplayScreen extends Screen {
       .setTo(false)
       .modify(_.creatures.at("creature1"))
       .using { creature =>
-
         creature
           .modify(_.x)
           .setTo(creature.x + deltaX)
@@ -184,7 +195,6 @@ object GameplayScreen extends Screen {
       }
       .modify(_.creatures.at("creature1"))
       .using { creature =>
-
         creature
           .modify(_.y)
           .setTo(creature.y + deltaY)
@@ -195,22 +205,6 @@ object GameplayScreen extends Screen {
       .setToIf(deltaX != 0 || deltaY != 0)((deltaX, deltaY))
       .modify(_.creatures.each)
       .using(_.update(delta))
-  }
-
-  def updateCamera(gameState: GameState): Unit = {
-
-    val camPosition = worldCamera.position
-
-    val creature = gameState.creatures("creature1")
-    val (x ,y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
-
-    camPosition.x =
-      (math.floor(x * 100) / 100).toFloat
-    camPosition.y =
-      (math.floor(y * 100) / 100).toFloat
-
-    worldCamera.update()
-
   }
 
   override def dispose(): Unit = {

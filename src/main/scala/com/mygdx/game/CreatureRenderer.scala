@@ -1,6 +1,6 @@
 package com.mygdx.game
 
-import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureAtlas, TextureRegion}
+import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
 import com.mygdx.game.WorldDirection.WorldDirection
 
 case class CreatureRenderer(creatureId: String) {
@@ -33,29 +33,37 @@ case class CreatureRenderer(creatureId: String) {
 
     for (i <- 0 until 4) {
       val frames =
-        for {j <- (0 until creature.frameCount).toArray} yield new TextureRegion(
+        for {
+          j <- (0 until creature.frameCount).toArray
+        } yield new TextureRegion(
           textureRegion,
           j * Constants.TileTextureWidth,
           i * Constants.TileTextureHeight,
           Constants.TileTextureWidth,
           Constants.TileTextureHeight
         )
-      runningAnimations(i) = new Animation[TextureRegion](creature.frameDuration, frames: _*)
+      runningAnimations(i) =
+        new Animation[TextureRegion](creature.frameDuration, frames: _*)
     }
   }
 
-  def runningAnimationFrame(currentDirection: WorldDirection, gameState: GameState): TextureRegion = {
+  def runningAnimationFrame(
+      currentDirection: WorldDirection,
+      gameState: GameState
+  ): TextureRegion = {
     val creature = gameState.creatures(creatureId)
 
     runningAnimations(creature.dirMap(currentDirection))
       .getKeyFrame(creature.animationTimer.time, true)
   }
 
-  def facingTextureFrame(currentDirection: WorldDirection, gameState: GameState): TextureRegion = {
+  def facingTextureFrame(
+      currentDirection: WorldDirection,
+      gameState: GameState
+  ): TextureRegion = {
     val creature = gameState.creatures(creatureId)
 
     facingTextures(creature.dirMap(currentDirection))
   }
-
 
 }
