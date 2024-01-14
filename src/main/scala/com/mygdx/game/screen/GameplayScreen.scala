@@ -1,4 +1,4 @@
-package com.mygdx.game
+package com.mygdx.game.screen
 
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.Screen
@@ -6,6 +6,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.{Sprite, SpriteBatch}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.{FitViewport, Viewport}
+import com.mygdx.game.gamestate.{Creature, GameState}
+import com.mygdx.game.util.{SimpleTimer, WorldDirection}
+import com.mygdx.game.view.tile.{Tile, TileType}
+import com.mygdx.game.view.{CreatureRenderer, Renderable}
+import com.mygdx.game.Constants
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.Random
@@ -17,7 +22,7 @@ object GameplayScreen extends Screen {
       i <- (0 until 15).toList
       j <- (0 until 15).toList
     } yield {
-      Tile(TilePos(j, i), TileType.Ground)
+      Tile(j, i, TileType.Ground)
     }
   }
   val overgroundTiles: List[Tile] = {
@@ -26,7 +31,7 @@ object GameplayScreen extends Screen {
       j <- (0 until 15).toList
     } yield {
       if (Random.nextInt(100) < 5) {
-        Some(Tile(TilePos(j, i), TileType.Tree))
+        Some(Tile(j, i, TileType.Tree))
       } else {
         None
       }
@@ -39,9 +44,11 @@ object GameplayScreen extends Screen {
   var creatureRenderers: Map[String, CreatureRenderer] = _
   protected var batch: SpriteBatch = _
 
+  private val playerCreatureId = "creature1"
+
   override def show(): Unit = {
     val creature = Creature(
-      id = "creature1",
+      id = playerCreatureId,
       x = 0,
       y = 0,
       textureName = "wanderer",
@@ -61,7 +68,7 @@ object GameplayScreen extends Screen {
 
     gameState = GameState(creatures =
       Map(
-        "creature1" ->
+        playerCreatureId ->
           creature
       )
     )
@@ -76,7 +83,7 @@ object GameplayScreen extends Screen {
       worldCamera
     )
 
-    creatureRenderers = Map("creature1" -> CreatureRenderer("creature1"))
+    creatureRenderers = Map(playerCreatureId -> CreatureRenderer(playerCreatureId))
 
     creatureRenderers.values.foreach(_.init(gameState))
   }
@@ -98,10 +105,10 @@ object GameplayScreen extends Screen {
 
     baseTiles
       .sorted((tileA: Tile, tileB: Tile) => {
-        if (tileA.tilePos.x == tileB.tilePos.x) {
-          tileB.tilePos.y - tileA.tilePos.y
+        if (tileA.x == tileB.x) {
+          tileB.y - tileA.y
         } else {
-          tileB.tilePos.x - tileA.tilePos.x
+          tileB.x - tileA.x
         }
       })
       .foreach(_.render(batch, gameState))
@@ -134,8 +141,8 @@ object GameplayScreen extends Screen {
 
     val camPosition = worldCamera.position
 
-    val creature = gameState.creatures("creature1")
-    val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
+    val creature = gameState.creatures(playerCreatureId)
+    val (x, y) = Tile.convertToIsometricCoordinates(creature.x, creature.y)
 
     camPosition.x = (math.floor(x * 100) / 100).toFloat
     camPosition.y = (math.floor(y * 100) / 100).toFloat
@@ -179,9 +186,9 @@ object GameplayScreen extends Screen {
       }
 
     gameState = gameState
-      .modify(_.creatures.at("creature1").moving)
+      .modify(_.creatures.at(playerCreatureId).moving)
       .setTo(false)
-      .modify(_.creatures.at("creature1"))
+      .modify(_.creatures.at(playerCreatureId))
       .using { creature =>
         creature
           .modify(_.x)
@@ -189,7 +196,7 @@ object GameplayScreen extends Screen {
           .modify(_.moving)
           .setToIf(deltaX != 0)(true)
       }
-      .modify(_.creatures.at("creature1"))
+      .modify(_.creatures.at(playerCreatureId))
       .using { creature =>
         creature
           .modify(_.y)
@@ -197,7 +204,7 @@ object GameplayScreen extends Screen {
           .modify(_.moving)
           .setToIf(deltaY != 0)(true)
       }
-      .modify(_.creatures.at("creature1").lastMovementDir)
+      .modify(_.creatures.at(playerCreatureId).lastMovementDir)
       .setToIf(deltaX != 0 || deltaY != 0)((deltaX, deltaY))
       .modify(_.creatures.each)
       .using(_.update(delta))

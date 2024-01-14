@@ -2,6 +2,7 @@ package com.mygdx.game
 
 import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
 import com.badlogic.gdx.{Game, Screen}
+import com.mygdx.game.screen.GameplayScreen
 
 object MyGdxGame extends Game {
 

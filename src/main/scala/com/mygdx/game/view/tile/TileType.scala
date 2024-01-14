@@ -1,4 +1,4 @@
-package com.mygdx.game
+package com.mygdx.game.view.tile
 
 object TileType extends Enumeration {
   type TileType = Value

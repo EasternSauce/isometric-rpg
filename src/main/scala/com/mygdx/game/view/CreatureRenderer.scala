@@ -1,6 +1,9 @@
-package com.mygdx.game
+package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, SpriteBatch, TextureRegion}
+import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.view.tile.Tile
+import com.mygdx.game.{Assets, Constants}
 
 case class CreatureRenderer(creatureId: String) extends Renderable {
 
@@ -50,7 +53,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
   override def pos(gameState: GameState): (Float, Float) = {
     val creature = gameState.creatures(creatureId)
 
-    Tile.convertIsometricCoordinates(creature.x, creature.y)
+    Tile.convertToIsometricCoordinates(creature.x, creature.y)
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
@@ -63,7 +66,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
       facingTextures(creature.dirMap(creature.facingDirection))
     }
 
-    val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
+    val (x, y) = Tile.convertToIsometricCoordinates(creature.x, creature.y)
     batch.draw(frame, x, y)
   }
 

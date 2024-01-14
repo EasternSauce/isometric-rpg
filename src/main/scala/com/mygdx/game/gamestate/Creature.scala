@@ -1,7 +1,8 @@
-package com.mygdx.game
+package com.mygdx.game.gamestate
 
 import com.badlogic.gdx.math.Vector2
-import com.mygdx.game.WorldDirection.WorldDirection
+import com.mygdx.game.util.WorldDirection.WorldDirection
+import com.mygdx.game.util.{SimpleTimer, WorldDirection}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class Creature(
