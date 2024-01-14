@@ -3,7 +3,7 @@ package com.mygdx.game
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.OrthographicCamera
-import com.badlogic.gdx.graphics.g2d.{Sprite, SpriteBatch, TextureRegion}
+import com.badlogic.gdx.graphics.g2d.{Sprite, SpriteBatch}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.{FitViewport, Viewport}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
@@ -47,7 +47,7 @@ object GameplayScreen extends Screen {
       textureName = "wanderer",
       neutralStanceFrame = 0,
       frameCount = 3,
-      frameDuration = 0.15f,
+      frameDuration = 0.2f,
       dirMap = Map(
         WorldDirection.South -> 0,
         WorldDirection.East -> 1,
@@ -91,44 +91,38 @@ object GameplayScreen extends Screen {
 
   private def drawView(): Unit = {
     ScreenUtils.clear(0.7f, 0.7f, 0.7f, 1)
-//   val goverageBufferBitNv = if(Gdx.graphics.getBufferFormat.coverageSampling) GL20.GL_COVERAGE_BUFFER_BIT_NV else 0
-//    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | goverageBufferBitNv)
 
     batch.setProjectionMatrix(worldCamera.combined)
+
     batch.begin()
+
     baseTiles
       .sorted((tileA: Tile, tileB: Tile) => {
-        if (tileA.pos.x == tileB.pos.x) {
-          tileB.pos.y - tileA.pos.y
+        if (tileA.tilePos.x == tileB.tilePos.x) {
+          tileB.tilePos.y - tileA.tilePos.y
         } else {
-          tileB.pos.x - tileA.pos.x
+          tileB.tilePos.x - tileA.tilePos.x
         }
       })
-      .foreach(_.render(batch))
+      .foreach(_.render(batch, gameState))
 
-    overgroundTiles
-      .sorted((tileA: Tile, tileB: Tile) => {
-        if (tileA.pos.x == tileB.pos.x) {
-          tileB.pos.y - tileA.pos.y
+    val creatureRenderables =
+      gameState.creatures.keys.map(creatureId => creatureRenderers(creatureId))
+
+    val overgroundRenderables = overgroundTiles ++ creatureRenderables
+
+    overgroundRenderables
+      .sorted((renderableA: Renderable, renderableB: Renderable) => {
+        val (ax, ay) = renderableA.pos(gameState)
+        val (bx, by) = renderableB.pos(gameState)
+        if (ay == by) {
+          bx.compare(ax)
         } else {
-          tileB.pos.x - tileA.pos.x
+          by.compare(ay)
         }
       })
-      .foreach(_.render(batch))
+      .foreach(_.render(batch, gameState))
 
-    gameState.creatures.values.foreach(creature => {
-      if (creature.moving) {
-        val frame: TextureRegion = creatureRenderers(creature.id)
-          .runningAnimationFrame(creature.facingDirection, gameState)
-        val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
-        batch.draw(frame, x, y)
-      } else {
-        val frame: TextureRegion = creatureRenderers(creature.id)
-          .facingTextureFrame(creature.facingDirection, gameState)
-        val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
-        batch.draw(frame, x, y)
-      }
-    })
     batch.end()
   }
 
@@ -162,10 +156,12 @@ object GameplayScreen extends Screen {
 
     val diagonalMovement = (left || right) && (up || down)
 
+    val baseSpeed = 3f
+
     val speed = if (diagonalMovement) {
-      delta * 5f / Math.sqrt(2).toFloat
+      delta * baseSpeed / Math.sqrt(2).toFloat
     } else {
-      delta * 5f
+      delta * baseSpeed
     }
 
     val deltaX =

@@ -1,9 +1,9 @@
 package com.mygdx.game
 
-import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
-import com.mygdx.game.WorldDirection.WorldDirection
+import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, SpriteBatch, TextureRegion}
 
-case class CreatureRenderer(creatureId: String) {
+case class CreatureRenderer(creatureId: String) extends Renderable {
+
   var sprite: Sprite = _
 
   var facingTextures: Array[TextureRegion] = _
@@ -47,23 +47,24 @@ case class CreatureRenderer(creatureId: String) {
     }
   }
 
-  def runningAnimationFrame(
-      currentDirection: WorldDirection,
-      gameState: GameState
-  ): TextureRegion = {
+  override def pos(gameState: GameState): (Float, Float) = {
     val creature = gameState.creatures(creatureId)
 
-    runningAnimations(creature.dirMap(currentDirection))
-      .getKeyFrame(creature.animationTimer.time, true)
+    Tile.convertIsometricCoordinates(creature.x, creature.y)
   }
 
-  def facingTextureFrame(
-      currentDirection: WorldDirection,
-      gameState: GameState
-  ): TextureRegion = {
+  override def render(batch: SpriteBatch, gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
 
-    facingTextures(creature.dirMap(currentDirection))
+    val frame = if (creature.moving) {
+      runningAnimations(creature.dirMap(creature.facingDirection))
+        .getKeyFrame(creature.animationTimer.time, true)
+    } else {
+      facingTextures(creature.dirMap(creature.facingDirection))
+    }
+
+    val (x, y) = Tile.convertIsometricCoordinates(creature.x, creature.y)
+    batch.draw(frame, x, y)
   }
 
 }
