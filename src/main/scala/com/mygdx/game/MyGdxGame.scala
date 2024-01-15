@@ -6,7 +6,7 @@ import com.mygdx.game.screen.GameplayScreen
 
 object MyGdxGame extends Game {
 
-  var playScreen: Screen = _
+  private var playScreen: Screen = _
 
   override def create(): Unit = {
     Assets.load()

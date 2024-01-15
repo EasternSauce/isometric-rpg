@@ -1,7 +1,7 @@
 package com.mygdx.game.view.tile
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.screen.SpriteBatch
 import com.mygdx.game.view.Renderable
 import com.mygdx.game.view.tile.Tile.{convertToIsometricCoordinates, textureMapping}
 import com.mygdx.game.view.tile.TileType.TileType

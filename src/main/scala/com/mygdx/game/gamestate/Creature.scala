@@ -1,30 +1,21 @@
 package com.mygdx.game.gamestate
 
 import com.badlogic.gdx.math.Vector2
+import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.util.WorldDirection.WorldDirection
-import com.mygdx.game.util.{SimpleTimer, WorldDirection}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class Creature(
-    id: String,
-    x: Float,
-    y: Float,
-    textureName: String,
-    neutralStanceFrame: Int,
-    frameCount: Int,
-    frameDuration: Float,
-    dirMap: Map[WorldDirection, Int],
-    animationTimer: SimpleTimer,
-    moving: Boolean,
-    lastMovementDir: (Float, Float)
+    params: CreatureParams
 ) {
   def update(delta: Float): Creature = {
-    this.modify(_.animationTimer).using(_.update(delta))
+    this.modify(_.params.animationTimer).using(_.update(delta))
   }
 
   def facingDirection: WorldDirection = {
     val angleDeg =
-      new Vector2(lastMovementDir._1, lastMovementDir._2).angleDeg()
+      new Vector2(params.lastMovementDir._1, params.lastMovementDir._2)
+        .angleDeg()
 
     angleDeg match {
       case angle if angle >= 45 && angle < 135  => WorldDirection.North
