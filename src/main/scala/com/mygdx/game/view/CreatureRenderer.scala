@@ -54,7 +54,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
   override def pos(gameState: GameState): (Float, Float) = {
     val creature = gameState.creatures(creatureId)
 
-    Tile.convertToIsometricCoordinates(creature.params.x, creature.params.y)
+    (creature.params.x, creature.params.y)
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
@@ -68,7 +68,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
     }
 
     val (x, y) =
-      Tile.convertToIsometricCoordinates(creature.params.x, creature.params.y)
+      Tile.translateIsoToScreen(creature.params.x, creature.params.y)
     batch.draw(frame, x, y)
   }
 

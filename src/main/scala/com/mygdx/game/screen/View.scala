@@ -1,12 +1,14 @@
 package com.mygdx.game.screen
 
+import com.badlogic.gdx.graphics.Texture.TextureFilter
+import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.view.tile.{Area, Tile}
+import com.mygdx.game.view.tile.Cell
 import com.mygdx.game.view.{CreatureRenderer, Renderable}
 
 case class View() {
-  private val area: Area = Area()
+  var tiledMap: TiledMap = _
   private var creatureRenderers: Map[String, CreatureRenderer] = _
 
   def init(clientInformation: ClientInformation, gameState: GameState): Unit = {
@@ -17,6 +19,16 @@ case class View() {
     )
 
     creatureRenderers.values.foreach(_.init(gameState))
+
+    tiledMap = new TmxMapLoader().load("assets/tiled/map1.tmx")
+
+    tiledMap.getTileSets.forEach(
+      _.forEach(
+        _.getTextureRegion.getTexture
+          .setFilter(TextureFilter.Linear, TextureFilter.Linear)
+      )
+    )
+//    tiledMapRenderer = new IsometricTiledMapRenderer(tiledMap)
   }
 
   def draw(
@@ -30,34 +42,48 @@ case class View() {
 
     batch.begin()
 
-    area.baseTiles
-      .sorted((tileA: Tile, tileB: Tile) => {
-        if (tileA.x == tileB.x) {
-          tileB.y - tileA.y
-        } else {
-          tileB.x - tileA.x
-        }
-      })
-      .foreach(_.render(batch, gameState))
+    val layer0Cells = getLayerCells(0)
+    val layer1Cells = getLayerCells(1)
+
+    layer0Cells.foreach(_.render(batch, gameState))
 
     val creatureRenderables =
-      gameState.creatures.keys.map(creatureId => creatureRenderers(creatureId))
+      gameState.creatures.keys.toList.map(creatureId =>
+        creatureRenderers(creatureId)
+      )
 
-    val overgroundRenderables = area.overgroundTiles ++ creatureRenderables
+    val overgroundRenderables = layer1Cells ++ creatureRenderables
+
+    def distanceFromCameraPlane(x: Float, y: Float): Float = {
+      Math.abs(-x + y + getMapWidth()) / Math.sqrt(2).toFloat
+    }
 
     overgroundRenderables
       .sorted((renderableA: Renderable, renderableB: Renderable) => {
         val (ax, ay) = renderableA.pos(gameState)
         val (bx, by) = renderableB.pos(gameState)
-        if (ay == by) {
-          bx.compare(ax)
-        } else {
-          by.compare(ay)
-        }
+
+        distanceFromCameraPlane(bx, by).compare(distanceFromCameraPlane(ax, ay))
       })
       .foreach(_.render(batch, gameState))
 
     batch.end()
+  }
+
+  private def getLayerCells(layerId: Int): List[Renderable] = {
+    val layer: TiledMapTileLayer =
+      tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
+
+    (for {
+      row <- (0 until layer.getHeight).toList.reverse
+      col <- 0 until layer.getWidth
+    } yield {
+      Option(layer.getCell(col, row)).map(Cell(_, col, row))
+    }).flatten
+  }
+
+  private def getMapWidth(): Int = {
+    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
   }
 
   def update(
@@ -66,6 +92,10 @@ case class View() {
       gameState: GameState
   ): Unit = {
     viewport.updateCamera(clientInformation.clientCreatureId, gameState)
+  }
+
+  private def getMapHeight(): Int = {
+    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
 }

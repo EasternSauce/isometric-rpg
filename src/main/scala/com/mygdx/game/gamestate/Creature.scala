@@ -9,6 +9,7 @@ case class Creature(
     params: CreatureParams
 ) {
   def update(delta: Float): Creature = {
+
     this.modify(_.params.animationTimer).using(_.update(delta))
   }
 
@@ -18,10 +19,10 @@ case class Creature(
         .angleDeg()
 
     angleDeg match {
-      case angle if angle >= 45 && angle < 135  => WorldDirection.North
-      case angle if angle >= 135 && angle < 225 => WorldDirection.West
-      case angle if angle >= 225 && angle < 315 => WorldDirection.South
-      case _                                    => WorldDirection.East
+      case angle if angle >= 45 && angle < 135  => WorldDirection.East
+      case angle if angle >= 135 && angle < 225 => WorldDirection.North
+      case angle if angle >= 225 && angle < 315 => WorldDirection.West
+      case _                                    => WorldDirection.South
     }
   }
 

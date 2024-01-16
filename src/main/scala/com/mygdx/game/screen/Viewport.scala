@@ -8,8 +8,10 @@ import com.mygdx.game.view.tile.Tile
 
 case class Viewport() {
 
-  private var worldCamera: OrthographicCamera = _
+  protected[screen] var worldCamera: OrthographicCamera = _
   private var worldViewport: FitViewport = _
+
+  import com.badlogic.gdx.graphics.OrthographicCamera
 
   def init(): Unit = {
     worldCamera = new OrthographicCamera()
@@ -30,7 +32,7 @@ case class Viewport() {
 
     val creature = gameState.creatures(playerCreatureId)
     val (x, y) =
-      Tile.convertToIsometricCoordinates(creature.params.x, creature.params.y)
+      Tile.translateIsoToScreen(creature.params.x, creature.params.y)
 
     camPosition.x = (math.floor(x * 100) / 100).toFloat
     camPosition.y = (math.floor(y * 100) / 100).toFloat

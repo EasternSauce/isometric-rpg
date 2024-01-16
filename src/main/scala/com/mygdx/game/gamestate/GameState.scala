@@ -12,62 +12,12 @@ case class GameState(
       keyboardInput: KeyboardInput,
       delta: Float
   ): GameState = {
-    val diagonalMovement =
-      (keyboardInput.moveWest || keyboardInput.moveEast) && (keyboardInput.moveNorth || keyboardInput.moveSouth)
-
-    val baseSpeed = 3f
-
-    val speed = if (diagonalMovement) {
-      delta * baseSpeed / Math.sqrt(2).toFloat
-    } else {
-      delta * baseSpeed
-    }
-
-    val deltaX =
-      (keyboardInput.moveWest, keyboardInput.moveEast) match {
-        case (true, false) => -speed
-        case (false, true) => speed
-        case _             => 0
-      }
-
-    val deltaY =
-      (keyboardInput.moveSouth, keyboardInput.moveNorth) match {
-        case (true, false) => -speed
-        case (false, true) => speed
-        case _             => 0
-      }
-
     this
-      .modify(_.creatures.at(clientInformation.clientCreatureId).params.moving)
-      .setTo(false)
       .modify(_.creatures.at(clientInformation.clientCreatureId))
-      .using { creature =>
-        creature
-          .modify(_.params.x)
-          .setTo(creature.params.x + deltaX)
-          .modify(_.params.moving)
-          .setToIf(deltaX != 0)(true)
-      }
-      .modify(_.creatures.at(clientInformation.clientCreatureId))
-      .using { creature =>
-        creature
-          .modify(_.params.y)
-          .setTo(creature.params.y + deltaY)
-          .modify(_.params.moving)
-          .setToIf(deltaY != 0)(true)
-      }
-      .modify(
-        _.creatures
-          .at(clientInformation.clientCreatureId)
-          .params
-          .lastMovementDir
-      )
-      .setToIf(deltaX != 0 || deltaY != 0)((deltaX, deltaY))
+      .using(GameState.updatePlayerMovement(keyboardInput, delta))
       .modify(_.creatures.each)
       .using(_.update(delta))
-
   }
-
 }
 
 object GameState {
@@ -99,6 +49,49 @@ object GameState {
           creature
       )
     )
+  }
+
+  def updatePlayerMovement(
+      keyboardInput: KeyboardInput,
+      delta: Float
+  ): Creature => Creature = {
+    val baseSpeed = 3f
+
+    val speed = if (keyboardInput.movingDiagonally()) {
+      delta * baseSpeed / Math.sqrt(2).toFloat
+    } else {
+      delta * baseSpeed
+    }
+
+    val deltaX =
+      (keyboardInput.moveNorth, keyboardInput.moveSouth) match {
+        case (true, false) => -speed
+        case (false, true) => speed
+        case _             => 0
+      }
+
+    val deltaY =
+      (keyboardInput.moveWest, keyboardInput.moveEast) match {
+        case (true, false) => -speed
+        case (false, true) => speed
+        case _             => 0
+      }
+
+    creature => {
+      creature
+        .modify(_.params.moving)
+        .setTo(false)
+        .modify(_.params.x)
+        .setTo(creature.params.x + deltaX)
+        .modify(_.params.moving)
+        .setToIf(deltaX != 0)(true)
+        .modify(_.params.y)
+        .setTo(creature.params.y + deltaY)
+        .modify(_.params.moving)
+        .setToIf(deltaY != 0)(true)
+        .modify(_.params.lastMovementDir)
+        .setToIf(deltaX != 0 || deltaY != 0)((deltaX, deltaY))
+    }
   }
 
 }

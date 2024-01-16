@@ -8,7 +8,10 @@ case class KeyboardInput(
     moveEast: Boolean,
     moveSouth: Boolean,
     moveNorth: Boolean
-) {}
+) {
+  def movingDiagonally(): Boolean =
+    (moveWest || moveEast) && (moveNorth || moveSouth)
+}
 
 object KeyboardInput {
   def getInput(): KeyboardInput = {
