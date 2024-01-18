@@ -8,7 +8,7 @@ object GameplayScreen extends Screen {
   private val clientInformation: ClientInformation =
     ClientInformation(clientCreatureId = "creature1")
 
-  private val view: View = View()
+  private val view: View = View(clientInformation)
   private val spriteBatch: SpriteBatch = SpriteBatch()
   private var gameState: GameState = _
 
@@ -20,8 +20,14 @@ object GameplayScreen extends Screen {
   }
 
   override def render(delta: Float): Unit = {
-    gameState =
-      gameState.update(clientInformation, KeyboardInput.getInput(), delta)
+    val (playerPosX, playerPosY) = view.getPlayerPos
+    gameState = gameState.update(
+      clientInformation,
+      KeyboardInput.getInput(),
+      playerPosX,
+      playerPosY,
+      delta
+    )
 
     view.update(clientInformation, gameState)
 

@@ -1,38 +1,9 @@
 package com.mygdx.game.view.tile
 
 import com.badlogic.gdx.math.{Matrix4, Vector3}
-import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.screen.SpriteBatch
-import com.mygdx.game.view.Renderable
-import com.mygdx.game.view.tile.Tile.textureMapping
-import com.mygdx.game.view.tile.TileType.TileType
-import com.mygdx.game.{Assets, Constants}
-
-case class Tile(x: Int, y: Int, tileType: TileType) extends Renderable {
-
-  override def pos(gameState: GameState): (Float, Float) = {
-    Tile.translateIsoToScreen(x, y)
-  }
-
-  override def render(batch: SpriteBatch, gameState: GameState): Unit = {
-    val (worldPosX, worldPosY) =
-      Tile.translateIsoToScreen(x, y)
-    batch.draw(
-      Assets.atlas.get.findRegion(textureMapping(tileType)),
-      worldPosX,
-      worldPosY,
-      Constants.TileTextureWidth,
-      Constants.TileTextureHeight
-    )
-  }
-
-}
+import com.mygdx.game.Constants
 
 object Tile {
-  val textureMapping: Map[TileType, String] = {
-    Map(TileType.Ground -> "ground", TileType.Tree -> "tree")
-  }
-
   private val isoTransform: Matrix4 = {
     val matrix: Matrix4 = new Matrix4()
 

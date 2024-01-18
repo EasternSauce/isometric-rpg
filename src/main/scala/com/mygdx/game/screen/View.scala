@@ -3,17 +3,20 @@ package com.mygdx.game.screen
 import com.badlogic.gdx.graphics.Texture.TextureFilter
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, GameState}
 import com.mygdx.game.view.tile.{Cell, Tile}
 import com.mygdx.game.view.{CreatureRenderer, Renderable}
 
-case class View() {
-
+case class View(clientInformation: ClientInformation) {
   private val worldViewport: Viewport = Viewport()
   private val b2DebugViewport: Viewport = Viewport()
-  var tiledMap: TiledMap = _
+  private val world: World = World()
+  private val playerBody: CreatureBody = CreatureBody(
+    clientInformation.clientCreatureId
+  )
+  private var tiledMap: TiledMap = _
   private var creatureRenderers: Map[String, CreatureRenderer] = _
-  private var world: World = World()
+  private var terrainBodies: List[TerrainBody] = List()
 
   def init(clientInformation: ClientInformation, gameState: GameState): Unit = {
     creatureRenderers = Map(
@@ -35,28 +38,34 @@ case class View() {
 
     world.init()
 
-    world.createBody(0, 0)
+    playerBody.init(world, 0, 0)
 
     val layer1Cells = getLayerCells(1)
 
-    layer1Cells.map(_.pos(gameState)).foreach { case (x, y) =>
-      world.createBody(x, y)
+    terrainBodies = layer1Cells.map(_.pos(gameState)).map { case (x, y) =>
+      TerrainBody("terrainBody_" + x + "_" + y, x, y)
     }
 
+    terrainBodies.foreach(terrainBody =>
+      terrainBody.init(world, terrainBody.x, terrainBody.y)
+    )
+
     worldViewport.init(1, (x, y) => Tile.translateIsoToScreen(x, y))
-    b2DebugViewport.init(0.035f, (x, y) => (x, y))
+    b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 
   private def getLayerCells(layerId: Int): List[Renderable] = {
     val layer: TiledMapTileLayer =
       tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
-    (for {
+    val cells: List[Option[Cell]] = for {
       row <- (0 until layer.getHeight).toList.reverse
       col <- 0 until layer.getWidth
     } yield {
       Option(layer.getCell(col, row)).map(Cell(_, col, row))
-    }).flatten
+    }
+
+    cells.flatten
   }
 
   def draw(
@@ -110,11 +119,21 @@ case class View() {
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     world.update()
+
+    val player: Creature =
+      gameState.creatures(clientInformation.clientCreatureId)
+    playerBody.move(player.params.velocityX, player.params.velocityY)
+
+    playerBody.update()
   }
 
   def resize(width: Int, height: Int): Unit = {
     worldViewport.update(width, height)
     b2DebugViewport.update(width, height)
+  }
+
+  def getPlayerPos: (Float, Float) = {
+    playerBody.getPos
   }
 
   private def getMapHeight: Int = {

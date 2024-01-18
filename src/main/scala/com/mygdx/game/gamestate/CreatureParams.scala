@@ -7,12 +7,14 @@ case class CreatureParams(
     id: String,
     x: Float,
     y: Float,
+    velocityX: Float,
+    velocityY: Float,
+    lastVelocityX: Float,
+    lastVelocityY: Float,
     textureName: String,
     neutralStanceFrame: Int,
     frameCount: Int,
     frameDuration: Float,
     dirMap: Map[WorldDirection, Int],
-    animationTimer: SimpleTimer,
-    moving: Boolean,
-    lastMovementDir: (Float, Float)
+    animationTimer: SimpleTimer
 ) {}

@@ -10,11 +10,15 @@ case class GameState(
   def update(
       clientInformation: ClientInformation,
       keyboardInput: KeyboardInput,
+      playerPosX: Float,
+      playerPosY: Float,
       delta: Float
   ): GameState = {
     this
       .modify(_.creatures.at(clientInformation.clientCreatureId))
-      .using(GameState.updatePlayerMovement(keyboardInput, delta))
+      .using(
+        GameState.updatePlayerMovement(keyboardInput, playerPosX, playerPosY)
+      )
       .modify(_.creatures.each)
       .using(_.update(delta))
   }
@@ -27,6 +31,10 @@ object GameState {
         id = clientInformation.clientCreatureId,
         x = 0,
         y = 0,
+        velocityX = 0,
+        velocityY = 0,
+        lastVelocityX = 0,
+        lastVelocityY = 0,
         textureName = "wanderer",
         neutralStanceFrame = 0,
         frameCount = 3,
@@ -37,9 +45,7 @@ object GameState {
           WorldDirection.North -> 2,
           WorldDirection.West -> 3
         ),
-        animationTimer = SimpleTimer(isRunning = true),
-        moving = false,
-        lastMovementDir = (0, 0)
+        animationTimer = SimpleTimer(isRunning = true)
       )
     )
 
@@ -53,44 +59,44 @@ object GameState {
 
   def updatePlayerMovement(
       keyboardInput: KeyboardInput,
-      delta: Float
+      playerPosX: Float,
+      playerPosY: Float
   ): Creature => Creature = {
-    val baseSpeed = 3f
+    val baseVelocity = 3f
 
-    val speed = if (keyboardInput.movingDiagonally()) {
-      delta * baseSpeed / Math.sqrt(2).toFloat
+    val velocity = if (keyboardInput.movingDiagonally()) {
+      baseVelocity / Math.sqrt(2).toFloat
     } else {
-      delta * baseSpeed
+      baseVelocity
     }
-
-    val deltaX =
+    val velocityX =
       (keyboardInput.moveNorth, keyboardInput.moveSouth) match {
-        case (true, false) => -speed
-        case (false, true) => speed
+        case (true, false) => -velocity
+        case (false, true) => velocity
         case _             => 0
       }
 
-    val deltaY =
+    val velocityY =
       (keyboardInput.moveWest, keyboardInput.moveEast) match {
-        case (true, false) => -speed
-        case (false, true) => speed
+        case (true, false) => -velocity
+        case (false, true) => velocity
         case _             => 0
       }
 
     creature => {
       creature
-        .modify(_.params.moving)
-        .setTo(false)
         .modify(_.params.x)
-        .setTo(creature.params.x + deltaX)
-        .modify(_.params.moving)
-        .setToIf(deltaX != 0)(true)
+        .setTo(playerPosX)
         .modify(_.params.y)
-        .setTo(creature.params.y + deltaY)
-        .modify(_.params.moving)
-        .setToIf(deltaY != 0)(true)
-        .modify(_.params.lastMovementDir)
-        .setToIf(deltaX != 0 || deltaY != 0)((deltaX, deltaY))
+        .setTo(playerPosY)
+        .modify(_.params.velocityX)
+        .setTo(velocityX)
+        .modify(_.params.velocityY)
+        .setTo(velocityY)
+        .modify(_.params.lastVelocityX)
+        .setToIf(velocityX != 0 && velocityY != 0)(velocityX)
+        .modify(_.params.lastVelocityY)
+        .setToIf(velocityX != 0 && velocityY != 0)(velocityY)
     }
   }
 

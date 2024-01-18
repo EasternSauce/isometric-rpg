@@ -60,7 +60,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
 
-    val frame = if (creature.params.moving) {
+    val frame = if (creature.moving) {
       runningAnimations(creature.params.dirMap(creature.facingDirection))
         .getKeyFrame(creature.params.animationTimer.time, true)
     } else {

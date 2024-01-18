@@ -15,7 +15,7 @@ case class Creature(
 
   def facingDirection: WorldDirection = {
     val angleDeg =
-      new Vector2(params.lastMovementDir._1, params.lastMovementDir._2)
+      new Vector2(params.lastVelocityX, params.lastVelocityY)
         .angleDeg()
 
     angleDeg match {
@@ -26,4 +26,5 @@ case class Creature(
     }
   }
 
+  def moving: Boolean = params.velocityX != 0 && params.velocityY != 0
 }

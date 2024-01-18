@@ -11,7 +11,7 @@ case class Cell(cell: TiledMapTileLayer.Cell, col: Float, row: Float)
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
     val textureRegion = cell.getTile.getTextureRegion
-    val (x, y) = Tile.translateIsoToScreen(col, row)
+    val (x, y) = Tile.translateIsoToScreen(col + 0.5f, row + 0.5f)
     batch.draw(textureRegion, x, y)
   }
 }
