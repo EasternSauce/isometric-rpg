@@ -14,4 +14,8 @@ case class Cell(cell: TiledMapTileLayer.Cell, col: Float, row: Float)
     val (x, y) = Tile.translateIsoToScreen(col + 0.5f, row + 0.5f)
     batch.draw(textureRegion, x, y)
   }
+
+  def walkable: Boolean = {
+    cell.getTile.getProperties.get("walkable").asInstanceOf[Boolean]
+  }
 }

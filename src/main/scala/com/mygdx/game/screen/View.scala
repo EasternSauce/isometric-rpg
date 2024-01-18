@@ -40,11 +40,13 @@ case class View(clientInformation: ClientInformation) {
 
     playerBody.init(world, 0, 0)
 
-    val layer1Cells = getLayerCells(1)
+    val cells = getLayerCells(0) ++ getLayerCells(1)
 
-    terrainBodies = layer1Cells.map(_.pos(gameState)).map { case (x, y) =>
-      TerrainBody("terrainBody_" + x + "_" + y, x, y)
-    }
+    terrainBodies =
+      cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
+        case (x, y) =>
+          TerrainBody("terrainBody_" + x + "_" + y, x, y)
+      }
 
     terrainBodies.foreach(terrainBody =>
       terrainBody.init(world, terrainBody.x, terrainBody.y)
@@ -54,7 +56,7 @@ case class View(clientInformation: ClientInformation) {
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 
-  private def getLayerCells(layerId: Int): List[Renderable] = {
+  private def getLayerCells(layerId: Int): List[Cell] = {
     val layer: TiledMapTileLayer =
       tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
