@@ -1,6 +1,6 @@
 package com.mygdx.game.screen
 
-import com.badlogic.gdx.Screen
+import com.badlogic.gdx.{Gdx, Screen}
 import com.mygdx.game.gamestate.GameState
 
 object GameplayScreen extends Screen {
@@ -23,7 +23,6 @@ object GameplayScreen extends Screen {
     val (playerPosX, playerPosY) = view.getPlayerPos
     gameState = gameState.update(
       clientInformation,
-      KeyboardInput.getInput(),
       playerPosX,
       playerPosY,
       delta

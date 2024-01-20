@@ -27,13 +27,11 @@ case class CreatureBody(creatureId: String) {
   }
 
   def move(vx: Float, vy: Float): Unit = {
-    println("move " + vx + " " + vy)
     velocityX = vx
     velocityY = vy
   }
 
   def update(): Unit = {
-    println("setting vel to " + velocityX + " " + velocityY)
     body.setLinearVelocity(velocityX, velocityY)
     velocityX = 0
     velocityY = 0

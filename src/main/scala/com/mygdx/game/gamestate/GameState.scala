@@ -1,7 +1,9 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.screen.{ClientInformation, KeyboardInput}
+import com.badlogic.gdx.Gdx
+import com.mygdx.game.screen.{ClientInformation, Input}
 import com.mygdx.game.util.{SimpleTimer, WorldDirection}
+import com.mygdx.game.view.tile.Tile
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 case class GameState(
@@ -9,7 +11,6 @@ case class GameState(
 ) {
   def update(
       clientInformation: ClientInformation,
-      keyboardInput: KeyboardInput,
       playerPosX: Float,
       playerPosY: Float,
       delta: Float
@@ -17,7 +18,10 @@ case class GameState(
     this
       .modify(_.creatures.at(clientInformation.clientCreatureId))
       .using(
-        GameState.updatePlayerMovement(keyboardInput, playerPosX, playerPosY)
+        GameState.updatePlayerMovement(
+          playerPosX,
+          playerPosY
+        )
       )
       .modify(_.creatures.each)
       .using(_.update(delta))
@@ -33,6 +37,8 @@ object GameState {
         y = 0,
         velocityX = 0,
         velocityY = 0,
+        destinationX = 0,
+        destinationY = 0,
         lastVelocityX = 0,
         lastVelocityY = 0,
         textureName = "wanderer",
@@ -58,45 +64,24 @@ object GameState {
   }
 
   def updatePlayerMovement(
-      keyboardInput: KeyboardInput,
       playerPosX: Float,
       playerPosY: Float
-  ): Creature => Creature = {
-    val baseVelocity = 3f
+  ): Creature => Creature = { creature =>
+    {
+      val (mouseX: Float, mouseY: Float) = Input.getMousePos
 
-    val velocity = if (keyboardInput.movingDiagonally()) {
-      baseVelocity / Math.sqrt(2).toFloat
-    } else {
-      baseVelocity
-    }
-    val velocityX =
-      (keyboardInput.moveNorth, keyboardInput.moveSouth) match {
-        case (true, false) => -velocity
-        case (false, true) => velocity
-        case _             => 0
-      }
+      val (destinationX, destinationY) = Tile.translateScreenToIso(mouseX, mouseY)
 
-    val velocityY =
-      (keyboardInput.moveWest, keyboardInput.moveEast) match {
-        case (true, false) => -velocity
-        case (false, true) => velocity
-        case _             => 0
-      }
-
-    creature => {
+      val justClicked = Gdx.input.justTouched()
       creature
         .modify(_.params.x)
         .setTo(playerPosX)
         .modify(_.params.y)
         .setTo(playerPosY)
-        .modify(_.params.velocityX)
-        .setTo(velocityX)
-        .modify(_.params.velocityY)
-        .setTo(velocityY)
-        .modify(_.params.lastVelocityX)
-        .setToIf(velocityX != 0 && velocityY != 0)(velocityX)
-        .modify(_.params.lastVelocityY)
-        .setToIf(velocityX != 0 && velocityY != 0)(velocityY)
+        .modify(_.params.destinationX)
+        .setToIf(justClicked)(destinationX)
+        .modify(_.params.destinationY)
+        .setToIf(justClicked)(destinationY)
     }
   }
 

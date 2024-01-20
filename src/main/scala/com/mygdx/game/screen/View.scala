@@ -1,10 +1,13 @@
 package com.mygdx.game.screen
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture.TextureFilter
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.gamestate.{Creature, GameState}
-import com.mygdx.game.view.tile.{Cell, Tile}
+import com.mygdx.game.{Assets, Constants}
+import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.view.tile.{CellRenderer, Tile}
 import com.mygdx.game.view.{CreatureRenderer, Renderable}
 
 case class View(clientInformation: ClientInformation) {
@@ -56,15 +59,15 @@ case class View(clientInformation: ClientInformation) {
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 
-  private def getLayerCells(layerId: Int): List[Cell] = {
+  private def getLayerCells(layerId: Int): List[CellRenderer] = {
     val layer: TiledMapTileLayer =
       tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
-    val cells: List[Option[Cell]] = for {
+    val cells: List[Option[CellRenderer]] = for {
       row <- (0 until layer.getHeight).toList.reverse
       col <- 0 until layer.getWidth
     } yield {
-      Option(layer.getCell(col, row)).map(Cell(_, col, row))
+      Option(layer.getCell(col, row)).map(CellRenderer(_, col, row))
     }
 
     cells.flatten
@@ -108,25 +111,31 @@ case class View(clientInformation: ClientInformation) {
     batch.end()
 
     world.renderDebug(b2DebugViewport)
+
   }
 
   private def getMapWidth: Int = {
     tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
   }
 
+  private def getMapHeight: Int = {
+    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
+  }
+
   def update(
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
-    worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
-    b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     world.update()
 
-    val player: Creature =
+    val player =
       gameState.creatures(clientInformation.clientCreatureId)
     playerBody.move(player.params.velocityX, player.params.velocityY)
 
     playerBody.update()
+
+    worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
+    b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
   }
 
   def resize(width: Int, height: Int): Unit = {
@@ -136,10 +145,6 @@ case class View(clientInformation: ClientInformation) {
 
   def getPlayerPos: (Float, Float) = {
     playerBody.getPos
-  }
-
-  private def getMapHeight: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
 }

@@ -9,6 +9,8 @@ case class CreatureParams(
     y: Float,
     velocityX: Float,
     velocityY: Float,
+    destinationX: Float,
+    destinationY: Float,
     lastVelocityX: Float,
     lastVelocityY: Float,
     textureName: String,

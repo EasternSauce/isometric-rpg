@@ -54,4 +54,8 @@ case class Viewport() {
     debugRenderer.render(b2World, camera.combined)
   }
 
+  def getCameraPos: (Float, Float) = {
+    (camera.position.x, camera.position.y)
+  }
+
 }

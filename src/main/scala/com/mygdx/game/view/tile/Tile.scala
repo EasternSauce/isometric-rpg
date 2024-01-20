@@ -31,8 +31,8 @@ object Tile {
 
   def translateScreenToIso(x: Float, y: Float): (Float, Float) = {
     val screenPos = new Vector3()
-    screenPos.set(x, y, 0)
+    screenPos.set(x / Constants.TileSize, y / Constants.TileSize, 0)
     screenPos.mul(invIsoTransform)
-    (screenPos.x * Constants.TileSize, screenPos.y * Constants.TileSize)
+    (screenPos.x, screenPos.y)
   }
 }
