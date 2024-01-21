@@ -5,6 +5,8 @@ import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.softwaremill.quicklens.ModifyPimp
 
+import scala.util.chaining.scalaUtilChainingOps
+
 case class Creature(
     params: CreatureParams
 ) {
@@ -26,6 +28,8 @@ case class Creature(
     this
       .modify(_.params.animationTimer)
       .using(_.update(delta))
+      .modify(_.params.lastPosTimer)
+      .using(_.update(delta))
       .modify(_.params.velocityX)
       .setTo(vectorTowardsDest.x)
       .modify(_.params.velocityY)
@@ -34,7 +38,39 @@ case class Creature(
       .setToIf(vectorTowardsDest.len() > 0)(vectorTowardsDest.x)
       .modify(_.params.lastVelocityY)
       .setToIf(vectorTowardsDest.len() > 0)(vectorTowardsDest.y)
+      .pipe(creature => {
+        if (creature.params.lastPosTimer.time > 0.5f) {
+          creature
+            .modify(_.params.lastPosTimer)
+            .using(_.restart())
+            .pipe(creature => {
+              val v1 =
+                new Vector2(creature.params.lastPosX, creature.params.lastPosY)
+              val v2 = new Vector2(creature.params.x, creature.params.y)
 
+              if (v1.dst(v2) < 0.2f) {
+                creature.forceStopMoving()
+
+              } else {
+                creature
+              }
+            })
+            .modify(_.params.lastPosX)
+            .setTo(params.x)
+            .modify(_.params.lastPosY)
+            .setTo(params.y)
+        } else {
+          creature
+        }
+      })
+  }
+
+  def forceStopMoving(): Creature = {
+    this
+      .modify(_.params.destinationX)
+      .setTo(params.x)
+      .modify(_.params.destinationY)
+      .setTo(params.y)
   }
 
   def facingDirection: WorldDirection = {
@@ -51,12 +87,4 @@ case class Creature(
   }
 
   def moving: Boolean = params.velocityX != 0 && params.velocityY != 0
-
-  def forceStopMoving(): Creature = {
-    this
-      .modify(_.params.destinationX)
-      .setTo(params.x)
-      .modify(_.params.destinationY)
-      .setTo(params.y)
-  }
 }

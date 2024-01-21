@@ -41,6 +41,8 @@ object GameState {
         destinationY = 0,
         lastVelocityX = 0,
         lastVelocityY = 0,
+        lastPosX = 0,
+        lastPosY = 0,
         textureName = "wanderer",
         neutralStanceFrame = 0,
         frameCount = 3,
@@ -51,7 +53,8 @@ object GameState {
           WorldDirection.North -> 2,
           WorldDirection.West -> 3
         ),
-        animationTimer = SimpleTimer(isRunning = true)
+        animationTimer = SimpleTimer(isRunning = true),
+        lastPosTimer = SimpleTimer(isRunning = true)
       )
     )
 
