@@ -1,3 +1,3 @@
-package com.mygdx.game.screen
+package com.mygdx.game
 
 case class ClientInformation(clientCreatureId: String) {}

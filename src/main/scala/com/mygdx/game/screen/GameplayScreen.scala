@@ -1,6 +1,7 @@
 package com.mygdx.game.screen
 
 import com.badlogic.gdx.Screen
+import com.mygdx.game.Gameplay
 
 object GameplayScreen extends Screen {
 

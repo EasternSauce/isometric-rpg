@@ -1,4 +1,4 @@
-package com.mygdx.game.screen
+package com.mygdx.game.levelmap
 
 import com.badlogic.gdx.graphics.Texture.TextureFilter
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}

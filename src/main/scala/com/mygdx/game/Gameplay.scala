@@ -1,6 +1,7 @@
-package com.mygdx.game.screen
+package com.mygdx.game
 
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.view.{SpriteBatch, View}
 

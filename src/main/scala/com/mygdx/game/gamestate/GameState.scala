@@ -1,7 +1,8 @@
 package com.mygdx.game.gamestate
 
 import com.badlogic.gdx.Gdx
-import com.mygdx.game.screen.{ClientInformation, Input}
+import com.mygdx.game.ClientInformation
+import com.mygdx.game.input.Input
 import com.mygdx.game.util.{SimpleTimer, WorldDirection}
 import com.mygdx.game.view.IsometricProjection
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}

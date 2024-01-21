@@ -1,7 +1,8 @@
 package com.mygdx.game.physics
 
+import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.screen.{ClientInformation, LevelMap}
+import com.mygdx.game.levelmap.LevelMap
 
 case class Physics() {
   private var world: World = _

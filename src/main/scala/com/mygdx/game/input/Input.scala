@@ -1,4 +1,4 @@
-package com.mygdx.game.screen
+package com.mygdx.game.input
 
 import com.badlogic.gdx.Gdx
 import com.mygdx.game.Constants
