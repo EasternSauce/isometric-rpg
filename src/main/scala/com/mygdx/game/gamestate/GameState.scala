@@ -7,6 +7,7 @@ import com.mygdx.game.view.tile.Tile
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 case class GameState(
+    creature: Creature,
     creatures: Map[String, Creature]
 ) {
   def update(
@@ -58,8 +59,9 @@ object GameState {
       )
     )
 
-    GameState(creatures =
-      Map(
+    GameState(
+      creature = creature,
+      creatures = Map(
         clientInformation.clientCreatureId ->
           creature
       )

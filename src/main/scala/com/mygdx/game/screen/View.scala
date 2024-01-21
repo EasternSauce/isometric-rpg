@@ -42,10 +42,17 @@ case class View(clientInformation: ClientInformation) {
 
     val cells = getLayerCells(0) ++ getLayerCells(1)
 
+    val borders = (0 until getMapWidth).zip(LazyList.continually(-1)) ++
+      LazyList.continually(-1).zip(0 until getMapHeight) ++
+      LazyList.continually(getMapWidth).zip(0 until getMapHeight) ++
+      (0 until getMapWidth).zip(LazyList.continually(getMapHeight))
+
     terrainBodies =
       cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
         case (x, y) =>
           TerrainBody("terrainBody_" + x + "_" + y, x, y)
+      } ++ borders.map { case (x, y) =>
+        TerrainBody("terrainBody_" + x + "_" + y, x, y)
       }
 
     terrainBodies.foreach(terrainBody =>
@@ -54,6 +61,10 @@ case class View(clientInformation: ClientInformation) {
 
     worldViewport.init(1, (x, y) => Tile.translateIsoToScreen(x, y))
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
+  }
+
+  private def getMapHeight: Int = {
+    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
   def draw(
@@ -93,7 +104,7 @@ case class View(clientInformation: ClientInformation) {
 
     batch.end()
 
-    //world.renderDebug(b2DebugViewport)
+    world.renderDebug(b2DebugViewport)
 
   }
 
@@ -138,10 +149,6 @@ case class View(clientInformation: ClientInformation) {
 
   def getPlayerPos: (Float, Float) = {
     playerBody.getPos
-  }
-
-  private def getMapHeight: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
 }
