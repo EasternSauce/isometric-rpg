@@ -1,4 +1,4 @@
-package com.mygdx.game.screen
+package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{TextureRegion, SpriteBatch => GdxSpriteBatch}
 import com.badlogic.gdx.math.Matrix4

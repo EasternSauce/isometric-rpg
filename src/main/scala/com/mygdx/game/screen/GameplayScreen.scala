@@ -1,17 +1,10 @@
 package com.mygdx.game.screen
 
 import com.badlogic.gdx.Screen
-import com.mygdx.game.gamestate.GameState
+
 object GameplayScreen extends Screen {
 
-  private val clientInformation: ClientInformation =
-    ClientInformation(clientCreatureId = "creature1")
-
-  private val levelMap: LevelMap = LevelMap()
-  private val physics: Physics = Physics()
-  private val view: View = View()
-  private val spriteBatch: SpriteBatch = SpriteBatch()
-  private var gameState: GameState = _
+  private val gameplay: Gameplay = Gameplay()
 
 //  val server: Server = {
 //    val kryo: Kryo = {
@@ -48,13 +41,7 @@ object GameplayScreen extends Screen {
 //  }
 
   override def show(): Unit = {
-    gameState = GameState.initialState(clientInformation)
-
-    levelMap.init()
-    view.init(clientInformation, levelMap, gameState)
-    physics.init(clientInformation, levelMap, gameState)
-
-    spriteBatch.init()
+    gameplay.init()
 
 //    new Thread(new Runnable() {
 //      override def run(): Unit = {
@@ -71,26 +58,15 @@ object GameplayScreen extends Screen {
   }
 
   override def render(delta: Float): Unit = {
-    val (playerPosX, playerPosY) = physics.getPlayerPos
-    gameState = gameState.update(
-      clientInformation,
-      playerPosX,
-      playerPosY,
-      delta
-    )
-
-    view.update(clientInformation, gameState)
-    physics.update(gameState)
-
-    view.draw(spriteBatch, physics, gameState)
+    gameplay.update(delta)
   }
 
   override def dispose(): Unit = {
-    spriteBatch.dispose()
+    gameplay.dispose()
   }
 
   override def resize(width: Int, height: Int): Unit = {
-    view.resize(width, height)
+    gameplay.resize(width, height)
   }
 
   override def pause(): Unit = {}

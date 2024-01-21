@@ -1,8 +1,9 @@
-package com.mygdx.game.screen
+package com.mygdx.game.physics
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.{Body, BodyDef, Box2DDebugRenderer, World => B2World}
+import com.mygdx.game.view.Viewport
 
 case class World() {
   var b2World: B2World = _

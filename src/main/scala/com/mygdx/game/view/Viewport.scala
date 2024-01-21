@@ -1,4 +1,4 @@
-package com.mygdx.game.screen
+package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}

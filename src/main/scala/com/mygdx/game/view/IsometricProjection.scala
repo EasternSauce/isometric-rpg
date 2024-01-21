@@ -1,9 +1,9 @@
-package com.mygdx.game.view.tile
+package com.mygdx.game.view
 
 import com.badlogic.gdx.math.{Matrix4, Vector3}
 import com.mygdx.game.Constants
 
-object Tile {
+object IsometricProjection {
   private val isoTransform: Matrix4 = {
     val matrix: Matrix4 = new Matrix4()
 

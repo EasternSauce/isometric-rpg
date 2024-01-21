@@ -1,4 +1,4 @@
-package com.mygdx.game.screen
+package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d.{Body, BodyDef, FixtureDef, PolygonShape}

@@ -1,9 +1,9 @@
-package com.mygdx.game.screen
+package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.view.tile.Tile
-import com.mygdx.game.view.{CreatureRenderer, Renderable}
+import com.mygdx.game.physics.Physics
+import com.mygdx.game.screen.{ClientInformation, LevelMap}
 
 case class View() {
   private val worldViewport: Viewport = Viewport()
@@ -27,7 +27,10 @@ case class View() {
 
     creatureRenderers.values.foreach(_.init(gameState))
 
-    worldViewport.init(1, (x, y) => Tile.translateIsoToScreen(x, y))
+    worldViewport.init(
+      1,
+      (x, y) => IsometricProjection.translateIsoToScreen(x, y)
+    )
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 

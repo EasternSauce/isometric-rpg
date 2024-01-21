@@ -2,8 +2,6 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.screen.SpriteBatch
-import com.mygdx.game.view.tile.Tile
 import com.mygdx.game.{Assets, Constants}
 
 case class CreatureRenderer(creatureId: String) extends Renderable {
@@ -68,7 +66,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
     }
 
     val (x, y) =
-      Tile.translateIsoToScreen(
+      IsometricProjection.translateIsoToScreen(
         creature.params.x - 0.5f + 0.85f,
         creature.params.y - 0.5f - 0.85f
       )

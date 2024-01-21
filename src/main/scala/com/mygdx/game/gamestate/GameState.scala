@@ -3,7 +3,7 @@ package com.mygdx.game.gamestate
 import com.badlogic.gdx.Gdx
 import com.mygdx.game.screen.{ClientInformation, Input}
 import com.mygdx.game.util.{SimpleTimer, WorldDirection}
-import com.mygdx.game.view.tile.Tile
+import com.mygdx.game.view.IsometricProjection
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 case class GameState(
@@ -75,7 +75,8 @@ object GameState {
     {
       val (mouseX: Float, mouseY: Float) = Input.getMousePos
 
-      val (worldMouseX, worldMouseY) = Tile.translateScreenToIso(mouseX, mouseY)
+      val (worldMouseX, worldMouseY) =
+        IsometricProjection.translateScreenToIso(mouseX, mouseY)
 
       val (destinationX, destinationY) =
         (playerPosX + worldMouseX, playerPosY + worldMouseY)
