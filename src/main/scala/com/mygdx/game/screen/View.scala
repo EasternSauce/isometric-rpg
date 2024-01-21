@@ -1,24 +1,24 @@
 package com.mygdx.game.screen
 
-import com.badlogic.gdx.graphics.Texture.TextureFilter
-import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.view.tile.{CellRenderer, Tile}
+import com.mygdx.game.view.tile.Tile
 import com.mygdx.game.view.{CreatureRenderer, Renderable}
 
-case class View(clientInformation: ClientInformation) {
+case class View() {
   private val worldViewport: Viewport = Viewport()
   private val b2DebugViewport: Viewport = Viewport()
-  private val world: World = World()
-  private val playerBody: CreatureBody = CreatureBody(
-    clientInformation.clientCreatureId
-  )
-  private var tiledMap: TiledMap = _
-  private var creatureRenderers: Map[String, CreatureRenderer] = _
-  private var terrainBodies: List[TerrainBody] = List()
 
-  def init(clientInformation: ClientInformation, gameState: GameState): Unit = {
+  private var creatureRenderers: Map[String, CreatureRenderer] = _
+  private var levelMap: LevelMap = _
+
+  def init(
+      clientInformation: ClientInformation,
+      levelMap: LevelMap,
+      gameState: GameState
+  ): Unit = {
+    this.levelMap = levelMap
+
     creatureRenderers = Map(
       clientInformation.clientCreatureId -> CreatureRenderer(
         clientInformation.clientCreatureId
@@ -27,48 +27,13 @@ case class View(clientInformation: ClientInformation) {
 
     creatureRenderers.values.foreach(_.init(gameState))
 
-    tiledMap = new TmxMapLoader().load("assets/tiled/map1.tmx")
-
-    tiledMap.getTileSets.forEach(
-      _.forEach(
-        _.getTextureRegion.getTexture
-          .setFilter(TextureFilter.Linear, TextureFilter.Linear)
-      )
-    )
-
-    world.init()
-
-    playerBody.init(world, 0, 0)
-
-    val cells = getLayerCells(0) ++ getLayerCells(1)
-
-    val borders = (0 until getMapWidth).zip(LazyList.continually(-1)) ++
-      LazyList.continually(-1).zip(0 until getMapHeight) ++
-      LazyList.continually(getMapWidth).zip(0 until getMapHeight) ++
-      (0 until getMapWidth).zip(LazyList.continually(getMapHeight))
-
-    terrainBodies =
-      cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
-        case (x, y) =>
-          TerrainBody("terrainBody_" + x + "_" + y, x, y)
-      } ++ borders.map { case (x, y) =>
-        TerrainBody("terrainBody_" + x + "_" + y, x, y)
-      }
-
-    terrainBodies.foreach(terrainBody =>
-      terrainBody.init(world, terrainBody.x, terrainBody.y)
-    )
-
     worldViewport.init(1, (x, y) => Tile.translateIsoToScreen(x, y))
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 
-  private def getMapHeight: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
-  }
-
   def draw(
       batch: SpriteBatch,
+      physics: Physics,
       gameState: GameState
   ): Unit = {
     ScreenUtils.clear(0.7f, 0.7f, 0.7f, 1)
@@ -77,8 +42,8 @@ case class View(clientInformation: ClientInformation) {
 
     batch.begin()
 
-    val layer0Cells = getLayerCells(0)
-    val layer1Cells = getLayerCells(1)
+    val layer0Cells = levelMap.getLayerCells(0)
+    val layer1Cells = levelMap.getLayerCells(1)
 
     layer0Cells.foreach(_.render(batch, gameState))
 
@@ -90,7 +55,7 @@ case class View(clientInformation: ClientInformation) {
     val overgroundRenderables = layer1Cells ++ creatureRenderables
 
     def distanceFromCameraPlane(x: Float, y: Float): Float = {
-      Math.abs(-x + y + getMapWidth) / Math.sqrt(2).toFloat
+      Math.abs(-x + y + levelMap.getMapWidth) / Math.sqrt(2).toFloat
     }
 
     overgroundRenderables
@@ -104,40 +69,14 @@ case class View(clientInformation: ClientInformation) {
 
     batch.end()
 
-    world.renderDebug(b2DebugViewport)
+    physics.getWorld.renderDebug(b2DebugViewport)
 
-  }
-
-  private def getLayerCells(layerId: Int): List[CellRenderer] = {
-    val layer: TiledMapTileLayer =
-      tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
-
-    val cells: List[Option[CellRenderer]] = for {
-      row <- (0 until layer.getHeight).toList.reverse
-      col <- 0 until layer.getWidth
-    } yield {
-      Option(layer.getCell(col, row)).map(CellRenderer(_, col, row))
-    }
-
-    cells.flatten
-  }
-
-  private def getMapWidth: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
   }
 
   def update(
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
-    world.update()
-
-    val player =
-      gameState.creatures(clientInformation.clientCreatureId)
-    playerBody.move(player.params.velocityX, player.params.velocityY)
-
-    playerBody.update()
-
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
   }
@@ -145,10 +84,6 @@ case class View(clientInformation: ClientInformation) {
   def resize(width: Int, height: Int): Unit = {
     worldViewport.update(width, height)
     b2DebugViewport.update(width, height)
-  }
-
-  def getPlayerPos: (Float, Float) = {
-    playerBody.getPos
   }
 
 }

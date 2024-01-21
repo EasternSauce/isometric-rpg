@@ -7,7 +7,9 @@ object GameplayScreen extends Screen {
   private val clientInformation: ClientInformation =
     ClientInformation(clientCreatureId = "creature1")
 
-  private val view: View = View(clientInformation)
+  private val levelMap: LevelMap = LevelMap()
+  private val physics: Physics = Physics()
+  private val view: View = View()
   private val spriteBatch: SpriteBatch = SpriteBatch()
   private var gameState: GameState = _
 
@@ -48,7 +50,10 @@ object GameplayScreen extends Screen {
   override def show(): Unit = {
     gameState = GameState.initialState(clientInformation)
 
-    view.init(clientInformation, gameState)
+    levelMap.init()
+    view.init(clientInformation, levelMap, gameState)
+    physics.init(clientInformation, levelMap, gameState)
+
     spriteBatch.init()
 
 //    new Thread(new Runnable() {
@@ -66,7 +71,7 @@ object GameplayScreen extends Screen {
   }
 
   override def render(delta: Float): Unit = {
-    val (playerPosX, playerPosY) = view.getPlayerPos
+    val (playerPosX, playerPosY) = physics.getPlayerPos
     gameState = gameState.update(
       clientInformation,
       playerPosX,
@@ -75,8 +80,9 @@ object GameplayScreen extends Screen {
     )
 
     view.update(clientInformation, gameState)
+    physics.update(gameState)
 
-    view.draw(spriteBatch, gameState)
+    view.draw(spriteBatch, physics, gameState)
   }
 
   override def dispose(): Unit = {
