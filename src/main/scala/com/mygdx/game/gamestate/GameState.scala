@@ -70,18 +70,22 @@ object GameState {
     {
       val (mouseX: Float, mouseY: Float) = Input.getMousePos
 
-      val (destinationX, destinationY) = Tile.translateScreenToIso(mouseX, mouseY)
+      val (worldMouseX, worldMouseY) = Tile.translateScreenToIso(mouseX, mouseY)
 
-      val justClicked = Gdx.input.justTouched()
+      val (destinationX, destinationY) =
+        (playerPosX + worldMouseX, playerPosY + worldMouseY)
+
+      val mouseButtonDown = Gdx.input.isTouched()
+
       creature
         .modify(_.params.x)
         .setTo(playerPosX)
         .modify(_.params.y)
         .setTo(playerPosY)
         .modify(_.params.destinationX)
-        .setToIf(justClicked)(destinationX)
+        .setToIf(mouseButtonDown)(destinationX)
         .modify(_.params.destinationY)
-        .setToIf(justClicked)(destinationY)
+        .setToIf(mouseButtonDown)(destinationY)
     }
   }
 

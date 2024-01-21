@@ -68,7 +68,10 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
     }
 
     val (x, y) =
-      Tile.translateIsoToScreen(creature.params.x - 0.5f + 0.85f, creature.params.y - 0.5f - 0.85f)
+      Tile.translateIsoToScreen(
+        creature.params.x - 0.5f + 0.85f,
+        creature.params.y - 0.5f - 0.85f
+      )
 
     batch.draw(frame, x, y)
   }

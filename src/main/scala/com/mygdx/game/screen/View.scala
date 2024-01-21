@@ -1,11 +1,8 @@
 package com.mygdx.game.screen
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture.TextureFilter
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.{Assets, Constants}
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.view.tile.{CellRenderer, Tile}
 import com.mygdx.game.view.{CreatureRenderer, Renderable}
@@ -59,20 +56,6 @@ case class View(clientInformation: ClientInformation) {
     b2DebugViewport.init(0.02f, (x, y) => (x, y))
   }
 
-  private def getLayerCells(layerId: Int): List[CellRenderer] = {
-    val layer: TiledMapTileLayer =
-      tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
-
-    val cells: List[Option[CellRenderer]] = for {
-      row <- (0 until layer.getHeight).toList.reverse
-      col <- 0 until layer.getWidth
-    } yield {
-      Option(layer.getCell(col, row)).map(CellRenderer(_, col, row))
-    }
-
-    cells.flatten
-  }
-
   def draw(
       batch: SpriteBatch,
       gameState: GameState
@@ -110,16 +93,26 @@ case class View(clientInformation: ClientInformation) {
 
     batch.end()
 
-    world.renderDebug(b2DebugViewport)
+    //world.renderDebug(b2DebugViewport)
 
+  }
+
+  private def getLayerCells(layerId: Int): List[CellRenderer] = {
+    val layer: TiledMapTileLayer =
+      tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
+
+    val cells: List[Option[CellRenderer]] = for {
+      row <- (0 until layer.getHeight).toList.reverse
+      col <- 0 until layer.getWidth
+    } yield {
+      Option(layer.getCell(col, row)).map(CellRenderer(_, col, row))
+    }
+
+    cells.flatten
   }
 
   private def getMapWidth: Int = {
     tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
-  }
-
-  private def getMapHeight: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
   def update(
@@ -145,6 +138,10 @@ case class View(clientInformation: ClientInformation) {
 
   def getPlayerPos: (Float, Float) = {
     playerBody.getPos
+  }
+
+  private def getMapHeight: Int = {
+    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
 }
