@@ -7,8 +7,9 @@ object Constants {
   val ViewpointWorldWidth = 1650f
   val ViewpointWorldHeight = 864f
 
-  val TileSize = 128
-  val TileTextureWidth = 128
-  val TileTextureHeight = 256
+  val TileSize = 64
 
+  val EnableDebug = true
+
+  val MapTextureScale = 2f
 }

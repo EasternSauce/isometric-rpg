@@ -1,16 +1,16 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
+import com.mygdx.game.Assets
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.{Assets, Constants}
 
 case class CreatureRenderer(creatureId: String) extends Renderable {
 
+  private val textureWidth = 128
+  private val textureHeight = 256
   private var sprite: Sprite = _
-
   private var facingTextures: Array[TextureRegion] = _
   private var runningAnimations: Array[Animation[TextureRegion]] = _
-
   private var textureRegion: TextureRegion = _
 
   def init(gameState: GameState): Unit = {
@@ -27,10 +27,10 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
     for (i <- 0 until 4)
       facingTextures(i) = new TextureRegion(
         textureRegion,
-        creature.params.neutralStanceFrame * Constants.TileTextureWidth,
-        i * Constants.TileTextureHeight,
-        Constants.TileTextureWidth,
-        Constants.TileTextureHeight
+        creature.params.neutralStanceFrame * textureWidth,
+        i * textureHeight,
+        textureWidth,
+        textureHeight
       )
 
     for (i <- 0 until 4) {
@@ -39,10 +39,10 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
           j <- (0 until creature.params.frameCount).toArray
         } yield new TextureRegion(
           textureRegion,
-          j * Constants.TileTextureWidth,
-          i * Constants.TileTextureHeight,
-          Constants.TileTextureWidth,
-          Constants.TileTextureHeight
+          j * textureWidth,
+          i * textureHeight,
+          textureWidth,
+          textureHeight
         )
       runningAnimations(i) =
         new Animation[TextureRegion](creature.params.frameDuration, frames: _*)
@@ -67,8 +67,8 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
 
     val (x, y) =
       IsometricProjection.translateIsoToScreen(
-        creature.params.x - 0.5f + 0.85f,
-        creature.params.y - 0.5f - 0.85f
+        creature.params.x,
+        creature.params.y
       )
 
     batch.draw(frame, x, y)

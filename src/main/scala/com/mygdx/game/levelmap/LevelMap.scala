@@ -1,6 +1,5 @@
 package com.mygdx.game.levelmap
 
-import com.badlogic.gdx.graphics.Texture.TextureFilter
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
 import com.mygdx.game.view.TileRenderer
 
@@ -8,14 +7,10 @@ case class LevelMap() {
   private var tiledMap: TiledMap = _
 
   def init(): Unit = {
-    tiledMap = new TmxMapLoader().load("assets/tiled/map1.tmx")
+    val params = new TmxMapLoader.Parameters()
 
-    tiledMap.getTileSets.forEach(
-      _.forEach(
-        _.getTextureRegion.getTexture
-          .setFilter(TextureFilter.Linear, TextureFilter.Linear)
-      )
-    )
+    tiledMap = new TmxMapLoader().load("assets/maps/map1.tmx", params)
+
   }
 
   def getMapWidth: Int = {

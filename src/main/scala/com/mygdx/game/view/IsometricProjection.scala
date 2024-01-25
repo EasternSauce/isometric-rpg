@@ -26,12 +26,19 @@ object IsometricProjection {
     val screenPos = new Vector3()
     screenPos.set(x, y, 0)
     screenPos.mul(isoTransform)
-    (screenPos.x * Constants.TileSize, screenPos.y * Constants.TileSize)
+    (
+      screenPos.x * Constants.TileSize * Constants.MapTextureScale,
+      screenPos.y * Constants.TileSize * Constants.MapTextureScale
+    )
   }
 
   def translateScreenToIso(x: Float, y: Float): (Float, Float) = {
     val screenPos = new Vector3()
-    screenPos.set(x / Constants.TileSize, y / Constants.TileSize, 0)
+    screenPos.set(
+      x / (Constants.TileSize * Constants.MapTextureScale),
+      y / (Constants.TileSize * Constants.MapTextureScale),
+      0
+    )
     screenPos.mul(invIsoTransform)
     (screenPos.x, screenPos.y)
   }

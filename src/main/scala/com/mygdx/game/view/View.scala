@@ -1,10 +1,10 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
+import com.mygdx.game.{ClientInformation, Constants}
 
 case class View() {
   private val worldViewport: Viewport = Viewport()
@@ -73,7 +73,7 @@ case class View() {
 
     batch.end()
 
-    physics.getWorld.renderDebug(b2DebugViewport)
+    if (Constants.EnableDebug) physics.getWorld.renderDebug(b2DebugViewport)
 
   }
 

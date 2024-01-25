@@ -10,20 +10,22 @@ case class CreatureBody(creatureId: String) {
   private var velocityY: Float = 0
 
   def init(world: World, x: Float, y: Float): Unit = {
-    val bodyDef = new BodyDef()
-    bodyDef.`type` = BodyType.DynamicBody
-    bodyDef.position.set(x, y)
+    this.body = {
+      val bodyDef = new BodyDef()
+      bodyDef.`type` = BodyType.DynamicBody
+      bodyDef.position.set(x, y)
 
-    val body = world.createBody(bodyDef)
+      val body = world.createBody(bodyDef)
 
-    val fixtureDef = new FixtureDef()
-    val shape = new CircleShape()
-    shape.setRadius(0.2f)
-    fixtureDef.shape = shape
+      val fixtureDef = new FixtureDef()
+      val shape = new CircleShape()
+      shape.setRadius(0.2f)
+      fixtureDef.shape = shape
 
-    body.createFixture(fixtureDef)
+      body.createFixture(fixtureDef)
 
-    this.body = body
+      body
+    }
   }
 
   def move(vx: Float, vy: Float): Unit = {
