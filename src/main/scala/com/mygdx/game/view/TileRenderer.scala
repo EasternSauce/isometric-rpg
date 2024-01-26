@@ -17,8 +17,8 @@ case class TileRenderer(cell: TiledMapTileLayer.Cell, col: Float, row: Float)
       IsometricProjection.translateIsoToScreen(col + 0.75f, row - 0.85f)
     batch.draw(
       textureRegion,
-      x,
-      y,
+      x + Constants.TileCenterX,
+      y + Constants.TileCenterY,
       (textureWidth * Constants.MapTextureScale).toInt,
       (textureHeight * Constants.MapTextureScale).toInt
     )

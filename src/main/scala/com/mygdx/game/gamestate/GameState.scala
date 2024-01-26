@@ -3,7 +3,7 @@ package com.mygdx.game.gamestate
 import com.badlogic.gdx.Gdx
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.input.Input
-import com.mygdx.game.util.{SimpleTimer, WorldDirection}
+import com.mygdx.game.util.SimpleTimer
 import com.mygdx.game.view.IsometricProjection
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
@@ -45,16 +45,8 @@ object GameState {
         lastVelocityY = 0,
         lastPosX = 0,
         lastPosY = 0,
-        textureName = "wanderer",
+        textureName = "steel_armor",
         neutralStanceFrame = 0,
-        frameCount = 3,
-        frameDuration = 0.2f,
-        dirMap = Map(
-          WorldDirection.South -> 0,
-          WorldDirection.East -> 1,
-          WorldDirection.North -> 2,
-          WorldDirection.West -> 3
-        ),
         animationTimer = SimpleTimer(isRunning = true),
         lastPosTimer = SimpleTimer(isRunning = true)
       )

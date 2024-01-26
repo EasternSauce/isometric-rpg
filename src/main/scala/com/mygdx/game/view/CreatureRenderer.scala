@@ -1,13 +1,12 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
-import com.mygdx.game.Assets
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.util.WorldDirection
+import com.mygdx.game.{Assets, Constants}
 
 case class CreatureRenderer(creatureId: String) extends Renderable {
 
-  private val textureWidth = 128
-  private val textureHeight = 256
   private var sprite: Sprite = _
   private var facingTextures: Array[TextureRegion] = _
   private var runningAnimations: Array[Animation[TextureRegion]] = _
@@ -16,36 +15,38 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
   def init(gameState: GameState): Unit = {
     sprite = new Sprite()
 
-    facingTextures = new Array[TextureRegion](4)
+    facingTextures = new Array[TextureRegion](WorldDirection.values.size)
 
-    runningAnimations = new Array[Animation[TextureRegion]](4)
+    runningAnimations =
+      new Array[Animation[TextureRegion]](WorldDirection.values.size)
 
     val creature = gameState.creatures(creatureId)
 
     textureRegion = Assets.atlas.get.findRegion(creature.params.textureName)
 
-    for (i <- 0 until 4)
+    for (i <- 0 until WorldDirection.values.size)
       facingTextures(i) = new TextureRegion(
         textureRegion,
-        creature.params.neutralStanceFrame * textureWidth,
-        i * textureHeight,
-        textureWidth,
-        textureHeight
+        creature.params.neutralStanceFrame * Constants.SpriteTextureWidth,
+        i * Constants.SpriteTextureHeight,
+        Constants.SpriteTextureWidth,
+        Constants.SpriteTextureHeight
       )
 
-    for (i <- 0 until 4) {
+    for (i <- 0 until WorldDirection.values.size) {
       val frames =
         for {
-          j <- (0 until creature.params.frameCount).toArray
+          j <-
+            (Constants.WalkingFrameStart until Constants.WalkingFrameStart + Constants.WalkingFrameCount).toArray
         } yield new TextureRegion(
           textureRegion,
-          j * textureWidth,
-          i * textureHeight,
-          textureWidth,
-          textureHeight
+          j * Constants.SpriteTextureWidth,
+          i * Constants.SpriteTextureHeight,
+          Constants.SpriteTextureWidth,
+          Constants.SpriteTextureHeight
         )
       runningAnimations(i) =
-        new Animation[TextureRegion](creature.params.frameDuration, frames: _*)
+        new Animation[TextureRegion](Constants.WalkingFrameDuration, frames: _*)
     }
   }
 
@@ -59,10 +60,10 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
     val creature = gameState.creatures(creatureId)
 
     val frame = if (creature.moving) {
-      runningAnimations(creature.params.dirMap(creature.facingDirection))
+      runningAnimations(creature.facingDirection.id)
         .getKeyFrame(creature.params.animationTimer.time, true)
     } else {
-      facingTextures(creature.params.dirMap(creature.facingDirection))
+      facingTextures(creature.facingDirection.id)
     }
 
     val (x, y) =
@@ -71,7 +72,7 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
         creature.params.y
       )
 
-    batch.draw(frame, x, y)
+    batch.draw(frame, x - Constants.SpriteCenterX, y - Constants.SpriteCenterY)
   }
 
 }
