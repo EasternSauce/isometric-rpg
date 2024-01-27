@@ -24,6 +24,6 @@ object Constants {
   val SpriteTextureWidth = 128
   val SpriteTextureHeight = 128
 
-  val TileCenterX = 16
-  val TileCenterY = 20
+  val TileCenterX = 0
+  val TileCenterY = 0
 }

@@ -3,7 +3,7 @@ package com.mygdx.game.physics
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d.{Body, BodyDef, FixtureDef, PolygonShape}
 
-case class TerrainBody(terrainId: String) extends PhysicsBody {
+case class BorderBody(borderId: String) extends PhysicsBody {
   var body: Body = _
 
   def init(world: World, x: Float, y: Float): Unit = {
@@ -15,8 +15,7 @@ case class TerrainBody(terrainId: String) extends PhysicsBody {
 
     val fixtureDef = new FixtureDef()
     val shape = new PolygonShape()
-
-    shape.set(Array(-0.5f, -0.25f, 0.5f, -0.75f, 0.5f, 0.25f, -0.5f, 0.75f))
+    shape.setAsBox(0.5f, 0.5f)
 
     fixtureDef.shape = shape
 

@@ -7,7 +7,7 @@ import com.mygdx.game.levelmap.LevelMap
 case class Physics() {
   private var world: World = _
   private var playerBody: CreatureBody = _
-  private var terrainBodies: List[TerrainBody] = _
+  private var physicsBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
 
   def init(
@@ -38,17 +38,17 @@ case class Physics() {
           LazyList.continually(levelMap.getMapHeight)
         )
 
-    terrainBodies =
+    physicsBodies =
       cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
         case (x, y) =>
-          TerrainBody("terrainBody_" + x + "_" + y, x, y)
+          val terrainBody = TerrainBody("terrainBody_" + x + "_" + y)
+          terrainBody.init(world, x, y)
+          terrainBody
       } ++ borders.map { case (x, y) =>
-        TerrainBody("terrainBody_" + x + "_" + y, x, y)
+        val borderBody = BorderBody("borderBody_" + x + "_" + y)
+        borderBody.init(world, x, y)
+        borderBody
       }
-
-    terrainBodies.foreach(terrainBody =>
-      terrainBody.init(world, terrainBody.x, terrainBody.y)
-    )
   }
 
   def update(gameState: GameState): Unit = {
