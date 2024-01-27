@@ -29,13 +29,13 @@ case class Physics() {
     val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
 
     val borders =
-      (0 until levelMap.getMapWidth).zip(LazyList.continually(-1)) ++
-        LazyList.continually(-1).zip(0 until levelMap.getMapHeight) ++
+      (0 until levelMap.getMapWidth).zip(LazyList.continually(0)) ++
+        LazyList.continually(0).zip(0 until levelMap.getMapHeight) ++
         LazyList
           .continually(levelMap.getMapWidth)
-          .zip(0 until levelMap.getMapHeight) ++
+          .zip(0 until levelMap.getMapHeight - 1) ++
         (0 until levelMap.getMapWidth).zip(
-          LazyList.continually(levelMap.getMapHeight)
+          LazyList.continually(levelMap.getMapHeight - 1)
         )
 
     physicsBodies =

@@ -2,7 +2,7 @@ package com.mygdx.game.util
 
 import com.softwaremill.quicklens.ModifyPimp
 
-case class SimpleTimer private (time: Float = 0f, isRunning: Boolean = false) {
+case class SimpleTimer private (time: Float = 0f, isRunning: Boolean) {
   def start(): SimpleTimer = this.modify(_.isRunning).setTo(true)
 
   def stop(): SimpleTimer =

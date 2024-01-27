@@ -9,14 +9,24 @@ object Constants {
 
   val TileSize = 64
 
-  val EnableDebug = true
+  val EnableDebug = false
 
   val MapTextureScale = 2f
 
-  val WalkingFrameDuration = 0.1f
+  val AttackFrameDuration = 0.1f
+  val WalkFrameDuration = 0.1f
+  val StandstillFrameDuration = 0.3f
 
-  val WalkingFrameStart = 4
-  val WalkingFrameCount = 8
+  val AttackCooldown = 0.3f
+
+  val StandstillFrameStart = 0
+  val StandStillFrameCount = 4
+
+  val AttackFrameStart = 12
+  val AttackFrameCount = 4
+
+  val WalkFrameStart = 4
+  val WalkFrameCount = 8
 
   val SpriteCenterX = 64
   val SpriteCenterY = 32

@@ -30,6 +30,8 @@ case class Creature(
       .using(_.update(delta))
       .modify(_.params.lastPosTimer)
       .using(_.update(delta))
+      .modify(_.params.attackTimer)
+      .using(_.update(delta))
       .modify(_.params.velocityX)
       .setTo(vectorTowardsDest.x)
       .modify(_.params.velocityY)
