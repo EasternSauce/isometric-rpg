@@ -20,9 +20,11 @@ case class Physics() {
     this.playerBody = CreatureBody(clientInformation.clientCreatureId)
     this.clientInformation = clientInformation
 
+    val player = gameState.creatures(clientInformation.clientCreatureId)
+
     world.init()
 
-    playerBody.init(world, 0, 0)
+    playerBody.init(world, player.params.x, player.params.y)
 
     val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
 

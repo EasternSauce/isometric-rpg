@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.SimpleTimer
-import com.mygdx.game.view.IsometricProjection
+import com.mygdx.game.view.{CreatureAnimationType, IsometricProjection}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 case class GameState(
@@ -35,17 +35,20 @@ object GameState {
     val creature = Creature(
       CreatureParams(
         id = clientInformation.clientCreatureId,
-        x = 0,
-        y = 0,
+        x = 5,
+        y = 5,
         velocityX = 0,
         velocityY = 0,
-        destinationX = 0,
-        destinationY = 0,
+        destinationX = 5,
+        destinationY = 5,
         lastVelocityX = 0,
         lastVelocityY = 0,
-        lastPosX = 0,
-        lastPosY = 0,
-        textureName = "steel_armor",
+        lastPosX = 5,
+        lastPosY = 5,
+        textureNames = Map(
+          CreatureAnimationType.Body -> "steel_armor",
+          CreatureAnimationType.Head -> "male_head1"
+        ),
         neutralStanceFrame = 0,
         animationTimer = SimpleTimer(isRunning = true),
         lastPosTimer = SimpleTimer(isRunning = true)

@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.util.SimpleTimer
+import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureParams(
     id: String,
@@ -14,7 +15,7 @@ case class CreatureParams(
     lastVelocityY: Float,
     lastPosX: Float,
     lastPosY: Float,
-    textureName: String,
+    textureNames: Map[CreatureAnimationType, String],
     neutralStanceFrame: Int,
     animationTimer: SimpleTimer,
     lastPosTimer: SimpleTimer

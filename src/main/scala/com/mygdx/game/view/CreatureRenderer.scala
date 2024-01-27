@@ -1,53 +1,26 @@
 package com.mygdx.game.view
 
-import com.badlogic.gdx.graphics.g2d.{Animation, Sprite, TextureRegion}
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.util.WorldDirection
-import com.mygdx.game.{Assets, Constants}
+import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureRenderer(creatureId: String) extends Renderable {
-
-  private var sprite: Sprite = _
-  private var facingTextures: Array[TextureRegion] = _
-  private var runningAnimations: Array[Animation[TextureRegion]] = _
-  private var textureRegion: TextureRegion = _
+  private val animations: Map[CreatureAnimationType, CreatureAnimation] = {
+    def entry(
+        creatureAnimationType: CreatureAnimationType,
+        creatureId: String
+    ): (CreatureAnimationType, CreatureAnimation) = {
+      creatureAnimationType -> CreatureAnimation(
+        creatureId,
+        creatureAnimationType
+      )
+    }
+    CreatureAnimationType.values.toList.map(entry(_, creatureId)).toMap
+  }
 
   def init(gameState: GameState): Unit = {
-    sprite = new Sprite()
-
-    facingTextures = new Array[TextureRegion](WorldDirection.values.size)
-
-    runningAnimations =
-      new Array[Animation[TextureRegion]](WorldDirection.values.size)
-
-    val creature = gameState.creatures(creatureId)
-
-    textureRegion = Assets.atlas.get.findRegion(creature.params.textureName)
-
-    for (i <- 0 until WorldDirection.values.size)
-      facingTextures(i) = new TextureRegion(
-        textureRegion,
-        creature.params.neutralStanceFrame * Constants.SpriteTextureWidth,
-        i * Constants.SpriteTextureHeight,
-        Constants.SpriteTextureWidth,
-        Constants.SpriteTextureHeight
-      )
-
-    for (i <- 0 until WorldDirection.values.size) {
-      val frames =
-        for {
-          j <-
-            (Constants.WalkingFrameStart until Constants.WalkingFrameStart + Constants.WalkingFrameCount).toArray
-        } yield new TextureRegion(
-          textureRegion,
-          j * Constants.SpriteTextureWidth,
-          i * Constants.SpriteTextureHeight,
-          Constants.SpriteTextureWidth,
-          Constants.SpriteTextureHeight
-        )
-      runningAnimations(i) =
-        new Animation[TextureRegion](Constants.WalkingFrameDuration, frames: _*)
-    }
+    CreatureAnimationType.values.foreach(creatureAnimationType => {
+      animations(creatureAnimationType).init(gameState)
+    })
   }
 
   override def pos(gameState: GameState): (Float, Float) = {
@@ -57,22 +30,8 @@ case class CreatureRenderer(creatureId: String) extends Renderable {
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
-    val creature = gameState.creatures(creatureId)
-
-    val frame = if (creature.moving) {
-      runningAnimations(creature.facingDirection.id)
-        .getKeyFrame(creature.params.animationTimer.time, true)
-    } else {
-      facingTextures(creature.facingDirection.id)
-    }
-
-    val (x, y) =
-      IsometricProjection.translateIsoToScreen(
-        creature.params.x,
-        creature.params.y
-      )
-
-    batch.draw(frame, x - Constants.SpriteCenterX, y - Constants.SpriteCenterY)
+    CreatureAnimationType.values.foreach(creatureAnimationType => {
+      animations(creatureAnimationType).render(batch, gameState)
+    })
   }
-
 }
