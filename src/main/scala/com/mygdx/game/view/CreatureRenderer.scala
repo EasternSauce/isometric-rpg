@@ -1,13 +1,13 @@
 package com.mygdx.game.view
 
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
-case class CreatureRenderer(creatureId: String) extends Renderable {
+case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
   private val animations: Map[CreatureAnimationType, CreatureAnimation] = {
     def entry(
         creatureAnimationType: CreatureAnimationType,
-        creatureId: String
+        creatureId: EntityId[Creature]
     ): (CreatureAnimationType, CreatureAnimation) = {
       creatureAnimationType -> CreatureAnimation(
         creatureId,

@@ -1,13 +1,13 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 import com.mygdx.game.{Assets, Constants}
 
 case class CreatureAnimation(
-    creatureId: String,
+    creatureId: EntityId[Creature],
     creatureAnimationType: CreatureAnimationType
 ) {
 //  private var facingTextures: Array[TextureRegion] = _

@@ -11,7 +11,7 @@ import scala.util.chaining.scalaUtilChainingOps
 
 case class GameState(
     creature: Creature,
-    creatures: Map[String, Creature]
+    creatures: Map[EntityId[Creature], Creature]
 ) {
   def update(
       clientInformation: ClientInformation,

@@ -1,7 +1,7 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.{ClientInformation, Constants}
@@ -10,7 +10,7 @@ case class View() {
   private val worldViewport: Viewport = Viewport()
   private val b2DebugViewport: Viewport = Viewport()
 
-  private var creatureRenderers: Map[String, CreatureRenderer] = _
+  private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var levelMap: LevelMap = _
 
   def init(

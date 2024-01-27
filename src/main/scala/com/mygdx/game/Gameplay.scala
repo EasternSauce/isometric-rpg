@@ -1,13 +1,13 @@
 package com.mygdx.game
 
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.view.{SpriteBatch, View}
 
 case class Gameplay() {
   private val clientInformation: ClientInformation =
-    ClientInformation(clientCreatureId = "creature1")
+    ClientInformation(clientCreatureId = EntityId("creature1"))
 
   private val levelMap: LevelMap = LevelMap()
   private val physics: Physics = Physics()

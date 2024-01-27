@@ -1,3 +1,5 @@
 package com.mygdx.game
 
-case class ClientInformation(clientCreatureId: String) {}
+import com.mygdx.game.gamestate.{Creature, EntityId}
+
+case class ClientInformation(clientCreatureId: EntityId[Creature]) {}

@@ -2,8 +2,9 @@ package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d.{Body, BodyDef, CircleShape, FixtureDef}
+import com.mygdx.game.gamestate.{Creature, EntityId}
 
-case class CreatureBody(creatureId: String) extends PhysicsBody {
+case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
   var body: Body = _
 
   private var velocityX: Float = 0

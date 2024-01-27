@@ -4,7 +4,7 @@ import com.mygdx.game.util.SimpleTimer
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureParams(
-    id: String,
+    id: EntityId[Creature],
     x: Float,
     y: Float,
     velocityX: Float,

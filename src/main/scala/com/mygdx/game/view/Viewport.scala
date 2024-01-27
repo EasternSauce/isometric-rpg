@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.Constants
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 
 case class Viewport() {
   private var camera: OrthographicCamera = _
@@ -33,7 +33,10 @@ case class Viewport() {
     batch.setProjectionMatrix(camera.combined)
   }
 
-  def updateCamera(playerCreatureId: String, gameState: GameState): Unit = {
+  def updateCamera(
+      playerCreatureId: EntityId[Creature],
+      gameState: GameState
+  ): Unit = {
     val camPosition = camera.position
 
     val creature = gameState.creatures(playerCreatureId)

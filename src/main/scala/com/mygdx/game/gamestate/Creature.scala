@@ -9,7 +9,7 @@ import scala.util.chaining.scalaUtilChainingOps
 
 case class Creature(
     params: CreatureParams
-) {
+) extends Entity {
   def update(delta: Float): Creature = {
     val vectorTowardsDest =
       new Vector2(
