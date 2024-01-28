@@ -3,6 +3,7 @@ package com.mygdx.game.physics
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
+import com.mygdx.game.util.Vector2
 
 case class Physics() {
   private var world: World = _
@@ -20,7 +21,7 @@ case class Physics() {
 
     val player = gameState.creatures(clientInformation.clientCreatureId)
     val playerBody = CreatureBody(clientInformation.clientCreatureId)
-    playerBody.init(world, player.params.x, player.params.y)
+    playerBody.init(world, player.params.pos)
 
     creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
 
@@ -29,24 +30,23 @@ case class Physics() {
     val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
 
     val borders =
-      (0 until levelMap.getMapWidth).zip(LazyList.continually(0)) ++
+      ((0 until levelMap.getMapWidth).zip(LazyList.continually(0)) ++
         LazyList.continually(0).zip(0 until levelMap.getMapHeight) ++
         LazyList
           .continually(levelMap.getMapWidth)
           .zip(0 until levelMap.getMapHeight - 1) ++
         (0 until levelMap.getMapWidth).zip(
           LazyList.continually(levelMap.getMapHeight - 1)
-        )
+        )).map { case (x, y) => Vector2(x, y) }
 
     staticBodies =
-      cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
-        case (x, y) =>
-          val terrainBody = TerrainBody("terrainBody_" + x + "_" + y)
-          terrainBody.init(world, x, y)
-          terrainBody
-      } ++ borders.map { case (x, y) =>
-        val borderBody = BorderBody("borderBody_" + x + "_" + y)
-        borderBody.init(world, x, y)
+      cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map { pos =>
+        val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
+        terrainBody.init(world, pos)
+        terrainBody
+      } ++ borders.map { pos =>
+        val borderBody = BorderBody("borderBody_" + pos.x + "_" + pos.y)
+        borderBody.init(world, pos)
         borderBody
       }
   }
@@ -62,18 +62,18 @@ case class Physics() {
 
       val creature = gameState.creatures(creatureId)
 
-      creatureBody.init(world, creature.params.x, creature.params.y)
+      creatureBody.init(world, creature.params.pos)
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     })
 
     creatureBodies.values.foreach(_.update(gameState))
   }
 
-  def getCreaturePositions: Map[EntityId[Creature], (Float, Float)] = {
+  def getCreaturePositions: Map[EntityId[Creature], Vector2] = {
     creatureBodies.values
       .map(creatureBody => {
-        val (x, y) = creatureBody.getPos
-        (creatureBody.creatureId, (x, y))
+        val pos = creatureBody.pos
+        (creatureBody.creatureId, pos)
       })
       .toMap
   }

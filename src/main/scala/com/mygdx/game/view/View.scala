@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.{ClientInformation, Constants}
 
 case class View() {
@@ -30,9 +31,9 @@ case class View() {
 
     worldViewport.init(
       1,
-      (x, y) => IsometricProjection.translateIsoToScreen(x, y)
+      pos => IsometricProjection.translateIsoToScreen(pos)
     )
-    b2DebugViewport.init(0.02f, (x, y) => (x, y))
+    b2DebugViewport.init(0.02f, Predef.identity)
   }
 
   def draw(
@@ -58,16 +59,16 @@ case class View() {
 
     val overgroundRenderables = layer1Cells ++ creatureRenderables
 
-    def distanceFromCameraPlane(x: Float, y: Float): Float = {
-      Math.abs(-x + y + levelMap.getMapWidth) / Math.sqrt(2).toFloat
+    def distanceFromCameraPlane(pos: Vector2): Float = {
+      Math.abs(-pos.x + pos.y + levelMap.getMapWidth) / Math.sqrt(2).toFloat
     }
 
     overgroundRenderables
       .sorted((renderableA: Renderable, renderableB: Renderable) => {
-        val (ax, ay) = renderableA.pos(gameState)
-        val (bx, by) = renderableB.pos(gameState)
+        val posA = renderableA.pos(gameState)
+        val posB = renderableB.pos(gameState)
 
-        distanceFromCameraPlane(bx, by).compare(distanceFromCameraPlane(ax, ay))
+        distanceFromCameraPlane(posB).compare(distanceFromCameraPlane(posA))
       })
       .foreach(_.render(batch, gameState))
 

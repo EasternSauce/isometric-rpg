@@ -1,6 +1,7 @@
 package com.mygdx.game.levelmap
 
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer, TmxMapLoader}
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.TileRenderer
 
 case class LevelMap() {
@@ -26,10 +27,10 @@ case class LevelMap() {
       tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
     val cells: List[Option[TileRenderer]] = for {
-      row <- (0 until layer.getHeight).toList.reverse
-      col <- 0 until layer.getWidth
+      x <- (0 until layer.getHeight).toList.reverse
+      y <- 0 until layer.getWidth
     } yield {
-      Option(layer.getCell(col, row)).map(TileRenderer(_, col, row))
+      Option(layer.getCell(x, y)).map(TileRenderer(_, Vector2(x, y)))
     }
 
     cells.flatten

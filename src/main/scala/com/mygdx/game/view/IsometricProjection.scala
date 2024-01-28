@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.math.{Matrix4, Vector3}
 import com.mygdx.game.Constants
+import com.mygdx.game.util.Vector2
 
 object IsometricProjection {
   private val isoTransform: Matrix4 = {
@@ -22,24 +23,24 @@ object IsometricProjection {
     new Matrix4(isoTransform).inv
   }
 
-  def translateIsoToScreen(x: Float, y: Float): (Float, Float) = {
+  def translateIsoToScreen(pos: Vector2): Vector2 = {
     val screenPos = new Vector3()
-    screenPos.set(x, y, 0)
+    screenPos.set(pos.x, pos.y, 0)
     screenPos.mul(isoTransform)
-    (
+    Vector2(
       screenPos.x * Constants.TileSize * Constants.MapTextureScale,
       screenPos.y * Constants.TileSize * Constants.MapTextureScale
     )
   }
 
-  def translateScreenToIso(x: Float, y: Float): (Float, Float) = {
+  def translateScreenToIso(pos: Vector2): Vector2 = {
     val screenPos = new Vector3()
     screenPos.set(
-      x / (Constants.TileSize * Constants.MapTextureScale),
-      y / (Constants.TileSize * Constants.MapTextureScale),
+      pos.x / (Constants.TileSize * Constants.MapTextureScale),
+      pos.y / (Constants.TileSize * Constants.MapTextureScale),
       0
     )
     screenPos.mul(invIsoTransform)
-    (screenPos.x, screenPos.y)
+    Vector2(screenPos.x, screenPos.y)
   }
 }

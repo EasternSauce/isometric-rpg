@@ -2,9 +2,10 @@ package com.mygdx.game.input
 
 import com.badlogic.gdx.Gdx
 import com.mygdx.game.Constants
+import com.mygdx.game.util.Vector2
 
 case class Input(
-    mousePos: (Float, Float),
+    mousePos: Vector2,
     attackButtonJustPressed: Boolean,
     moveButtonPressed: Boolean
 )
@@ -18,7 +19,7 @@ object Input {
     )
   }
 
-  private def getMousePos: (Float, Float) = {
+  private def getMousePos: Vector2 = {
     val mouseX =
       Gdx.input.getX * Constants.ViewpointWorldWidth / Gdx.graphics.getWidth
     val mouseY =
@@ -26,6 +27,7 @@ object Input {
 
     val mouseCenterX = mouseX - Constants.ViewpointWorldWidth / 2f
     val mouseCenterY = mouseY - Constants.ViewpointWorldHeight / 2f
-    (mouseCenterX, mouseCenterY)
+
+    Vector2(mouseCenterX, mouseCenterY)
   }
 }

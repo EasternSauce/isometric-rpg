@@ -5,17 +5,18 @@ import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.util.Vector2
 
 case class Viewport() {
   private var camera: OrthographicCamera = _
   private var viewport: FitViewport = _
-  private var coordinateTransformation: (Float, Float) => (Float, Float) = _
+  private var coordinateTransformation: Vector2 => Vector2 = _
 
   import com.badlogic.gdx.graphics.OrthographicCamera
 
   def init(
       zoom: Float,
-      coordinateTransformation: (Float, Float) => (Float, Float)
+      coordinateTransformation: Vector2 => Vector2
   ): Unit = {
     camera = new OrthographicCamera()
     camera.zoom = zoom
@@ -40,11 +41,10 @@ case class Viewport() {
     val camPosition = camera.position
 
     val creature = gameState.creatures(playerCreatureId)
-    val (x, y) =
-      coordinateTransformation(creature.params.x, creature.params.y)
+    val pos = coordinateTransformation(creature.params.pos)
 
-    camPosition.x = (math.floor(x * 100) / 100).toFloat
-    camPosition.y = (math.floor(y * 100) / 100).toFloat
+    camPosition.x = (math.floor(pos.x * 100) / 100).toFloat
+    camPosition.y = (math.floor(pos.y * 100) / 100).toFloat
 
     camera.update()
   }

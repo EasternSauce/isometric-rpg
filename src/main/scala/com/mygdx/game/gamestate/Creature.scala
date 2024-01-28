@@ -1,9 +1,8 @@
 package com.mygdx.game.gamestate
 
-import com.badlogic.gdx.math.Vector2
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
-import com.mygdx.game.util.{SimpleTimer, WorldDirection}
+import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
 import com.mygdx.game.view.{CreatureAnimationType, IsometricProjection}
 import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
@@ -14,22 +13,17 @@ case class Creature(
     params: CreatureParams
 ) extends Entity {
   def update(
-      newX: Float,
-      newY: Float,
+      newPos: Vector2,
       delta: Float,
       clientInformation: ClientInformation,
       gameState: GameState
   ): Creature = {
-    val vectorTowardsDest =
-      new Vector2(
-        params.destinationX - params.x,
-        params.destinationY - params.y
-      )
+    val vectorTowardsDest = params.pos.vectorTowards(params.destination)
 
-    if (vectorTowardsDest.len() > 0.2f) {
-      vectorTowardsDest.setLength(params.baseVelocity)
+    val velocity = if (vectorTowardsDest.length > 0.2f) {
+      vectorTowardsDest.withLength(params.baseVelocity)
     } else {
-      vectorTowardsDest.setLength(0f)
+      vectorTowardsDest.withLength(0f)
     }
 
     this
@@ -37,36 +31,30 @@ case class Creature(
         if (creature.params.player) {
           val input = Input.poll()
 
-          updatePlayerMovement(input, newX, newY)
+          updatePlayerMovement(input, newPos)
         } else {
           val player = gameState.creatures(clientInformation.clientCreatureId)
 
           creature
-            .modify(_.params.x)
-            .setTo(newX)
-            .modify(_.params.y)
-            .setTo(newY)
+            .modify(_.params.pos)
+            .setTo(newPos)
             .pipe(creature => {
               val distanceToPlayer = Math
                 .sqrt(
-                  Math.pow(player.params.x - params.x, 2) + Math.pow(
-                    player.params.y - params.y,
+                  Math.pow(player.params.pos.x - params.pos.x, 2) + Math.pow(
+                    player.params.pos.y - params.pos.y,
                     2
                   )
                 )
                 .toFloat
               if (distanceToPlayer > 1) {
                 creature
-                  .modify(_.params.destinationX)
-                  .setTo(player.params.x)
-                  .modify(_.params.destinationY)
-                  .setTo(player.params.y)
+                  .modify(_.params.destination)
+                  .setTo(player.params.pos)
               } else {
                 creature
-                  .modify(_.params.destinationX)
-                  .setTo(creature.params.x)
-                  .modify(_.params.destinationY)
-                  .setTo(creature.params.y)
+                  .modify(_.params.destination)
+                  .setTo(creature.params.pos)
               }
             })
         }
@@ -77,35 +65,28 @@ case class Creature(
       .using(_.update(delta))
       .modify(_.params.attackTimer)
       .using(_.update(delta))
-      .modify(_.params.velocityX)
-      .setTo(vectorTowardsDest.x)
-      .modify(_.params.velocityY)
-      .setTo(vectorTowardsDest.y)
-      .modify(_.params.lastVelocityX)
-      .setToIf(vectorTowardsDest.len() > 0)(vectorTowardsDest.x)
-      .modify(_.params.lastVelocityY)
-      .setToIf(vectorTowardsDest.len() > 0)(vectorTowardsDest.y)
+      .modify(_.params.velocity)
+      .setTo(velocity)
+      .modify(_.params.lastVelocity)
+      .setToIf(velocity.length > 0)(velocity)
       .pipe(creature => {
         if (creature.params.lastPosTimer.time > 0.5f) {
           creature
             .modify(_.params.lastPosTimer)
             .using(_.restart())
             .pipe(creature => {
-              val v1 =
-                new Vector2(creature.params.lastPosX, creature.params.lastPosY)
-              val v2 = new Vector2(creature.params.x, creature.params.y)
+              val v1 = creature.params.lastPos
+              val v2 = creature.params.pos
 
-              if (v1.dst(v2) < 0.2f) {
+              if (v1.distance(v2) < 0.2f) {
                 creature.forceStopMoving()
 
               } else {
                 creature
               }
             })
-            .modify(_.params.lastPosX)
-            .setTo(params.x)
-            .modify(_.params.lastPosY)
-            .setTo(params.y)
+            .modify(_.params.lastPos)
+            .setTo(params.pos)
         } else {
           creature
         }
@@ -114,37 +95,29 @@ case class Creature(
 
   private def updatePlayerMovement(
       input: Input,
-      playerPosX: Float,
-      playerPosY: Float
+      playerPos: Vector2
   ): Creature = {
-    val (mouseX: Float, mouseY: Float) = input.mousePos
+    val mousePos = input.mousePos
 
-    val (worldMouseX, worldMouseY) =
-      IsometricProjection.translateScreenToIso(mouseX, mouseY)
+    val mouseWorldPos =
+      IsometricProjection.translateScreenToIso(mousePos)
 
-    val (destinationX, destinationY) =
-      (playerPosX + worldMouseX, playerPosY + worldMouseY)
+    val destinationPos = playerPos.add(mouseWorldPos)
 
     this
-      .modify(_.params.x)
-      .setTo(playerPosX)
-      .modify(_.params.y)
-      .setTo(playerPosY)
+      .modify(_.params.pos)
+      .setTo(playerPos)
       .pipe(creature =>
         if (input.moveButtonPressed) {
           creature
-            .modify(_.params.destinationX)
-            .setTo(destinationX)
-            .modify(_.params.destinationY)
-            .setTo(destinationY)
+            .modify(_.params.destination)
+            .setTo(destinationPos)
             .modify(_.params.attackTimer)
             .usingIf(creature.params.attackTimer.isRunning)(_.stop())
         } else {
           creature
-            .modify(_.params.destinationX)
-            .setTo(creature.params.x)
-            .modify(_.params.destinationY)
-            .setTo(creature.params.y)
+            .modify(_.params.destination)
+            .setTo(creature.params.pos)
         }
       )
       .pipe(creature =>
@@ -165,16 +138,12 @@ case class Creature(
 
   def forceStopMoving(): Creature = {
     this
-      .modify(_.params.destinationX)
-      .setTo(params.x)
-      .modify(_.params.destinationY)
-      .setTo(params.y)
+      .modify(_.params.destination)
+      .setTo(params.pos)
   }
 
   def facingDirection: WorldDirection = {
-    val angleDeg =
-      new Vector2(params.lastVelocityX, params.lastVelocityY)
-        .angleDeg()
+    val angleDeg = params.lastVelocity.angleDeg
 
     angleDeg match {
       case angle if angle >= 67.5 && angle < 112.5  => WorldDirection.East
@@ -191,7 +160,7 @@ case class Creature(
     }
   }
 
-  def moving: Boolean = params.velocityX != 0 && params.velocityY != 0
+  def moving: Boolean = params.velocity.length > 0
 
   def alive: Boolean = true
 }
@@ -199,24 +168,18 @@ case class Creature(
 object Creature {
   def male1(
       creatureId: EntityId[Creature],
-      x: Float,
-      y: Float,
+      pos: Vector2,
       player: Boolean,
       baseVelocity: Float
   ): Creature = {
     Creature(
       CreatureParams(
         id = creatureId,
-        x = x,
-        y = y,
-        velocityX = 0,
-        velocityY = 0,
-        destinationX = x,
-        destinationY = y,
-        lastVelocityX = 0,
-        lastVelocityY = 0,
-        lastPosX = x,
-        lastPosY = y,
+        pos = pos,
+        velocity = Vector2(0, 0),
+        destination = Vector2(0, 0),
+        lastVelocity = Vector2(0, 0),
+        lastPos = pos,
         textureNames = Map(
           CreatureAnimationType.Body -> "steel_armor",
           CreatureAnimationType.Head -> "male_head1",

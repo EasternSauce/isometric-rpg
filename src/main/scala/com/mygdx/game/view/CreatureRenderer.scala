@@ -1,6 +1,7 @@
 package com.mygdx.game.view
 
 import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
@@ -23,10 +24,10 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
     })
   }
 
-  override def pos(gameState: GameState): (Float, Float) = {
+  override def pos(gameState: GameState): Vector2 = {
     val creature = gameState.creatures(creatureId)
 
-    (creature.params.x, creature.params.y)
+    creature.params.pos
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {

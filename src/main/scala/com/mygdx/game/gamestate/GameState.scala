@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
+import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.Random
@@ -12,15 +13,15 @@ case class GameState(
     creatureCounter: Int
 ) {
   def update(
-      creaturePositions: Map[EntityId[Creature], (Float, Float)],
+      creaturePositions: Map[EntityId[Creature], Vector2],
       clientInformation: ClientInformation,
       delta: Float
   ): GameState = {
     this
       .modify(_.creatures.each)
       .using { creature =>
-        val (x, y) = creaturePositions(creature.params.id)
-        creature.update(x, y, delta, clientInformation, this)
+        val creaturePos = creaturePositions(creature.params.id)
+        creature.update(creaturePos, delta, clientInformation, this)
       }
       .pipe(gameState => {
         val enemyCount = gameState.creatures.values
@@ -32,8 +33,7 @@ case class GameState(
 
           val newEnemy = Creature.male1(
             nextCreatureId,
-            Random.between(2f, 28f),
-            Random.between(2f, 18f),
+            Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
             player = false,
             baseVelocity = 2f
           )
@@ -55,8 +55,7 @@ object GameState {
     val creature =
       Creature.male1(
         clientInformation.clientCreatureId,
-        5f,
-        5f,
+        Vector2(5f, 5f),
         player = true,
         baseVelocity = 4f
       )
