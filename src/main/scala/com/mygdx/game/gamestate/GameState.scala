@@ -1,7 +1,8 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.ClientInformation
+import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
+import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.Random
@@ -14,6 +15,7 @@ case class GameState(
 ) {
   def update(
       creaturePositions: Map[EntityId[Creature], Vector2],
+      input: Input,
       clientInformation: ClientInformation,
       delta: Float
   ): GameState = {
@@ -21,7 +23,7 @@ case class GameState(
       .modify(_.creatures.each)
       .using { creature =>
         val creaturePos = creaturePositions(creature.params.id)
-        creature.update(creaturePos, delta, clientInformation, this)
+        creature.update(creaturePos, delta, input, clientInformation, this)
       }
       .pipe(gameState => {
         val enemyCount = gameState.creatures.values
@@ -47,6 +49,65 @@ case class GameState(
           gameState
         }
       })
+      .pipe(gameState => {
+        val creatureAttackEvents = gameState.creatures.values
+          .filter(creature =>
+            creature.params.attackedCreatureId.nonEmpty && creature.params.attackTimer.isRunning &&
+              creature.params.attackTimer.time > Constants.AttackFrameCount * Constants.AttackFrameDuration * 0.8f
+          )
+          .map(creature =>
+            (creature.params.attackedCreatureId.get, creature.params.id)
+          )
+          .toMap
+
+        var attacksDone: List[EntityId[Creature]] = List()
+
+        gameState
+          .modify(_.creatures.each)
+          .using(creature => {
+            if (creatureAttackEvents.contains(creature.params.id)) {
+              val attackerId = creatureAttackEvents(creature.params.id)
+              val attacker = gameState.creatures(attackerId)
+              attacksDone = attacksDone.appended(attackerId)
+              creature.takeDamage(attacker.params.damage)
+            } else {
+              creature
+            }
+          })
+          .modify(_.creatures.each)
+          .using(creature => {
+            if (attacksDone.contains(creature.params.id)) {
+              creature
+                .modify(_.params.attackedCreatureId)
+                .setTo(None)
+            } else {
+              creature
+            }
+          })
+      })
+  }
+
+  def getAliveCreatureClosestTo(
+      point: Vector2,
+      ignored: List[EntityId[Creature]]
+  ): Option[Creature] = {
+    var closestCreature: Option[Creature] = None
+
+    creatures.values
+      .filter(creature =>
+        creature.alive && !ignored.contains(creature.params.id)
+      )
+      .foreach { creature =>
+        if (
+          closestCreature.isEmpty || closestCreature.get.params.pos.distance(
+            point
+          ) > creature.params.pos.distance(point)
+        ) {
+          closestCreature = Some(creature)
+        }
+      }
+
+    closestCreature
   }
 }
 

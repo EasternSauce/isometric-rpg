@@ -37,7 +37,8 @@ case class Physics() {
           .zip(0 until levelMap.getMapHeight - 1) ++
         (0 until levelMap.getMapWidth).zip(
           LazyList.continually(levelMap.getMapHeight - 1)
-        )).map { case (x, y) => Vector2(x, y) }
+        ))
+        .map { case (x, y) => Vector2(x, y) }
 
     staticBodies =
       cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map { pos =>

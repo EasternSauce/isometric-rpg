@@ -1,6 +1,7 @@
 package com.mygdx.game
 
 import com.mygdx.game.gamestate.{EntityId, GameState}
+import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.view.{SpriteBatch, View}
@@ -35,8 +36,11 @@ case class Gameplay() {
 
   def updateGameState(delta: Float): Unit = {
     val creaturePositions = physics.getCreaturePositions
+    val input = Input.poll()
+
     gameState = gameState.update(
       creaturePositions,
+      input,
       clientInformation,
       delta
     )

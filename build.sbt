@@ -25,4 +25,6 @@ libraryDependencies += "com.softwaremill.quicklens" %% "quicklens" % "1.9.0"
 
 libraryDependencies += "com.esotericsoftware" % "kryonet" % "2.22.0-RC1"
 
+libraryDependencies += "space.earlygrey" % "shapedrawer" % "2.4.0"
+
 libraryDependencies += "com.twitter" %% "chill" % "0.10.0"

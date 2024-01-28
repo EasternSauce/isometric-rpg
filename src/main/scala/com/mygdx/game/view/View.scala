@@ -72,6 +72,8 @@ case class View() {
       })
       .foreach(_.render(batch, gameState))
 
+    creatureRenderers.values.foreach(_.renderLifeBar(batch, gameState))
+
     batch.end()
 
     if (Constants.EnableDebug) physics.getWorld.renderDebug(b2DebugViewport)

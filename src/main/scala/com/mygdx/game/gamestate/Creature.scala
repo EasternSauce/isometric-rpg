@@ -15,12 +15,15 @@ case class Creature(
   def update(
       newPos: Vector2,
       delta: Float,
+      input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
   ): Creature = {
     val vectorTowardsDest = params.pos.vectorTowards(params.destination)
 
-    val velocity = if (vectorTowardsDest.length > 0.2f) {
+    val velocity = if (!alive) {
+      Vector2(0, 0)
+    } else if (vectorTowardsDest.length > 0.2f) {
       vectorTowardsDest.withLength(params.baseVelocity)
     } else {
       vectorTowardsDest.withLength(0f)
@@ -29,9 +32,7 @@ case class Creature(
     this
       .pipe(creature => {
         if (creature.params.player) {
-          val input = Input.poll()
-
-          updatePlayerMovement(input, newPos)
+          updatePlayerMovement(input, newPos, gameState)
         } else {
           val player = gameState.creatures(clientInformation.clientCreatureId)
 
@@ -39,7 +40,7 @@ case class Creature(
             .modify(_.params.pos)
             .setTo(newPos)
             .pipe(creature => {
-              val distanceToPlayer = Math
+              val distanceToPlayer = Math // TODO: use vector2!
                 .sqrt(
                   Math.pow(player.params.pos.x - params.pos.x, 2) + Math.pow(
                     player.params.pos.y - params.pos.y,
@@ -95,14 +96,15 @@ case class Creature(
 
   private def updatePlayerMovement(
       input: Input,
-      playerPos: Vector2
+      playerPos: Vector2,
+      gameState: GameState
   ): Creature = {
     val mousePos = input.mousePos
 
-    val mouseWorldPos =
+    val mouseScreenPos =
       IsometricProjection.translateScreenToIso(mousePos)
 
-    val destinationPos = playerPos.add(mouseWorldPos)
+    val mouseWorldPos = playerPos.add(mouseScreenPos)
 
     this
       .modify(_.params.pos)
@@ -111,7 +113,7 @@ case class Creature(
         if (input.moveButtonPressed) {
           creature
             .modify(_.params.destination)
-            .setTo(destinationPos)
+            .setTo(mouseWorldPos)
             .modify(_.params.attackTimer)
             .usingIf(creature.params.attackTimer.isRunning)(_.stop())
         } else {
@@ -126,14 +128,35 @@ case class Creature(
           (!creature.params.attackTimer.isRunning ||
             creature.params.attackTimer.time >= Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
         ) {
-          creature
-            .forceStopMoving()
-            .modify(_.params.attackTimer)
-            .using(_.restart())
+          val closestCreature =
+            gameState.getAliveCreatureClosestTo(mouseWorldPos, List(params.id))
+
+          if (
+            closestCreature.nonEmpty && closestCreature.get.params.pos
+              .distance(params.pos) < Constants.AttackRange
+          ) {
+            creature
+              .forceStopMoving()
+              .modify(_.params.attackTimer)
+              .using(_.restart())
+              .attack(closestCreature.get)
+          } else {
+            creature
+              .forceStopMoving()
+              .modify(_.params.attackTimer)
+              .using(_.restart())
+          }
+
         } else {
           creature
         }
       )
+  }
+
+  def attack(otherCreature: Creature): Creature = {
+    this
+      .modify(_.params.attackedCreatureId)
+      .setTo(Some(otherCreature.params.id))
   }
 
   def forceStopMoving(): Creature = {
@@ -141,6 +164,8 @@ case class Creature(
       .modify(_.params.destination)
       .setTo(params.pos)
   }
+
+  def alive: Boolean = params.life > 0
 
   def facingDirection: WorldDirection = {
     val angleDeg = params.lastVelocity.angleDeg
@@ -162,7 +187,14 @@ case class Creature(
 
   def moving: Boolean = params.velocity.length > 0
 
-  def alive: Boolean = true
+  def takeDamage(damage: Float): Creature = {
+    if (params.life - damage > 0) {
+      this.modify(_.params.life).setTo(params.life - damage)
+    } else {
+      this.modify(_.params.life).setTo(0)
+    }
+  }
+
 }
 
 object Creature {
@@ -190,7 +222,11 @@ object Creature {
         lastPosTimer = SimpleTimer(isRunning = true),
         attackTimer = SimpleTimer(isRunning = false),
         player = player,
-        baseVelocity = baseVelocity
+        baseVelocity = baseVelocity,
+        life = 100f,
+        maxLife = 100f,
+        attackedCreatureId = None,
+        damage = 20f
       )
     )
   }

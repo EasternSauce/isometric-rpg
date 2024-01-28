@@ -27,8 +27,8 @@ case class LevelMap() {
       tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
     val cells: List[Option[TileRenderer]] = for {
-      x <- (0 until layer.getHeight).toList.reverse
-      y <- 0 until layer.getWidth
+      x <- (0 until layer.getWidth).toList
+      y <- (0 until layer.getHeight).reverse
     } yield {
       Option(layer.getCell(x, y)).map(TileRenderer(_, Vector2(x, y)))
     }

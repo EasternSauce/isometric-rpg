@@ -15,5 +15,9 @@ case class CreatureParams(
     lastPosTimer: SimpleTimer,
     attackTimer: SimpleTimer,
     player: Boolean,
-    baseVelocity: Float
+    baseVelocity: Float,
+    life: Float,
+    maxLife: Float,
+    attackedCreatureId: Option[EntityId[Creature]],
+    damage: Float
 ) {}
