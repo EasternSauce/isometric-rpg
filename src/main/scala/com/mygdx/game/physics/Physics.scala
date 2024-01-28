@@ -54,14 +54,6 @@ case class Physics() {
   def update(gameState: GameState): Unit = {
     world.update()
 
-    val playerBody = creatureBodies(clientInformation.clientCreatureId)
-
-    val player =
-      gameState.creatures(clientInformation.clientCreatureId)
-    playerBody.move(player.params.velocityX, player.params.velocityY)
-
-    playerBody.update()
-
     val bodiesToCreate =
       gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
 
@@ -74,6 +66,7 @@ case class Physics() {
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     })
 
+    creatureBodies.values.foreach(_.update(gameState))
   }
 
   def getCreaturePositions: Map[EntityId[Creature], (Float, Float)] = {

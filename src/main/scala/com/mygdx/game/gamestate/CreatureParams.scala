@@ -19,5 +19,6 @@ case class CreatureParams(
     animationTimer: SimpleTimer,
     lastPosTimer: SimpleTimer,
     attackTimer: SimpleTimer,
-    player: Boolean
+    player: Boolean,
+    baseVelocity: Float
 ) {}

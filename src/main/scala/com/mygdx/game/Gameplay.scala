@@ -37,6 +37,7 @@ case class Gameplay() {
     val creaturePositions = physics.getCreaturePositions
     gameState = gameState.update(
       creaturePositions,
+      clientInformation,
       delta
     )
   }

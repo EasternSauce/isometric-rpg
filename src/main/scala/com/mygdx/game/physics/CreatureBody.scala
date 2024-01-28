@@ -2,13 +2,10 @@ package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.Body
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.mygdx.game.gamestate.{Creature, EntityId}
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
   var body: Body = _
-
-  private var velocityX: Float = 0
-  private var velocityY: Float = 0
 
   def init(world: World, x: Float, y: Float): Unit = {
     this.body = {
@@ -37,15 +34,10 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
     }
   }
 
-  def move(vx: Float, vy: Float): Unit = {
-    velocityX = vx
-    velocityY = vy
-  }
+  def update(gameState: GameState): Unit = {
+    val creature = gameState.creatures(creatureId)
 
-  def update(): Unit = {
-    body.setLinearVelocity(velocityX, velocityY)
-    velocityX = 0
-    velocityY = 0
+    body.setLinearVelocity(creature.params.velocityX, creature.params.velocityY)
   }
 
   def getPos: (Float, Float) = {

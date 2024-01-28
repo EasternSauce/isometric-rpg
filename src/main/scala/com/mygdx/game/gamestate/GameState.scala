@@ -13,13 +13,14 @@ case class GameState(
 ) {
   def update(
       creaturePositions: Map[EntityId[Creature], (Float, Float)],
+      clientInformation: ClientInformation,
       delta: Float
   ): GameState = {
     this
       .modify(_.creatures.each)
       .using { creature =>
         val (x, y) = creaturePositions(creature.params.id)
-        creature.update(x, y, delta)
+        creature.update(x, y, delta, clientInformation, this)
       }
       .pipe(gameState => {
         val enemyCount = gameState.creatures.values
@@ -33,7 +34,8 @@ case class GameState(
             nextCreatureId,
             Random.between(2f, 28f),
             Random.between(2f, 18f),
-            player = false
+            player = false,
+            baseVelocity = 2f
           )
 
           gameState
@@ -51,7 +53,13 @@ case class GameState(
 object GameState {
   def initialState(clientInformation: ClientInformation): GameState = {
     val creature =
-      Creature.male1(clientInformation.clientCreatureId, 5f, 5f, player = true)
+      Creature.male1(
+        clientInformation.clientCreatureId,
+        5f,
+        5f,
+        player = true,
+        baseVelocity = 4f
+      )
 
     GameState(
       creature = creature,
