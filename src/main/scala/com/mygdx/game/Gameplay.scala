@@ -26,18 +26,19 @@ case class Gameplay() {
   }
 
   def update(delta: Float): Unit = {
-    val (playerPosX, playerPosY) = physics.getPlayerPos
-    gameState = gameState.update(
-      clientInformation,
-      playerPosX,
-      playerPosY,
-      delta
-    )
-
-    view.update(clientInformation, gameState)
     physics.update(gameState)
+    updateGameState(delta)
+    view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
+  }
+
+  def updateGameState(delta: Float): Unit = {
+    val creaturePositions = physics.getCreaturePositions
+    gameState = gameState.update(
+      creaturePositions,
+      delta
+    )
   }
 
   def dispose(): Unit = {

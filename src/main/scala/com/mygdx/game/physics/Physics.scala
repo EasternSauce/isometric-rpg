@@ -1,13 +1,13 @@
 package com.mygdx.game.physics
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 
 case class Physics() {
   private var world: World = _
-  private var playerBody: CreatureBody = _
-  private var physicsBodies: List[PhysicsBody] = _
+  private var creatureBodies: Map[EntityId[Creature], CreatureBody] = _
+  private var staticBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
 
   def init(
@@ -15,16 +15,16 @@ case class Physics() {
       levelMap: LevelMap,
       gameState: GameState
   ): Unit = {
-
-    this.world = World()
-    this.playerBody = CreatureBody(clientInformation.clientCreatureId)
-    this.clientInformation = clientInformation
-
-    val player = gameState.creatures(clientInformation.clientCreatureId)
-
+    world = World()
     world.init()
 
+    val player = gameState.creatures(clientInformation.clientCreatureId)
+    val playerBody = CreatureBody(clientInformation.clientCreatureId)
     playerBody.init(world, player.params.x, player.params.y)
+
+    creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
+
+    this.clientInformation = clientInformation
 
     val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
 
@@ -38,7 +38,7 @@ case class Physics() {
           LazyList.continually(levelMap.getMapHeight - 1)
         )
 
-    physicsBodies =
+    staticBodies =
       cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map {
         case (x, y) =>
           val terrainBody = TerrainBody("terrainBody_" + x + "_" + y)
@@ -54,15 +54,35 @@ case class Physics() {
   def update(gameState: GameState): Unit = {
     world.update()
 
+    val playerBody = creatureBodies(clientInformation.clientCreatureId)
+
     val player =
       gameState.creatures(clientInformation.clientCreatureId)
     playerBody.move(player.params.velocityX, player.params.velocityY)
 
     playerBody.update()
+
+    val bodiesToCreate =
+      gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
+
+    bodiesToCreate.foreach(creatureId => {
+      val creatureBody = CreatureBody(creatureId)
+
+      val creature = gameState.creatures(creatureId)
+
+      creatureBody.init(world, creature.params.x, creature.params.y)
+      creatureBodies = creatureBodies.updated(creatureId, creatureBody)
+    })
+
   }
 
-  def getPlayerPos: (Float, Float) = {
-    playerBody.getPos
+  def getCreaturePositions: Map[EntityId[Creature], (Float, Float)] = {
+    creatureBodies.values
+      .map(creatureBody => {
+        val (x, y) = creatureBody.getPos
+        (creatureBody.creatureId, (x, y))
+      })
+      .toMap
   }
 
   def getWorld: World = world

@@ -81,6 +81,16 @@ case class View() {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
+    val renderersToCreate =
+      gameState.creatures.keys.toSet -- creatureRenderers.keys.toSet
+
+    renderersToCreate.foreach(creatureId => {
+      val creatureRenderer = CreatureRenderer(creatureId)
+      creatureRenderer.init(gameState)
+      creatureRenderers =
+        creatureRenderers.updated(creatureId, creatureRenderer)
+    })
+
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
   }

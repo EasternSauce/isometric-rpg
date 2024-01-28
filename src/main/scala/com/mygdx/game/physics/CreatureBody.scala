@@ -1,7 +1,7 @@
 package com.mygdx.game.physics
 
+import com.badlogic.gdx.physics.box2d.Body
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.badlogic.gdx.physics.box2d.{Body, BodyDef, CircleShape, FixtureDef}
 import com.mygdx.game.gamestate.{Creature, EntityId}
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
@@ -12,6 +12,8 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
 
   def init(world: World, x: Float, y: Float): Unit = {
     this.body = {
+      import com.badlogic.gdx.physics.box2d._
+
       val bodyDef = new BodyDef()
       bodyDef.`type` = BodyType.DynamicBody
       bodyDef.position.set(x, y)
@@ -24,6 +26,12 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       fixtureDef.shape = shape
 
       body.createFixture(fixtureDef)
+
+      body.setLinearDamping(10f)
+
+      val massData = new MassData
+      massData.mass = 1000f
+      body.setMassData(massData)
 
       body
     }

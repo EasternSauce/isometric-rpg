@@ -1,8 +1,11 @@
 package com.mygdx.game.gamestate
 
 import com.badlogic.gdx.math.Vector2
-import com.mygdx.game.util.WorldDirection
+import com.mygdx.game.Constants
+import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
+import com.mygdx.game.util.{SimpleTimer, WorldDirection}
+import com.mygdx.game.view.{CreatureAnimationType, IsometricProjection}
 import com.softwaremill.quicklens.ModifyPimp
 
 import scala.util.chaining.scalaUtilChainingOps
@@ -10,7 +13,7 @@ import scala.util.chaining.scalaUtilChainingOps
 case class Creature(
     params: CreatureParams
 ) extends Entity {
-  def update(delta: Float): Creature = {
+  def update(newX: Float, newY: Float, delta: Float): Creature = {
     val vectorTowardsDest =
       new Vector2(
         params.destinationX - params.x,
@@ -18,7 +21,7 @@ case class Creature(
       )
 
     if (vectorTowardsDest.len() > 0.2f) {
-      val baseVelocity = 3f
+      val baseVelocity = 4f
 
       vectorTowardsDest.setLength(baseVelocity)
     } else {
@@ -26,6 +29,19 @@ case class Creature(
     }
 
     this
+      .pipe(creature => {
+        if (creature.params.player) {
+          val input = Input.poll()
+
+          updatePlayerMovement(input, newX, newY)
+        } else {
+          creature
+            .modify(_.params.x)
+            .setTo(newX)
+            .modify(_.params.y)
+            .setTo(newY)
+        }
+      })
       .modify(_.params.animationTimer)
       .using(_.update(delta))
       .modify(_.params.lastPosTimer)
@@ -67,6 +83,51 @@ case class Creature(
       })
   }
 
+  private def updatePlayerMovement(
+      input: Input,
+      playerPosX: Float,
+      playerPosY: Float
+  ): Creature = {
+    val (mouseX: Float, mouseY: Float) = input.mousePos
+
+    val (worldMouseX, worldMouseY) =
+      IsometricProjection.translateScreenToIso(mouseX, mouseY)
+
+    val (destinationX, destinationY) =
+      (playerPosX + worldMouseX, playerPosY + worldMouseY)
+
+    this
+      .modify(_.params.x)
+      .setTo(playerPosX)
+      .modify(_.params.y)
+      .setTo(playerPosY)
+      .pipe(creature =>
+        if (input.moveButtonPressed) {
+          creature
+            .modify(_.params.destinationX)
+            .setTo(destinationX)
+            .modify(_.params.destinationY)
+            .setTo(destinationY)
+            .modify(_.params.attackTimer)
+            .usingIf(creature.params.attackTimer.isRunning)(_.stop())
+        } else creature
+      )
+      .pipe(creature =>
+        if (
+          input.attackButtonJustPressed && !input.moveButtonPressed &&
+          (!creature.params.attackTimer.isRunning ||
+            creature.params.attackTimer.time >= Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
+        ) {
+          creature
+            .forceStopMoving()
+            .modify(_.params.attackTimer)
+            .using(_.restart())
+        } else {
+          creature
+        }
+      )
+  }
+
   def forceStopMoving(): Creature = {
     this
       .modify(_.params.destinationX)
@@ -96,4 +157,41 @@ case class Creature(
   }
 
   def moving: Boolean = params.velocityX != 0 && params.velocityY != 0
+
+  def alive: Boolean = true
+}
+
+object Creature {
+  def male1(
+      creatureId: EntityId[Creature],
+      x: Float,
+      y: Float,
+      player: Boolean
+  ): Creature = {
+    Creature(
+      CreatureParams(
+        id = creatureId,
+        x = x,
+        y = y,
+        velocityX = 0,
+        velocityY = 0,
+        destinationX = x,
+        destinationY = y,
+        lastVelocityX = 0,
+        lastVelocityY = 0,
+        lastPosX = x,
+        lastPosY = y,
+        textureNames = Map(
+          CreatureAnimationType.Body -> "steel_armor",
+          CreatureAnimationType.Head -> "male_head1",
+          CreatureAnimationType.Weapon -> "greatstaff",
+          CreatureAnimationType.Shield -> "shield"
+        ),
+        animationTimer = SimpleTimer(isRunning = true),
+        lastPosTimer = SimpleTimer(isRunning = true),
+        attackTimer = SimpleTimer(isRunning = false),
+        player = player
+      )
+    )
+  }
 }

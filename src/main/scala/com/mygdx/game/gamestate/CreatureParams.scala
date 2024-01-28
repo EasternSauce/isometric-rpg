@@ -16,8 +16,8 @@ case class CreatureParams(
     lastPosX: Float,
     lastPosY: Float,
     textureNames: Map[CreatureAnimationType, String],
-    neutralStanceFrame: Int,
     animationTimer: SimpleTimer,
     lastPosTimer: SimpleTimer,
-    attackTimer: SimpleTimer
+    attackTimer: SimpleTimer,
+    player: Boolean
 ) {}
