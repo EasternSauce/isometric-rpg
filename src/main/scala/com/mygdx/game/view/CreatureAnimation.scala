@@ -14,6 +14,7 @@ case class CreatureAnimation(
   private var standstillAnimations: Array[Animation[TextureRegion]] = _
   private var attackAnimations: Array[Animation[TextureRegion]] = _
   private var walkAnimations: Array[Animation[TextureRegion]] = _
+  private var deathAnimations: Array[Animation[TextureRegion]] = _
   private var textureRegion: TextureRegion = _
 
   def init(gameState: GameState): Unit = {
@@ -24,6 +25,9 @@ case class CreatureAnimation(
       new Array[Animation[TextureRegion]](WorldDirection.values.size)
 
     walkAnimations =
+      new Array[Animation[TextureRegion]](WorldDirection.values.size)
+
+    deathAnimations =
       new Array[Animation[TextureRegion]](WorldDirection.values.size)
 
     val creature = gameState.creatures(creatureId)
@@ -50,7 +54,7 @@ case class CreatureAnimation(
         standstillFrames: _*
       )
 
-      val idleFrames =
+      val attackFrames =
         for {
           j <-
             (Constants.AttackFrameStart until Constants.AttackFrameStart + Constants.AttackFrameCount).toArray
@@ -64,10 +68,10 @@ case class CreatureAnimation(
 
       attackAnimations(i) = new Animation[TextureRegion](
         Constants.AttackFrameDuration,
-        idleFrames: _*
+        attackFrames: _*
       )
 
-      val runningFrames =
+      val walkFrames =
         for {
           j <-
             (Constants.WalkFrameStart until Constants.WalkFrameStart + Constants.WalkFrameCount).toArray
@@ -80,7 +84,23 @@ case class CreatureAnimation(
         )
       walkAnimations(i) = new Animation[TextureRegion](
         Constants.WalkFrameDuration,
-        runningFrames: _*
+        walkFrames: _*
+      )
+
+      val deathFrames =
+        for {
+          j <-
+            (Constants.DeathFrameStart until Constants.DeathFrameStart + Constants.DeathFrameCount).toArray
+        } yield new TextureRegion(
+          textureRegion,
+          j * Constants.SpriteTextureWidth,
+          i * Constants.SpriteTextureHeight,
+          Constants.SpriteTextureWidth,
+          Constants.SpriteTextureHeight
+        )
+      deathAnimations(i) = new Animation[TextureRegion](
+        Constants.DeathFrameDuration,
+        deathFrames: _*
       )
     }
   }
@@ -88,18 +108,22 @@ case class CreatureAnimation(
   def render(batch: SpriteBatch, gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
 
-    val frame = if (
-      creature.params.attackTimer.isRunning && creature.params.attackTimer.time < Constants.AttackFrameCount * Constants.AttackFrameDuration
-    ) {
-      attackAnimations(creature.facingDirection.id)
-        .getKeyFrame(creature.params.attackTimer.time, false)
-    } else if (creature.moving) {
-      walkAnimations(creature.facingDirection.id)
-        .getKeyFrame(creature.params.animationTimer.time, true)
-    } else {
-      standstillAnimations(creature.facingDirection.id)
-        .getKeyFrame(creature.params.animationTimer.time, true)
-    }
+    val frame =
+      if (
+        creature.params.attackAnimationTimer.isRunning && creature.params.attackAnimationTimer.time < Constants.AttackFrameCount * Constants.AttackFrameDuration
+      ) {
+        attackAnimations(creature.facingDirection.id)
+          .getKeyFrame(creature.params.attackAnimationTimer.time, false)
+      } else if (creature.moving) {
+        walkAnimations(creature.facingDirection.id)
+          .getKeyFrame(creature.params.animationTimer.time, true)
+      } else if (creature.alive) {
+        standstillAnimations(creature.facingDirection.id)
+          .getKeyFrame(creature.params.animationTimer.time, true)
+      } else {
+        deathAnimations(creature.facingDirection.id)
+          .getKeyFrame(creature.params.deathAnimationTimer.time, false)
+      }
 
     val pos = IsometricProjection.translateIsoToScreen(creature.params.pos)
 

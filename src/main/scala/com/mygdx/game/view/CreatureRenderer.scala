@@ -39,20 +39,23 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
 
   def renderLifeBar(spriteBatch: SpriteBatch, gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
-    val lifeBarWidth = 32f
-    val currentLifeBarWidth =
-      lifeBarWidth * creature.params.life / creature.params.maxLife
 
-    val creatureScreenPos =
-      IsometricProjection.translateIsoToScreen(creature.params.pos)
+    if (!creature.params.deathRegistered) {
+      val lifeBarWidth = 32f
+      val currentLifeBarWidth =
+        lifeBarWidth * creature.params.life / creature.params.maxLife
 
-    val barPos = Vector2(
-      creatureScreenPos.x - lifeBarWidth / 2f,
-      creatureScreenPos.y + 60f
-    )
+      val creatureScreenPos =
+        IsometricProjection.translateIsoToScreen(creature.params.pos)
 
-    renderBar(spriteBatch, barPos, lifeBarWidth, Color.ORANGE)
-    renderBar(spriteBatch, barPos, currentLifeBarWidth, Color.RED)
+      val barPos = Vector2(
+        creatureScreenPos.x - lifeBarWidth / 2f,
+        creatureScreenPos.y + 32f
+      )
+
+      renderBar(spriteBatch, barPos, lifeBarWidth, Color.ORANGE)
+      renderBar(spriteBatch, barPos, currentLifeBarWidth, Color.RED)
+    }
   }
 
   private def renderBar(

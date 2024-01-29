@@ -1,14 +1,15 @@
 package com.mygdx.game
 
-import com.mygdx.game.gamestate.{EntityId, GameState}
+import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.{SpriteBatch, View}
 
 case class Gameplay() {
   private val clientInformation: ClientInformation =
-    ClientInformation(clientCreatureId = EntityId("creature1"))
+    ClientInformation(clientCreatureId = EntityId("player"))
 
   private val levelMap: LevelMap = LevelMap()
   private val physics: Physics = Physics()
@@ -27,17 +28,20 @@ case class Gameplay() {
   }
 
   def update(delta: Float): Unit = {
+    val input = Input.poll()
+
     physics.update(gameState)
-    updateGameState(delta)
+    updateGameState(physics.getCreaturePositions, input, delta)
     view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
   }
 
-  def updateGameState(delta: Float): Unit = {
-    val creaturePositions = physics.getCreaturePositions
-    val input = Input.poll()
-
+  private def updateGameState(
+      creaturePositions: Map[EntityId[Creature], Vector2],
+      input: Input,
+      delta: Float
+  ): Unit = {
     gameState = gameState.update(
       creaturePositions,
       input,

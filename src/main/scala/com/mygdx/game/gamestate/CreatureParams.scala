@@ -13,11 +13,13 @@ case class CreatureParams(
     textureNames: Map[CreatureAnimationType, String],
     animationTimer: SimpleTimer,
     lastPosTimer: SimpleTimer,
-    attackTimer: SimpleTimer,
+    attackAnimationTimer: SimpleTimer,
     player: Boolean,
     baseVelocity: Float,
     life: Float,
     maxLife: Float,
     attackedCreatureId: Option[EntityId[Creature]],
-    damage: Float
+    damage: Float,
+    deathRegistered: Boolean,
+    deathAnimationTimer: SimpleTimer
 ) {}

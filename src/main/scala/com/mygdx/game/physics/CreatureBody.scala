@@ -7,6 +7,7 @@ import com.mygdx.game.util.Vector2
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
   var body: Body = _
+  var sensor: Boolean = false
 
   def init(world: World, pos: Vector2): Unit = {
     this.body = {
@@ -42,6 +43,15 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       creature.params.velocity.x,
       creature.params.velocity.y
     )
+
+    if (creature.params.deathRegistered && !sensor) {
+      makeSensor()
+    }
+  }
+
+  def makeSensor(): Unit = {
+    body.getFixtureList.get(0).setSensor(true)
+    sensor = true
   }
 
   def pos: Vector2 = {

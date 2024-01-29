@@ -1,9 +1,6 @@
 package com.mygdx.game.view
 
-import com.badlogic.gdx.graphics.g2d.{
-  TextureRegion,
-  SpriteBatch => GdxSpriteBatch
-}
+import com.badlogic.gdx.graphics.g2d.{TextureRegion, SpriteBatch => GdxSpriteBatch}
 import com.badlogic.gdx.graphics.{Color, Pixmap, Texture}
 import com.badlogic.gdx.math.{Matrix4, Rectangle => GdxRectangle}
 import com.mygdx.game.util.Rectangle

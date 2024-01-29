@@ -40,14 +40,8 @@ case class Creature(
             .modify(_.params.pos)
             .setTo(newPos)
             .pipe(creature => {
-              val distanceToPlayer = Math // TODO: use vector2!
-                .sqrt(
-                  Math.pow(player.params.pos.x - params.pos.x, 2) + Math.pow(
-                    player.params.pos.y - params.pos.y,
-                    2
-                  )
-                )
-                .toFloat
+              val distanceToPlayer = params.pos.distance(player.params.pos)
+
               if (distanceToPlayer > 1) {
                 creature
                   .modify(_.params.destination)
@@ -64,7 +58,9 @@ case class Creature(
       .using(_.update(delta))
       .modify(_.params.lastPosTimer)
       .using(_.update(delta))
-      .modify(_.params.attackTimer)
+      .modify(_.params.attackAnimationTimer)
+      .using(_.update(delta))
+      .modify(_.params.deathAnimationTimer)
       .using(_.update(delta))
       .modify(_.params.velocity)
       .setTo(velocity)
@@ -87,7 +83,18 @@ case class Creature(
               }
             })
             .modify(_.params.lastPos)
-            .setTo(params.pos)
+            .setTo(creature.params.pos)
+        } else {
+          creature
+        }
+      })
+      .pipe(creature => {
+        if (creature.params.life <= 0 && !creature.params.deathRegistered) {
+          creature
+            .modify(_.params.deathRegistered)
+            .setTo(true)
+            .modify(_.params.deathAnimationTimer)
+            .using(_.restart())
         } else {
           creature
         }
@@ -100,6 +107,10 @@ case class Creature(
       gameState: GameState
   ): Creature = {
     val mousePos = input.mousePos
+      .modify(_.y)
+      .using(
+        _ + 30f
+      ) // shift upwards because player clicks torso not where they are standing
 
     val mouseScreenPos =
       IsometricProjection.translateScreenToIso(mousePos)
@@ -114,8 +125,8 @@ case class Creature(
           creature
             .modify(_.params.destination)
             .setTo(mouseWorldPos)
-            .modify(_.params.attackTimer)
-            .usingIf(creature.params.attackTimer.isRunning)(_.stop())
+            .modify(_.params.attackAnimationTimer)
+            .usingIf(creature.params.attackAnimationTimer.isRunning)(_.stop())
         } else {
           creature
             .modify(_.params.destination)
@@ -125,25 +136,33 @@ case class Creature(
       .pipe(creature =>
         if (
           input.attackButtonJustPressed && !input.moveButtonPressed &&
-          (!creature.params.attackTimer.isRunning ||
-            creature.params.attackTimer.time >= Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
+          (!creature.params.attackAnimationTimer.isRunning ||
+            creature.params.attackAnimationTimer.time >= Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
         ) {
           val closestCreature =
-            gameState.getAliveCreatureClosestTo(mouseWorldPos, List(params.id))
+            CreaturesFinderUtils.getAliveCreatureClosestTo(
+              mouseWorldPos,
+              List(params.id),
+              gameState
+            )
 
           if (
             closestCreature.nonEmpty && closestCreature.get.params.pos
               .distance(params.pos) < Constants.AttackRange
           ) {
             creature
+              .modify(_.params.lastVelocity)
+              .setTo(creature.params.pos.vectorTowards(mouseWorldPos))
               .forceStopMoving()
-              .modify(_.params.attackTimer)
+              .modify(_.params.attackAnimationTimer)
               .using(_.restart())
               .attack(closestCreature.get)
           } else {
             creature
+              .modify(_.params.lastVelocity)
+              .setTo(creature.params.pos.vectorTowards(mouseWorldPos))
               .forceStopMoving()
-              .modify(_.params.attackTimer)
+              .modify(_.params.attackAnimationTimer)
               .using(_.restart())
           }
 
@@ -153,13 +172,13 @@ case class Creature(
       )
   }
 
-  def attack(otherCreature: Creature): Creature = {
+  private def attack(otherCreature: Creature): Creature = {
     this
       .modify(_.params.attackedCreatureId)
       .setTo(Some(otherCreature.params.id))
   }
 
-  def forceStopMoving(): Creature = {
+  private def forceStopMoving(): Creature = {
     this
       .modify(_.params.destination)
       .setTo(params.pos)
@@ -216,17 +235,19 @@ object Creature {
           CreatureAnimationType.Body -> "steel_armor",
           CreatureAnimationType.Head -> "male_head1",
           CreatureAnimationType.Weapon -> "greatstaff",
-          CreatureAnimationType.Shield -> "shield"
+          CreatureAnimationType.Bow -> "shield"
         ),
         animationTimer = SimpleTimer(isRunning = true),
         lastPosTimer = SimpleTimer(isRunning = true),
-        attackTimer = SimpleTimer(isRunning = false),
+        attackAnimationTimer = SimpleTimer(isRunning = false),
         player = player,
         baseVelocity = baseVelocity,
         life = 100f,
         maxLife = 100f,
         attackedCreatureId = None,
-        damage = 20f
+        damage = 20f,
+        deathRegistered = false,
+        deathAnimationTimer = SimpleTimer(isRunning = false)
       )
     )
   }
