@@ -107,10 +107,6 @@ case class Creature(
       gameState: GameState
   ): Creature = {
     val mousePos = input.mousePos
-      .modify(_.y)
-      .using(
-        _ + 30f
-      ) // shift upwards because player clicks torso not where they are standing
 
     val mouseScreenPos =
       IsometricProjection.translateScreenToIso(mousePos)

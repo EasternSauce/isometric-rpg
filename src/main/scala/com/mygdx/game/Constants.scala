@@ -41,5 +41,5 @@ object Constants {
   val TileCenterX = 0
   val TileCenterY = 0
 
-  val AttackRange = 1.2f
+  val AttackRange = 1f
 }

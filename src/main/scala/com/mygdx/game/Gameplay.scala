@@ -1,11 +1,12 @@
 package com.mygdx.game
 
+import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
-import com.mygdx.game.util.Vector2
-import com.mygdx.game.view.{SpriteBatch, View}
+import com.mygdx.game.util.{Rectangle, Vector2}
+import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
 case class Gameplay() {
   private val clientInformation: ClientInformation =
@@ -35,6 +36,41 @@ case class Gameplay() {
     view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
+
+    if (Constants.EnableDebug) drawMouseAimDebug(input)
+  }
+
+  private def drawMouseAimDebug(input: Input): Unit = {
+    val mousePos = input.mousePos
+
+    val isoMousePos =
+      IsometricProjection.translateScreenToIso(mousePos)
+
+    val mouseWorldPos = gameState
+      .creatures(clientInformation.clientCreatureId)
+      .params
+      .pos
+      .add(isoMousePos)
+
+    spriteBatch.begin()
+
+    gameState.creatures.values
+      .map(_.params.pos)
+      .foreach(pos => {
+        val worldPos = IsometricProjection.translateIsoToScreen(pos)
+        spriteBatch.filledRectangle(
+          Rectangle(worldPos.x - 5, worldPos.y - 5, 10, 10),
+          Color.CYAN
+        )
+      })
+
+    val mouseScreenPos = IsometricProjection.translateIsoToScreen(mouseWorldPos)
+
+    spriteBatch.filledRectangle(
+      Rectangle(mouseScreenPos.x - 5, mouseScreenPos.y - 5, 10, 10),
+      Color.CYAN
+    )
+    spriteBatch.end()
   }
 
   private def updateGameState(
