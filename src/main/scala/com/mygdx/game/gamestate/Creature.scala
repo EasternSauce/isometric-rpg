@@ -34,24 +34,7 @@ case class Creature(
         if (creature.params.player) {
           updatePlayerMovement(input, newPos, gameState)
         } else {
-          val player = gameState.creatures(clientInformation.clientCreatureId)
-
-          creature
-            .modify(_.params.pos)
-            .setTo(newPos)
-            .pipe(creature => {
-              val distanceToPlayer = params.pos.distance(player.params.pos)
-
-              if (distanceToPlayer > 1) {
-                creature
-                  .modify(_.params.destination)
-                  .setTo(player.params.pos)
-              } else {
-                creature
-                  .modify(_.params.destination)
-                  .setTo(creature.params.pos)
-              }
-            })
+          updateEnemyMovement(newPos, clientInformation, creature, gameState)
         }
       })
       .modify(_.params.animationTimer)
@@ -95,11 +78,63 @@ case class Creature(
             .setTo(true)
             .modify(_.params.deathAnimationTimer)
             .using(_.restart())
+            .modify(_.params.attackAnimationTimer)
+            .using(_.restart().stop())
         } else {
           creature
         }
       })
   }
+
+  private def updateEnemyMovement(
+      newPos: Vector2,
+      clientInformation: ClientInformation,
+      creature: Creature,
+      gameState: GameState
+  ): Creature = {
+    val player = gameState.creatures(clientInformation.clientCreatureId)
+
+    creature
+      .modify(_.params.pos)
+      .setTo(newPos)
+      .pipe(creature => {
+        val distanceToPlayer = params.pos.distance(player.params.pos)
+
+        if (distanceToPlayer > 1) {
+          creature
+            .modify(_.params.destination)
+            .setTo(player.params.pos)
+        } else {
+          if (
+            player.alive && (!creature.params.attackAnimationTimer.isRunning || creature.params.attackAnimationTimer.time > Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
+          ) {
+            creature
+              .forceStopMoving()
+              .modify(_.params.attackAnimationTimer)
+              .using(_.restart())
+              .attack(player)
+          } else {
+            creature
+              .forceStopMoving()
+          }
+
+        }
+      })
+  }
+
+  private def attack(otherCreature: Creature): Creature = {
+    this
+      .modify(_.params.attackedCreatureId)
+      .setTo(Some(otherCreature.params.id))
+  }
+
+  private def forceStopMoving(): Creature = {
+    this
+      .modify(_.params.destination)
+      .setTo(params.pos)
+  }
+
+  def alive: Boolean = params.life > 0
 
   private def updatePlayerMovement(
       input: Input,
@@ -117,21 +152,25 @@ case class Creature(
       .modify(_.params.pos)
       .setTo(playerPos)
       .pipe(creature =>
-        if (input.moveButtonPressed) {
-          creature
-            .modify(_.params.destination)
-            .setTo(mouseWorldPos)
-            .modify(_.params.attackAnimationTimer)
-            .usingIf(creature.params.attackAnimationTimer.isRunning)(_.stop())
+        if (creature.alive) {
+          if (input.moveButtonPressed) {
+            creature
+              .modify(_.params.destination)
+              .setTo(mouseWorldPos)
+              .modify(_.params.attackAnimationTimer)
+              .usingIf(creature.params.attackAnimationTimer.isRunning)(_.stop())
+          } else {
+            creature
+              .modify(_.params.destination)
+              .setTo(creature.params.pos)
+          }
         } else {
           creature
-            .modify(_.params.destination)
-            .setTo(creature.params.pos)
         }
       )
       .pipe(creature =>
         if (
-          input.attackButtonJustPressed && !input.moveButtonPressed &&
+          creature.alive && input.attackButtonJustPressed && !input.moveButtonPressed &&
           (!creature.params.attackAnimationTimer.isRunning ||
             creature.params.attackAnimationTimer.time >= Constants.AttackFrameCount * Constants.AttackFrameDuration + Constants.AttackCooldown)
         ) {
@@ -148,7 +187,10 @@ case class Creature(
           ) {
             creature
               .modify(_.params.lastVelocity)
-              .setTo(creature.params.pos.vectorTowards(mouseWorldPos))
+              .setTo(
+                creature.params.pos
+                  .vectorTowards(closestCreature.get.params.pos)
+              )
               .forceStopMoving()
               .modify(_.params.attackAnimationTimer)
               .using(_.restart())
@@ -167,20 +209,6 @@ case class Creature(
         }
       )
   }
-
-  private def attack(otherCreature: Creature): Creature = {
-    this
-      .modify(_.params.attackedCreatureId)
-      .setTo(Some(otherCreature.params.id))
-  }
-
-  private def forceStopMoving(): Creature = {
-    this
-      .modify(_.params.destination)
-      .setTo(params.pos)
-  }
-
-  def alive: Boolean = params.life > 0
 
   def facingDirection: WorldDirection = {
     val angleDeg = params.lastVelocity.angleDeg
