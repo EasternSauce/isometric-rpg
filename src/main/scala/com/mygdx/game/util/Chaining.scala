@@ -10,8 +10,8 @@ trait CustomChainingSyntax {
 }
 
 final class CustomChainingOps[A](private val self: A) extends AnyVal {
-  def pipeIf(cond: Boolean)(f: A => A): A = {
-    if (cond) f(self)
+  def pipeIf(cond: A => Boolean)(f: A => A): A = {
+    if (cond(self)) f(self)
     else self
   }
 }

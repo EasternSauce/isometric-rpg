@@ -110,7 +110,7 @@ case class CreatureAnimation(
 
     val frame =
       if (
-        creature.params.attackAnimationTimer.isRunning && creature.params.attackAnimationTimer.time < Constants.AttackFrameCount * Constants.AttackFrameDuration
+        creature.params.attackAnimationTimer.isRunning && creature.params.attackAnimationTimer.time < Constants.AttackAnimationDuration
       ) {
         attackAnimations(creature.facingDirection.id)
           .getKeyFrame(creature.params.attackAnimationTimer.time, false)

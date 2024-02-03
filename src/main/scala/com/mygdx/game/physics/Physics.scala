@@ -58,14 +58,14 @@ case class Physics() {
     val bodiesToCreate =
       gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
 
-    bodiesToCreate.foreach(creatureId => {
+    bodiesToCreate.foreach { creatureId =>
       val creatureBody = CreatureBody(creatureId)
 
       val creature = gameState.creatures(creatureId)
 
       creatureBody.init(world, creature.params.pos)
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
-    })
+    }
 
     creatureBodies.values.foreach(_.update(gameState))
   }

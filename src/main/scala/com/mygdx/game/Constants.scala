@@ -25,6 +25,7 @@ object Constants {
 
   val AttackFrameStart = 12
   val AttackFrameCount = 4
+  val AttackAnimationDuration: Float = AttackFrameDuration * AttackFrameCount
 
   val WalkFrameStart = 4
   val WalkFrameCount = 8
@@ -42,4 +43,6 @@ object Constants {
   val TileCenterY = 0
 
   val AttackRange = 1f
+
+  val EnemyAttackDistance = 1f
 }

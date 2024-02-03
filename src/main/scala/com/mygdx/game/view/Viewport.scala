@@ -40,8 +40,8 @@ case class Viewport() {
   ): Unit = {
     val camPosition = camera.position
 
-    val creature = gameState.creatures(playerCreatureId)
-    val pos = coordinateTransformation(creature.params.pos)
+    val player = gameState.creatures(playerCreatureId)
+    val pos = coordinateTransformation(player.params.pos)
 
     camPosition.x = (math.floor(pos.x * 100) / 100).toFloat
     camPosition.y = (math.floor(pos.y * 100) / 100).toFloat

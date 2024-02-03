@@ -21,8 +21,8 @@ case class GameState(
       .modify(_.creatures.each)
       .using { creature =>
         creature.update(
-          newPos = creaturePositions(creature.params.id),
           delta = delta,
+          newPos = creaturePositions(creature.params.id),
           input = input,
           clientInformation = clientInformation,
           gameState = this

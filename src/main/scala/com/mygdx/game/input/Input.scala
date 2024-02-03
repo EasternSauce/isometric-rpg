@@ -13,9 +13,11 @@ case class Input(
 object Input {
   def poll(): Input = {
     Input(
-      getMousePos,
-      Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.RIGHT),
-      Gdx.input.isButtonPressed(com.badlogic.gdx.Input.Buttons.LEFT)
+      mousePos = getMousePos,
+      attackButtonJustPressed =
+        Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.RIGHT),
+      moveButtonPressed =
+        Gdx.input.isButtonPressed(com.badlogic.gdx.Input.Buttons.LEFT)
     )
   }
 

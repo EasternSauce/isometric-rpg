@@ -11,7 +11,7 @@ object CreatureAttackUtils {
 
       gameState
         .modify(_.creatures.each)
-        .using(creature => {
+        .using { creature =>
           val totalDamage = creatureAttackEvents
             .filter(_.attackedCreatureId == creature.params.id)
             .map(_.damage)
@@ -22,11 +22,13 @@ object CreatureAttackUtils {
             .contains(creature.params.id)
 
           creature
-            .pipeIf(totalDamage != 0)(_.takeDamage(totalDamage))
-            .pipeIf(attackDone)(_.modify(_.params.attackedCreatureId).setTo({
-              None
-            })) // TODO: should attackedCreatureId be a list or smthng?
-        })
+            .pipeIf(_ => totalDamage != 0)(_.takeDamage(totalDamage))
+            .pipeIf(_ => attackDone)(
+              _.modify(_.params.attackedCreatureId).setTo({
+                None
+              })
+            ) // TODO: should attackedCreatureId be a list or smthng?
+        }
     }
 
   }
@@ -37,7 +39,7 @@ object CreatureAttackUtils {
     gameState.creatures.values.toList
       .filter(creature =>
         creature.params.attackedCreatureId.nonEmpty && creature.params.attackAnimationTimer.isRunning &&
-          creature.params.attackAnimationTimer.time > Constants.AttackFrameCount * Constants.AttackFrameDuration * 0.8f
+          creature.params.attackAnimationTimer.time > Constants.AttackAnimationDuration * 0.8f
       )
       .map(creature =>
         CreatureAttackEvent(
