@@ -1,7 +1,8 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 

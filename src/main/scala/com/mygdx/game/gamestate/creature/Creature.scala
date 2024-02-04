@@ -1,5 +1,7 @@
-package com.mygdx.game.gamestate
+package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.gamestate._
+import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.WorldDirection.WorldDirection
@@ -11,7 +13,8 @@ import com.softwaremill.quicklens.ModifyPimp
 import scala.util.chaining.scalaUtilChainingOps
 
 case class Creature(
-    params: CreatureParams
+    params: CreatureParams,
+    creatureBehavior: CreatureBehavior
 ) extends Entity {
   def update(
       delta: Float,
@@ -39,8 +42,6 @@ case class Creature(
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathRegistered
 
-  def alive: Boolean = params.life > 0
-
   private def updateMovement(
       newPos: Vector2,
       input: Input,
@@ -49,13 +50,10 @@ case class Creature(
   ): Creature = {
     this
       .setPos(newPos)
-      .pipe(creature => {
-        if (creature.params.player) {
-          creature.updatePlayerMovement(input, gameState)
-        } else {
-          creature.updateEnemyMovement(clientInformation, gameState)
-        }
-      })
+      .pipe(creature =>
+        creatureBehavior
+          .updateMovement(creature, input, clientInformation, gameState)
+      )
       .stopMovingIfStuck()
       .updateVelocity()
   }
@@ -93,132 +91,6 @@ case class Creature(
           .setTo(this.params.pos)
       )
   }
-
-  private def updateEnemyMovement(
-      clientInformation: ClientInformation,
-      gameState: GameState
-  ): Creature = {
-    enemyPursuePlayer(clientInformation, gameState)
-  }
-
-  private def enemyPursuePlayer(
-      clientInformation: ClientInformation,
-      gameState: GameState
-  ) = {
-    val player = gameState.creatures(clientInformation.clientCreatureId)
-
-    this
-      .pipe { creature =>
-        val distanceToPlayer = params.pos.distance(player.params.pos)
-
-        if (distanceToPlayer > Constants.EnemyAttackDistance) {
-          creature
-            .modify(_.params.destination)
-            .setTo(player.params.pos)
-        } else {
-          creature
-            .pipeIf(creature => player.alive && creature.attackingAllowed)(
-              _.modify(_.params.attackAnimationTimer)
-                .using(_.restart())
-                .attack(player)
-            )
-            .stopMoving()
-        }
-      }
-  }
-
-  private def updatePlayerMovement(
-      input: Input,
-      gameState: GameState
-  ): Creature = {
-    val mouseWorldPos: Vector2 = getMouseWorldPos(this.params.pos, input)
-
-    this
-      .pipeIf(_.alive)(_.moveTowardsTarget(input, mouseWorldPos))
-      .pipeIf(_.isPlayerAttacking(input))(
-        _.performAttack(mouseWorldPos, gameState)
-      )
-  }
-
-  private def moveTowardsTarget(
-      input: Input,
-      mouseWorldPos: Vector2
-  ): Creature = {
-    if (isPlayerMoving(input)) {
-      this
-        .modify(_.params.destination)
-        .setTo(mouseWorldPos)
-        .modify(_.params.attackAnimationTimer)
-        .usingIf(params.attackAnimationTimer.isRunning)(_.stop())
-    } else {
-      this
-        .modify(_.params.destination)
-        .setTo(params.pos)
-    }
-  }
-
-  private def isPlayerMoving(input: Input): Boolean = input.moveButtonPressed
-
-  private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {
-    val mousePos = input.mousePos
-
-    val mouseScreenPos =
-      IsometricProjection.translateScreenToIso(mousePos)
-
-    val mouseWorldPos = playerPos.add(mouseScreenPos)
-    mouseWorldPos
-  }
-
-  private def performAttack(
-      mouseWorldPos: Vector2,
-      gameState: GameState
-  ): Creature = {
-    val closestCreature =
-      CreaturesFinderUtils.getAliveCreatureClosestTo(
-        mouseWorldPos,
-        List(params.id),
-        gameState
-      )
-
-    (closestCreature match {
-      case Some(closestCreature) =>
-        this
-          .pipeIf(_ =>
-            closestCreature.params.pos
-              .distance(params.pos) < Constants.AttackRange
-          )(creature =>
-            creature
-              .modify(_.params.facingVector)
-              .setTo(
-                creature.params.pos
-                  .vectorTowards(closestCreature.params.pos)
-              )
-              .attack(closestCreature)
-          )
-      case None => this
-    })
-      .modify(_.params.attackAnimationTimer)
-      .using(_.restart())
-      .stopMoving()
-  }
-
-  private def attack(otherCreature: Creature): Creature = {
-    this
-      .modify(_.params.attackedCreatureId)
-      .setTo(Some(otherCreature.params.id))
-  }
-
-  private def stopMoving(): Creature = {
-    this
-      .modify(_.params.destination)
-      .setTo(params.pos)
-  }
-
-  private def isPlayerAttacking(input: Input): Boolean =
-    this.alive && input.attackButtonJustPressed && !input.moveButtonPressed && this.attackingAllowed
-
-  private def attackingAllowed: Boolean =
-    !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= Constants.AttackAnimationDuration + Constants.AttackCooldown
 
   private def setPos(pos: Vector2): Creature = {
     this
@@ -265,6 +137,88 @@ case class Creature(
       this.modify(_.params.life).setTo(0)
     }
   }
+
+  private[creature] def moveTowardsTarget(
+      input: Input,
+      mouseWorldPos: Vector2
+  ): Creature = {
+    if (isPlayerMoving(input)) {
+      this
+        .modify(_.params.destination)
+        .setTo(mouseWorldPos)
+        .modify(_.params.attackAnimationTimer)
+        .usingIf(params.attackAnimationTimer.isRunning)(_.stop())
+    } else {
+      this
+        .modify(_.params.destination)
+        .setTo(params.pos)
+    }
+  }
+
+  private def isPlayerMoving(input: Input): Boolean = input.moveButtonPressed
+
+  private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {
+    val mousePos = input.mousePos
+
+    val mouseScreenPos =
+      IsometricProjection.translateScreenToIso(mousePos)
+
+    val mouseWorldPos = playerPos.add(mouseScreenPos)
+    mouseWorldPos
+  }
+
+  private[creature] def performAttack(
+      mouseWorldPos: Vector2,
+      gameState: GameState
+  ): Creature = {
+    val closestCreature =
+      CreaturesFinderUtils.getAliveCreatureClosestTo(
+        mouseWorldPos,
+        List(params.id),
+        gameState
+      )
+
+    (closestCreature match {
+      case Some(closestCreature) =>
+        this
+          .pipeIf(_ =>
+            closestCreature.params.pos
+              .distance(params.pos) < Constants.AttackRange
+          )(creature =>
+            creature
+              .modify(_.params.facingVector)
+              .setTo(
+                creature.params.pos
+                  .vectorTowards(closestCreature.params.pos)
+              )
+              .attack(closestCreature)
+          )
+      case None => this
+    })
+      .modify(_.params.attackAnimationTimer)
+      .using(_.restart())
+      .stopMoving()
+  }
+
+  private[creature] def attack(otherCreature: Creature): Creature = {
+    this
+      .modify(_.params.attackedCreatureId)
+      .setTo(Some(otherCreature.params.id))
+  }
+
+  private[creature] def stopMoving(): Creature = {
+    this
+      .modify(_.params.destination)
+      .setTo(params.pos)
+  }
+
+  private[creature] def isPlayerAttacking(input: Input): Boolean =
+    this.alive && input.attackButtonJustPressed && !input.moveButtonPressed && this.attackingAllowed
+
+  def alive: Boolean = params.life > 0
+
+  private[creature] def attackingAllowed: Boolean =
+    !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= Constants.AttackAnimationDuration + Constants.AttackCooldown
 }
 
 object Creature {
@@ -275,7 +229,7 @@ object Creature {
       baseVelocity: Float
   ): Creature = {
     Creature(
-      CreatureParams(
+      creature.CreatureParams(
         id = creatureId,
         pos = pos,
         velocity = Vector2(0, 0),
@@ -299,7 +253,8 @@ object Creature {
         damage = 20f,
         deathRegistered = false,
         deathAnimationTimer = SimpleTimer(isRunning = false)
-      )
+      ),
+      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 }

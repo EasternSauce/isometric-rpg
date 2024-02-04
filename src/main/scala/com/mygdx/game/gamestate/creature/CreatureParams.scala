@@ -1,5 +1,6 @@
-package com.mygdx.game.gamestate
+package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.util.{SimpleTimer, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 

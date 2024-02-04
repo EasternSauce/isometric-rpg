@@ -1,5 +1,6 @@
-package com.mygdx.game.gamestate
+package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 object CreaturesFinderUtils {

@@ -1,6 +1,7 @@
-package com.mygdx.game.gamestate
+package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.Constants
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 

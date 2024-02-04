@@ -1,7 +1,8 @@
 package com.mygdx.game.physics
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
 

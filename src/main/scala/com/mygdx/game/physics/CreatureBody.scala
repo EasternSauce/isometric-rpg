@@ -2,7 +2,8 @@ package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.Body
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {

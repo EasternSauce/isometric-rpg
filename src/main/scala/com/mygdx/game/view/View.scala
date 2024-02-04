@@ -1,7 +1,8 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Vector2

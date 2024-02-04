@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
+import com.mygdx.game.gamestate.creature.{Creature, CreatureAttackUtils}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}

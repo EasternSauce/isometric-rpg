@@ -4,7 +4,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.Constants
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class Viewport() {

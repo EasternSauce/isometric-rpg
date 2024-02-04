@@ -1,5 +1,6 @@
 package com.mygdx.game.gamestate
 
+import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.ModifyPimp
 

@@ -1,7 +1,8 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
-import com.mygdx.game.gamestate.{Creature, EntityId, GameState}
+import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 import com.mygdx.game.{Assets, Constants}
