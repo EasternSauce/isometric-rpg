@@ -41,7 +41,7 @@ object GameState {
         clientInformation.clientCreatureId,
         Vector2(5f, 5f),
         player = true,
-        baseVelocity = 4f
+        baseSpeed = 4f
       )
 
     GameState(

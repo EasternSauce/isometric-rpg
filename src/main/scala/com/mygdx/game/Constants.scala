@@ -21,6 +21,15 @@ object Constants {
     deathFrames = FramesDefinition(start = 16, count = 8, frameDuration = 0.12f)
   )
 
+  val RatAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.2f),
+    walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.08f),
+    attackFrames =
+      FramesDefinition(start = 12, count = 7, frameDuration = 0.16f),
+    deathFrames =
+      FramesDefinition(start = 17, count = 11, frameDuration = 0.09f)
+  )
+
   val AttackCooldown = 0.3f
 
   val SpriteCenterX = 64
@@ -31,10 +40,6 @@ object Constants {
 
   val TileCenterX = 0
   val TileCenterY = 0
-
-  val AttackRange = 1f
-
-  val EnemyAttackDistance = 1f
 
   val EnemyAggroDistance = 3f
 }

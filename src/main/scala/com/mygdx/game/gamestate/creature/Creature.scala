@@ -10,8 +10,6 @@ import com.mygdx.game.view.CreatureAnimationType
 import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
-import scala.util.chaining.scalaUtilChainingOps
-
 case class Creature(
     params: CreatureParams,
     creatureBehavior: CreatureBehavior
@@ -52,9 +50,8 @@ case class Creature(
   ): Creature = {
     this
       .setPos(newPos)
-      .pipe(creature =>
-        creatureBehavior
-          .updateMovement(creature, input, clientInformation, gameState)
+      .pipeIf(_.alive)(
+        creatureBehavior.updateMovement(_, input, clientInformation, gameState)
       )
       .stopMovingIfStuck()
       .updateVelocity()
@@ -66,7 +63,7 @@ case class Creature(
     val velocity = if (!alive) {
       Vector2(0, 0)
     } else if (vectorTowardsDest.length > 0.2f) {
-      vectorTowardsDest.withLength(params.baseVelocity)
+      vectorTowardsDest.withLength(params.baseSpeed)
     } else {
       vectorTowardsDest.withLength(0f)
     }
@@ -179,7 +176,7 @@ case class Creature(
         this
           .pipeIf(_ =>
             closestCreature.params.pos
-              .distance(params.pos) < Constants.AttackRange
+              .distance(params.pos) < params.attackRange
           )(creature =>
             creature
               .modify(_.params.facingVector)
@@ -211,7 +208,7 @@ object Creature {
       creatureId: EntityId[Creature],
       pos: Vector2,
       player: Boolean,
-      baseVelocity: Float
+      baseSpeed: Float
   ): Creature = {
     Creature(
       creature.CreatureParams(
@@ -225,20 +222,56 @@ object Creature {
           CreatureAnimationType.Body -> "steel_armor",
           CreatureAnimationType.Head -> "male_head1",
           CreatureAnimationType.Weapon -> "greatstaff",
-          CreatureAnimationType.Bow -> "shield"
+          CreatureAnimationType.Shield -> "shield"
         ),
         animationTimer = SimpleTimer(isRunning = true),
         lastPosTimer = SimpleTimer(isRunning = true),
         attackAnimationTimer = SimpleTimer(isRunning = false),
         player = player,
-        baseVelocity = baseVelocity,
+        baseSpeed = baseSpeed,
         life = 100f,
         maxLife = 100f,
         attackedCreatureId = None,
         damage = 20f,
         deathRegistered = false,
         deathAnimationTimer = SimpleTimer(isRunning = false),
-        animationDefinition = Constants.HumanAnimationDefinition
+        animationDefinition = Constants.HumanAnimationDefinition,
+        attackRange = 1f
+      ),
+      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
+    )
+  }
+
+  def rat(
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float
+  ): Creature = {
+    Creature(
+      creature.CreatureParams(
+        id = creatureId,
+        pos = pos,
+        velocity = Vector2(0, 0),
+        destination = pos,
+        facingVector = Vector2(0, 0),
+        lastPos = pos,
+        textureNames = Map(
+          CreatureAnimationType.Body -> "rat"
+        ),
+        animationTimer = SimpleTimer(isRunning = true),
+        lastPosTimer = SimpleTimer(isRunning = true),
+        attackAnimationTimer = SimpleTimer(isRunning = false),
+        player = player,
+        baseSpeed = baseSpeed,
+        life = 40f,
+        maxLife = 40f,
+        attackedCreatureId = None,
+        damage = 5f,
+        deathRegistered = false,
+        deathAnimationTimer = SimpleTimer(isRunning = false),
+        animationDefinition = Constants.RatAnimationDefinition,
+        attackRange = 0.5f
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )

@@ -18,7 +18,7 @@ case class EnemyBehavior() extends CreatureBehavior {
   ): Creature = {
     val enemyAggroed: Option[Creature] =
       gameState.creatures.values.toList.filter(otherCreature =>
-        otherCreature.params.player && otherCreature.params.pos
+        otherCreature.params.player && otherCreature.alive && otherCreature.params.pos
           .distance(creature.params.pos) < Constants.EnemyAggroDistance
       ) match {
         case List() => None
@@ -28,23 +28,21 @@ case class EnemyBehavior() extends CreatureBehavior {
 
     enemyAggroed match {
       case Some(otherCreature) =>
-        enemyPursuePlayer(creature, otherCreature, clientInformation, gameState)
+        enemyPursuePlayer(creature, otherCreature)
       case _ => creature
     }
   }
 
   private def enemyPursuePlayer(
       creature: Creature,
-      aggroedCreature: Creature,
-      clientInformation: ClientInformation,
-      gameState: GameState
+      aggroedCreature: Creature
   ): Creature = {
     creature
       .pipe { creature =>
         val distanceToPlayer =
           creature.params.pos.distance(aggroedCreature.params.pos)
 
-        if (distanceToPlayer > Constants.EnemyAttackDistance) {
+        if (distanceToPlayer > creature.params.attackRange) {
           creature
             .modify(_.params.destination)
             .setTo(aggroedCreature.params.pos)

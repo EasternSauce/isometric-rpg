@@ -18,6 +18,8 @@ case class CreatureAnimation(
   private var textureRegion: TextureRegion = _
 
   def init(gameState: GameState): Unit = {
+    val creature: Creature = gameState.creatures(creatureId)
+
     standstillAnimations =
       new Array[Animation[TextureRegion]](WorldDirection.values.size)
 
@@ -29,8 +31,6 @@ case class CreatureAnimation(
 
     deathAnimations =
       new Array[Animation[TextureRegion]](WorldDirection.values.size)
-
-    val creature = gameState.creatures(creatureId)
 
     textureRegion = Assets.atlas.get.findRegion(
       creature.params.textureNames(creatureAnimationType)
@@ -49,6 +49,9 @@ case class CreatureAnimation(
       creature.params.animationDefinition.deathFrames
     )
 
+    standstillAnimations.foreach(
+      _.setPlayMode(Animation.PlayMode.LOOP_PINGPONG)
+    )
   }
 
   private def loadAnimations(

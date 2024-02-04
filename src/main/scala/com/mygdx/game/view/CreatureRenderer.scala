@@ -7,23 +7,26 @@ import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
-  private val animations: Map[CreatureAnimationType, CreatureAnimation] = {
-    def entry(
-        creatureAnimationType: CreatureAnimationType,
-        creatureId: EntityId[Creature]
-    ): (CreatureAnimationType, CreatureAnimation) = {
-      creatureAnimationType -> CreatureAnimation(
-        creatureId,
-        creatureAnimationType
-      )
-    }
-    CreatureAnimationType.values.toList.map(entry(_, creatureId)).toMap
-  }
+  private var animations: Map[CreatureAnimationType, CreatureAnimation] = _
 
   def init(gameState: GameState): Unit = {
-    CreatureAnimationType.values.foreach(creatureAnimationType => {
-      animations(creatureAnimationType).init(gameState)
-    })
+    val creature = gameState.creatures(creatureId)
+
+    animations = {
+      def entry(
+          creatureAnimationType: CreatureAnimationType,
+          creatureId: EntityId[Creature]
+      ): (CreatureAnimationType, CreatureAnimation) = {
+        creatureAnimationType -> CreatureAnimation(
+          creatureId,
+          creatureAnimationType
+        )
+      }
+
+      creature.params.textureNames.keys.map(entry(_, creatureId)).toMap
+    }
+
+    animations.values.foreach(_.init(gameState))
   }
 
   override def pos(gameState: GameState): Vector2 = {
@@ -33,9 +36,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
-    CreatureAnimationType.values.foreach(creatureAnimationType => {
-      animations(creatureAnimationType).render(batch, gameState)
-    })
+    animations.values.foreach(_.render(batch, gameState))
   }
 
   def renderLifeBar(spriteBatch: SpriteBatch, gameState: GameState): Unit = {

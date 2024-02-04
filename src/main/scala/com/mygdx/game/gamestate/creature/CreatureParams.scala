@@ -17,12 +17,13 @@ case class CreatureParams(
     lastPosTimer: SimpleTimer,
     attackAnimationTimer: SimpleTimer,
     player: Boolean,
-    baseVelocity: Float,
+    baseSpeed: Float,
     life: Float,
     maxLife: Float,
     attackedCreatureId: Option[EntityId[Creature]],
     damage: Float,
     deathRegistered: Boolean,
     deathAnimationTimer: SimpleTimer,
-    animationDefinition: AnimationDefinition
+    animationDefinition: AnimationDefinition,
+    attackRange: Float
 ) {}
