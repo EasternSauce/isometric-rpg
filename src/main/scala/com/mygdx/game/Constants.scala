@@ -45,4 +45,6 @@ object Constants {
   val AttackRange = 1f
 
   val EnemyAttackDistance = 1f
+
+  val EnemyAggroDistance = 3f
 }

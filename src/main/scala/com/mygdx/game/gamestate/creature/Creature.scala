@@ -42,6 +42,8 @@ case class Creature(
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathRegistered
 
+  def alive: Boolean = params.life > 0
+
   private def updateMovement(
       newPos: Vector2,
       input: Input,
@@ -90,6 +92,12 @@ case class Creature(
           .modify(_.params.lastPos)
           .setTo(this.params.pos)
       )
+  }
+
+  private[creature] def stopMoving(): Creature = {
+    this
+      .modify(_.params.destination)
+      .setTo(params.pos)
   }
 
   private def setPos(pos: Vector2): Creature = {
@@ -206,16 +214,8 @@ case class Creature(
       .setTo(Some(otherCreature.params.id))
   }
 
-  private[creature] def stopMoving(): Creature = {
-    this
-      .modify(_.params.destination)
-      .setTo(params.pos)
-  }
-
   private[creature] def isPlayerAttacking(input: Input): Boolean =
     this.alive && input.attackButtonJustPressed && !input.moveButtonPressed && this.attackingAllowed
-
-  def alive: Boolean = params.life > 0
 
   private[creature] def attackingAllowed: Boolean =
     !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= Constants.AttackAnimationDuration + Constants.AttackCooldown
@@ -233,7 +233,7 @@ object Creature {
         id = creatureId,
         pos = pos,
         velocity = Vector2(0, 0),
-        destination = Vector2(0, 0),
+        destination = pos,
         facingVector = Vector2(0, 0),
         lastPos = pos,
         textureNames = Map(

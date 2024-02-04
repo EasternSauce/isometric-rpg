@@ -16,30 +16,46 @@ case class EnemyBehavior() extends CreatureBehavior {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Creature = {
-    enemyPursuePlayer(creature, clientInformation, gameState)
+    val enemyAggroed: Option[Creature] =
+      gameState.creatures.values.toList.filter(otherCreature =>
+        otherCreature.params.player && otherCreature.params.pos
+          .distance(creature.params.pos) < Constants.EnemyAggroDistance
+      ) match {
+        case List() => None
+        case creatures =>
+          Some(creatures.minBy(_.params.pos.distance(creature.params.pos)))
+      }
+
+    enemyAggroed match {
+      case Some(otherCreature) =>
+        enemyPursuePlayer(creature, otherCreature, clientInformation, gameState)
+      case _ => creature
+    }
   }
 
   private def enemyPursuePlayer(
       creature: Creature,
+      aggroedCreature: Creature,
       clientInformation: ClientInformation,
       gameState: GameState
   ): Creature = {
-    val player = gameState.creatures(clientInformation.clientCreatureId)
-
     creature
       .pipe { creature =>
-        val distanceToPlayer = creature.params.pos.distance(player.params.pos)
+        val distanceToPlayer =
+          creature.params.pos.distance(aggroedCreature.params.pos)
 
         if (distanceToPlayer > Constants.EnemyAttackDistance) {
           creature
             .modify(_.params.destination)
-            .setTo(player.params.pos)
+            .setTo(aggroedCreature.params.pos)
         } else {
           creature
-            .pipeIf(creature => player.alive && creature.attackingAllowed)(
+            .pipeIf(creature =>
+              aggroedCreature.alive && creature.attackingAllowed
+            )(
               _.modify(_.params.attackAnimationTimer)
                 .using(_.restart())
-                .attack(player)
+                .attack(aggroedCreature)
             )
             .stopMoving()
         }
