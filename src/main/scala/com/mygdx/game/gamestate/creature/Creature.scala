@@ -6,7 +6,7 @@ import com.mygdx.game.input.Input
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
-import com.mygdx.game.view.{CreatureAnimationType, IsometricProjection}
+import com.mygdx.game.view.CreatureAnimationType
 import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
@@ -150,7 +150,7 @@ case class Creature(
       input: Input,
       mouseWorldPos: Vector2
   ): Creature = {
-    if (isPlayerMoving(input)) {
+    if (input.moveButtonPressed) {
       this
         .modify(_.params.destination)
         .setTo(mouseWorldPos)
@@ -161,18 +161,6 @@ case class Creature(
         .modify(_.params.destination)
         .setTo(params.pos)
     }
-  }
-
-  private def isPlayerMoving(input: Input): Boolean = input.moveButtonPressed
-
-  private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {
-    val mousePos = input.mousePos
-
-    val mouseScreenPos =
-      IsometricProjection.translateScreenToIso(mousePos)
-
-    val mouseWorldPos = playerPos.add(mouseScreenPos)
-    mouseWorldPos
   }
 
   private[creature] def performAttack(
@@ -213,9 +201,6 @@ case class Creature(
       .modify(_.params.attackedCreatureId)
       .setTo(Some(otherCreature.params.id))
   }
-
-  private[creature] def isPlayerAttacking(input: Input): Boolean =
-    this.alive && input.attackButtonJustPressed && !input.moveButtonPressed && this.attackingAllowed
 
   private[creature] def attackingAllowed: Boolean =
     !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= Constants.AttackAnimationDuration + Constants.AttackCooldown

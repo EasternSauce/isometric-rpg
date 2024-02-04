@@ -14,7 +14,7 @@ object Constants {
   val MapTextureScale = 2f
 
   val AttackFrameDuration = 0.1f
-  val WalkFrameDuration = 0.1f
+  val WalkFrameDuration = 0.075f
   val StandstillFrameDuration = 0.3f
   val DeathFrameDuration = 0.12f
 

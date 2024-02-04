@@ -19,7 +19,9 @@ case class PlayerBehavior() extends CreatureBehavior {
 
     creature
       .pipeIf(_.alive)(_.moveTowardsTarget(input, mouseWorldPos))
-      .pipeIf(_.isPlayerAttacking(input))(
+      .pipeIf(creature =>
+        creature.alive && input.attackButtonJustPressed && creature.attackingAllowed
+      )(
         _.performAttack(mouseWorldPos, gameState)
       )
   }
