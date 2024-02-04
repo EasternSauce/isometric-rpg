@@ -13,25 +13,15 @@ object Constants {
 
   val MapTextureScale = 2f
 
-  val AttackFrameDuration = 0.1f
-  val WalkFrameDuration = 0.075f
-  val StandstillFrameDuration = 0.3f
-  val DeathFrameDuration = 0.12f
+  val HumanAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.3f),
+    walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.075f),
+    attackFrames =
+      FramesDefinition(start = 12, count = 4, frameDuration = 0.1f),
+    deathFrames = FramesDefinition(start = 16, count = 8, frameDuration = 0.12f)
+  )
 
   val AttackCooldown = 0.3f
-
-  val StandstillFrameStart = 0
-  val StandStillFrameCount = 4
-
-  val AttackFrameStart = 12
-  val AttackFrameCount = 4
-  val AttackAnimationDuration: Float = AttackFrameDuration * AttackFrameCount
-
-  val WalkFrameStart = 4
-  val WalkFrameCount = 8
-
-  val DeathFrameStart = 16
-  val DeathFrameCount = 8
 
   val SpriteCenterX = 64
   val SpriteCenterY = 64

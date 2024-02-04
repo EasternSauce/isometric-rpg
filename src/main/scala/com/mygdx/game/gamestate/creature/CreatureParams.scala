@@ -1,5 +1,6 @@
 package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.AnimationDefinition
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.util.{SimpleTimer, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
@@ -22,5 +23,6 @@ case class CreatureParams(
     attackedCreatureId: Option[EntityId[Creature]],
     damage: Float,
     deathRegistered: Boolean,
-    deathAnimationTimer: SimpleTimer
+    deathAnimationTimer: SimpleTimer,
+    animationDefinition: AnimationDefinition
 ) {}

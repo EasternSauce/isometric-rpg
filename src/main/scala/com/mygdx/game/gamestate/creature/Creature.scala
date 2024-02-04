@@ -203,7 +203,7 @@ case class Creature(
   }
 
   private[creature] def attackingAllowed: Boolean =
-    !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= Constants.AttackAnimationDuration + Constants.AttackCooldown
+    !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
 }
 
 object Creature {
@@ -237,7 +237,8 @@ object Creature {
         attackedCreatureId = None,
         damage = 20f,
         deathRegistered = false,
-        deathAnimationTimer = SimpleTimer(isRunning = false)
+        deathAnimationTimer = SimpleTimer(isRunning = false),
+        animationDefinition = Constants.HumanAnimationDefinition
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )

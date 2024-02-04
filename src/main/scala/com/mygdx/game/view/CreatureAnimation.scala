@@ -5,13 +5,12 @@ import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
-import com.mygdx.game.{Assets, Constants}
+import com.mygdx.game.{Assets, Constants, FramesDefinition}
 
 case class CreatureAnimation(
     creatureId: EntityId[Creature],
     creatureAnimationType: CreatureAnimationType
 ) {
-//  private var facingTextures: Array[TextureRegion] = _
   private var standstillAnimations: Array[Animation[TextureRegion]] = _
   private var attackAnimations: Array[Animation[TextureRegion]] = _
   private var walkAnimations: Array[Animation[TextureRegion]] = _
@@ -37,11 +36,31 @@ case class CreatureAnimation(
       creature.params.textureNames(creatureAnimationType)
     )
 
-    for (i <- 0 until WorldDirection.values.size) {
+    standstillAnimations = loadAnimations(
+      creature.params.animationDefinition.stanceFrames
+    )
+    attackAnimations = loadAnimations(
+      creature.params.animationDefinition.attackFrames
+    )
+    walkAnimations = loadAnimations(
+      creature.params.animationDefinition.walkFrames
+    )
+    deathAnimations = loadAnimations(
+      creature.params.animationDefinition.deathFrames
+    )
+
+  }
+
+  private def loadAnimations(
+      stanceFrames: FramesDefinition
+  ): Array[Animation[TextureRegion]] = {
+    for {
+      i <- (0 until WorldDirection.values.size).toArray
+    } yield {
       val standstillFrames =
         for {
           j <-
-            (Constants.StandstillFrameStart until Constants.StandstillFrameStart + Constants.StandStillFrameCount).toArray
+            (stanceFrames.start until stanceFrames.start + stanceFrames.count).toArray
         } yield new TextureRegion(
           textureRegion,
           j * Constants.SpriteTextureWidth,
@@ -50,58 +69,9 @@ case class CreatureAnimation(
           Constants.SpriteTextureHeight
         )
 
-      standstillAnimations(i) = new Animation[TextureRegion](
-        Constants.StandstillFrameDuration,
+      new Animation[TextureRegion](
+        stanceFrames.frameDuration,
         standstillFrames: _*
-      )
-
-      val attackFrames =
-        for {
-          j <-
-            (Constants.AttackFrameStart until Constants.AttackFrameStart + Constants.AttackFrameCount).toArray
-        } yield new TextureRegion(
-          textureRegion,
-          j * Constants.SpriteTextureWidth,
-          i * Constants.SpriteTextureHeight,
-          Constants.SpriteTextureWidth,
-          Constants.SpriteTextureHeight
-        )
-
-      attackAnimations(i) = new Animation[TextureRegion](
-        Constants.AttackFrameDuration,
-        attackFrames: _*
-      )
-
-      val walkFrames =
-        for {
-          j <-
-            (Constants.WalkFrameStart until Constants.WalkFrameStart + Constants.WalkFrameCount).toArray
-        } yield new TextureRegion(
-          textureRegion,
-          j * Constants.SpriteTextureWidth,
-          i * Constants.SpriteTextureHeight,
-          Constants.SpriteTextureWidth,
-          Constants.SpriteTextureHeight
-        )
-      walkAnimations(i) = new Animation[TextureRegion](
-        Constants.WalkFrameDuration,
-        walkFrames: _*
-      )
-
-      val deathFrames =
-        for {
-          j <-
-            (Constants.DeathFrameStart until Constants.DeathFrameStart + Constants.DeathFrameCount).toArray
-        } yield new TextureRegion(
-          textureRegion,
-          j * Constants.SpriteTextureWidth,
-          i * Constants.SpriteTextureHeight,
-          Constants.SpriteTextureWidth,
-          Constants.SpriteTextureHeight
-        )
-      deathAnimations(i) = new Animation[TextureRegion](
-        Constants.DeathFrameDuration,
-        deathFrames: _*
       )
     }
   }
@@ -111,7 +81,7 @@ case class CreatureAnimation(
 
     val frame =
       if (
-        creature.params.attackAnimationTimer.isRunning && creature.params.attackAnimationTimer.time < Constants.AttackAnimationDuration
+        creature.params.attackAnimationTimer.isRunning && creature.params.attackAnimationTimer.time < creature.params.animationDefinition.attackFrames.totalDuration
       ) {
         attackAnimations(creature.facingDirection.id)
           .getKeyFrame(creature.params.attackAnimationTimer.time, false)

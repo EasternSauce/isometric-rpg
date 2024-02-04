@@ -1,6 +1,5 @@
 package com.mygdx.game.gamestate.creature
 
-import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
@@ -40,7 +39,7 @@ object CreatureAttackUtils {
     gameState.creatures.values.toList
       .filter(creature =>
         creature.params.attackedCreatureId.nonEmpty && creature.params.attackAnimationTimer.isRunning &&
-          creature.params.attackAnimationTimer.time > Constants.AttackAnimationDuration * 0.8f
+          creature.params.attackAnimationTimer.time > creature.params.animationDefinition.attackFrames.totalDuration * 0.8f
       )
       .map(creature =>
         CreatureAttackEvent(
