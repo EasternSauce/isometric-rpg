@@ -68,6 +68,17 @@ case class Physics() {
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
 
+    gameState.creatures.values.foreach { creature =>
+      if (creature.params.teleportPos.nonEmpty) {
+        val pos = creature.params.teleportPos.get
+        creatureBodies(creature.params.id).body.setTransform(
+          pos.x,
+          pos.y,
+          creatureBodies(creature.params.id).body.getAngle
+        )
+      }
+    }
+
     creatureBodies.values.foreach(_.update(gameState))
   }
 

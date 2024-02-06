@@ -22,6 +22,8 @@ case class Creature(
       gameState: GameState
   ): Creature = {
     this
+      .modify(_.params.teleportPos)
+      .setTo(None)
       .updateMovement(newPos, input, clientInformation, gameState)
       .updateTimers(delta)
       .pipeIf(_.deathToBeHandled)(_.onDeath())
@@ -35,12 +37,17 @@ case class Creature(
       .using(_.restart())
       .modify(_.params.attackAnimationTimer)
       .using(_.restart().stop())
+      // TODO: do all this after few seconds delay... and only do this for player
+      .modify(_.params.teleportPos)
+      .setTo(Some(Vector2(5, 5)))
+      .modify(_.params.life)
+      .setTo(100)
+      .modify(_.params.deathRegistered)
+      .setTo(false)
   }
 
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathRegistered
-
-  def alive: Boolean = params.life > 0
 
   private def updateMovement(
       newPos: Vector2,
@@ -56,6 +63,8 @@ case class Creature(
       .stopMovingIfStuck()
       .updateVelocity()
   }
+
+  def alive: Boolean = params.life > 0
 
   private def updateVelocity(): Creature = {
     val vectorTowardsDest = params.pos.vectorTowards(params.destination)
@@ -89,12 +98,6 @@ case class Creature(
           .modify(_.params.lastPos)
           .setTo(this.params.pos)
       )
-  }
-
-  private[creature] def stopMoving(): Creature = {
-    this
-      .modify(_.params.destination)
-      .setTo(params.pos)
   }
 
   private def setPos(pos: Vector2): Creature = {
@@ -193,6 +196,12 @@ case class Creature(
       .stopMoving()
   }
 
+  private[creature] def stopMoving(): Creature = {
+    this
+      .modify(_.params.destination)
+      .setTo(params.pos)
+  }
+
   private[creature] def attack(otherCreature: Creature): Creature = {
     this
       .modify(_.params.attackedCreatureId)
@@ -236,7 +245,8 @@ object Creature {
         deathRegistered = false,
         deathAnimationTimer = SimpleTimer(isRunning = false),
         animationDefinition = Constants.HumanAnimationDefinition,
-        attackRange = 1f
+        attackRange = 1f,
+        teleportPos = None
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
@@ -271,7 +281,8 @@ object Creature {
         deathRegistered = false,
         deathAnimationTimer = SimpleTimer(isRunning = false),
         animationDefinition = Constants.RatAnimationDefinition,
-        attackRange = 0.5f
+        attackRange = 0.8f,
+        teleportPos = None
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )

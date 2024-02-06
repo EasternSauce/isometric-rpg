@@ -25,5 +25,6 @@ case class CreatureParams(
     deathRegistered: Boolean,
     deathAnimationTimer: SimpleTimer,
     animationDefinition: AnimationDefinition,
-    attackRange: Float
+    attackRange: Float,
+    teleportPos: Option[Vector2]
 ) {}
