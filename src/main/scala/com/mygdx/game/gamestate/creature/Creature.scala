@@ -1,7 +1,11 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
+import com.mygdx.game.gamestate.creature.behavior.{
+  CreatureBehavior,
+  EnemyBehavior,
+  PlayerBehavior
+}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.WorldDirection.WorldDirection
@@ -20,13 +24,15 @@ case class Creature(
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
-  ): Creature = {
-    this
-      .modify(_.params.teleportPos)
-      .setTo(None)
-      .updateMovement(newPos, input, clientInformation, gameState)
-      .updateTimers(delta)
-      .pipeIf(_.deathToBeHandled)(_.onDeath())
+  ): Outcome[Creature] = {
+    Outcome[Creature](
+      this
+        .modify(_.params.teleportPos)
+        .setTo(None)
+    ) ++
+      (_.updateMovement(newPos, input, clientInformation, gameState)) ++
+      (_.updateTimers(delta)) ++
+      (creature => Outcome(creature.pipeIf(_.deathToBeHandled)(_.onDeath())))
   }
 
   private def onDeath(): Creature = {
@@ -54,19 +60,22 @@ case class Creature(
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
-  ): Creature = {
-    this
-      .setPos(newPos)
-      .pipeIf(_.alive)(
-        creatureBehavior.updateMovement(_, input, clientInformation, gameState)
-      )
-      .stopMovingIfStuck()
-      .updateVelocity()
+  ): Outcome[Creature] = {
+    Outcome(this) ++
+      (_.setPos(newPos)) ++
+      (creature =>
+        Outcome(creature.pipeIf(_.alive)(
+          creatureBehavior
+            .updateMovement(_, input, clientInformation, gameState)
+        ))
+      ) ++
+      (_.stopMovingIfStuck()) ++
+      (_.updateVelocity())
   }
 
   def alive: Boolean = params.life > 0
 
-  private def updateVelocity(): Creature = {
+  private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = params.pos.vectorTowards(params.destination)
 
     val velocity = if (!alive) {
@@ -84,7 +93,7 @@ case class Creature(
       .setToIf(velocity.length > 0)(velocity)
   }
 
-  private def stopMovingIfStuck(): Creature = {
+  private def stopMovingIfStuck(): Outcome[Creature] = {
     this
       .pipeIf(_.params.lastPosTimer.time > 0.5f)(
         _.modify(_.params.lastPosTimer)
@@ -100,22 +109,26 @@ case class Creature(
       )
   }
 
-  private def setPos(pos: Vector2): Creature = {
-    this
-      .modify(_.params.pos)
-      .setTo(pos)
+  private def setPos(pos: Vector2): Outcome[Creature] = {
+    Outcome(this)
+      .map(
+        _.modify(_.params.pos)
+          .setTo(pos)
+      )
   }
 
-  private def updateTimers(delta: Float): Creature = {
-    this
-      .modify(_.params.animationTimer)
-      .using(_.update(delta))
-      .modify(_.params.lastPosTimer)
-      .using(_.update(delta))
-      .modify(_.params.attackAnimationTimer)
-      .using(_.update(delta))
-      .modify(_.params.deathAnimationTimer)
-      .using(_.update(delta))
+  private def updateTimers(delta: Float): Outcome[Creature] = {
+    Outcome(
+      this
+        .modify(_.params.animationTimer)
+        .using(_.update(delta))
+        .modify(_.params.lastPosTimer)
+        .using(_.update(delta))
+        .modify(_.params.attackAnimationTimer)
+        .using(_.update(delta))
+        .modify(_.params.deathAnimationTimer)
+        .using(_.update(delta))
+    )
   }
 
   def facingDirection: WorldDirection = {
