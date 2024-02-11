@@ -1,5 +1,8 @@
 package com.mygdx.game.gamestate
 
+import com.mygdx.game.gamestate.event.Event
+import com.softwaremill.quicklens.ModifyPimp
+
 case class Outcome[T](obj: T, events: List[Event] = Nil) {
   @inline final def map[B](f: T => B): Outcome[B] =
     Outcome(f(this.obj), events = events)
@@ -12,6 +15,10 @@ case class Outcome[T](obj: T, events: List[Event] = Nil) {
   def ++(f: T => Outcome[T]): Outcome[T] = {
     val newOutcome = f(obj)
     Outcome(newOutcome.obj, events ++ newOutcome.events)
+  }
+
+  def withEvents(events: List[Event]): Outcome[T] = {
+    this.modify(_.events).setTo(events)
   }
 
 }

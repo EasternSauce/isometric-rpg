@@ -3,6 +3,7 @@ package com.mygdx.game.gamestate
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.creature.{Creature, CreatureAttackUtils}
 import com.mygdx.game.input.Input
+import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
@@ -16,12 +17,13 @@ case class GameState(
       creaturePositions: Map[EntityId[Creature], Vector2],
       input: Input,
       clientInformation: ClientInformation,
+      physics: Physics,
       delta: Float
   ): GameState = {
     this
       .modify(_.creatures.each)
       .using { creature =>
-        creature
+        val outcome = creature
           .update(
             delta = delta,
             newPos = creaturePositions(creature.params.id),
@@ -29,7 +31,10 @@ case class GameState(
             clientInformation = clientInformation,
             gameState = this
           )
-          .obj // TODO: handle side effects!
+
+        outcome.events.foreach(physics.scheduleEvent)
+
+        outcome.obj
       }
       .pipe(EnemySpawnUtils.processSpawns)
       .pipe(CreatureAttackUtils.processAttacks)

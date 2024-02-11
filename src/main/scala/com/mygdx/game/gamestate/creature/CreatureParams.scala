@@ -22,9 +22,9 @@ case class CreatureParams(
     maxLife: Float,
     attackedCreatureId: Option[EntityId[Creature]],
     damage: Float,
-    deathRegistered: Boolean,
+    deathAcknowledged: Boolean,
     deathAnimationTimer: SimpleTimer,
     animationDefinition: AnimationDefinition,
     attackRange: Float,
-    teleportPos: Option[Vector2]
+    respawnTimer: SimpleTimer
 ) {}

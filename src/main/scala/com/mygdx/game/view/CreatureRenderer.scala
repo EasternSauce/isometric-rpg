@@ -42,7 +42,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
   def renderLifeBar(spriteBatch: SpriteBatch, gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
 
-    if (!creature.params.deathRegistered) {
+    if (!creature.params.deathAcknowledged) {
       val lifeBarWidth = 32f
       val currentLifeBarWidth =
         lifeBarWidth * creature.params.life / creature.params.maxLife

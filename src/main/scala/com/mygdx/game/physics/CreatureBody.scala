@@ -45,7 +45,7 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       creature.params.velocity.y
     )
 
-    if (creature.params.deathRegistered && !sensor) {
+    if (creature.params.deathAcknowledged && !sensor) {
       makeSensor()
     }
   }

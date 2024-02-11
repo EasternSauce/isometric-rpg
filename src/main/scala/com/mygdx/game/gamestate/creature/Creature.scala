@@ -1,11 +1,8 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.{
-  CreatureBehavior,
-  EnemyBehavior,
-  PlayerBehavior
-}
+import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
+import com.mygdx.game.gamestate.event.TeleportEvent
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
@@ -26,14 +23,22 @@ case class Creature(
   ): Outcome[Creature] = {
     for {
       a <- Outcome(this)
-      b <- Outcome(
-        a
-          .modify(_.params.teleportPos)
-          .setTo(None)
+      b <- a.updateMovement(newPos, input, clientInformation, gameState)
+      c <- b.updateTimers(delta)
+      d <- Outcome.when(c)(_.deathToBeHandled)(_.onDeath())
+      e <- Outcome.when(d)(creature =>
+        creature.params.deathAcknowledged && creature.params.respawnTimer.time > Constants.RespawnTime
+      )(creature =>
+        Outcome(
+          creature
+            .modify(_.params.life)
+            .setTo(creature.params.maxLife)
+            .modify(_.params.deathAcknowledged)
+            .setTo(false)
+            .modify(_.params.respawnTimer)
+            .using(_.stop())
+        ).withEvents(List(TeleportEvent(this.params.id, Vector2(5, 5))))
       )
-      c <- b.updateMovement(newPos, input, clientInformation, gameState)
-      d <- c.updateTimers(delta)
-      e <- Outcome.when(d)(_.deathToBeHandled)(_.onDeath())
     } yield e
   }
 
@@ -41,7 +46,7 @@ case class Creature(
     for {
       a <- Outcome(
         this
-          .modify(_.params.deathRegistered)
+          .modify(_.params.deathAcknowledged)
           .setTo(true)
           .modify(_.params.deathAnimationTimer)
           .using(_.restart())
@@ -51,21 +56,15 @@ case class Creature(
       b <- Outcome.when(a)(_.params.player)(creature =>
         Outcome(
           creature
-            .modify(_.params.teleportPos)
-            .setTo(Some(Vector2(5, 5)))
-            .modify(_.params.life)
-            .setTo(100)
-            .modify(_.params.deathRegistered)
-            .setTo(false)
+            .modify(_.params.respawnTimer)
+            .using(_.restart())
         )
       )
     } yield b
   }
 
   private def deathToBeHandled: Boolean =
-    !this.alive && !this.params.deathRegistered
-
-  def alive: Boolean = params.life > 0
+    !this.alive && !this.params.deathAcknowledged
 
   private def updateMovement(
       newPos: Vector2,
@@ -84,6 +83,8 @@ case class Creature(
       e <- d.updateVelocity()
     } yield e
   }
+
+  def alive: Boolean = params.life > 0
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = params.pos.vectorTowards(params.destination)
@@ -145,6 +146,8 @@ case class Creature(
         .modify(_.params.attackAnimationTimer)
         .using(_.update(delta))
         .modify(_.params.deathAnimationTimer)
+        .using(_.update(delta))
+        .modify(_.params.respawnTimer)
         .using(_.update(delta))
     )
   }
@@ -283,11 +286,11 @@ object Creature {
         maxLife = 100f,
         attackedCreatureId = None,
         damage = 20f,
-        deathRegistered = false,
+        deathAcknowledged = false,
         deathAnimationTimer = SimpleTimer(isRunning = false),
         animationDefinition = Constants.HumanAnimationDefinition,
         attackRange = 1f,
-        teleportPos = None
+        respawnTimer = SimpleTimer(isRunning = false)
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
@@ -319,11 +322,11 @@ object Creature {
         maxLife = 40f,
         attackedCreatureId = None,
         damage = 5f,
-        deathRegistered = false,
+        deathAcknowledged = false,
         deathAnimationTimer = SimpleTimer(isRunning = false),
         animationDefinition = Constants.RatAnimationDefinition,
         attackRange = 0.8f,
-        teleportPos = None
+        respawnTimer = SimpleTimer(isRunning = false)
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )

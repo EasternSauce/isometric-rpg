@@ -42,4 +42,6 @@ object Constants {
   val TileCenterY = 0
 
   val EnemyAggroDistance = 3f
+
+  val RespawnTime = 5f
 }

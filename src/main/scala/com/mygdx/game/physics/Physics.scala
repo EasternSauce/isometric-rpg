@@ -2,6 +2,7 @@ package com.mygdx.game.physics
 
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.{Event, TeleportEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
@@ -11,6 +12,7 @@ case class Physics() {
   private var creatureBodies: Map[EntityId[Creature], CreatureBody] = _
   private var staticBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
+  private var eventQueue: List[Event] = _
 
   def init(
       clientInformation: ClientInformation,
@@ -51,6 +53,8 @@ case class Physics() {
         borderBody.init(world, pos)
         borderBody
       }
+
+    eventQueue = List()
   }
 
   def update(gameState: GameState): Unit = {
@@ -68,18 +72,24 @@ case class Physics() {
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
 
-    gameState.creatures.values.foreach { creature =>
-      if (creature.params.teleportPos.nonEmpty) {
-        val pos = creature.params.teleportPos.get
-        creatureBodies(creature.params.id).body.setTransform(
-          pos.x,
-          pos.y,
-          creatureBodies(creature.params.id).body.getAngle
-        )
-      }
+    val eventsToBeProcessed = eventQueue.filter(_.isInstanceOf[TeleportEvent])
+
+    eventsToBeProcessed.foreach { case TeleportEvent(creatureId, pos) =>
+      val creature = gameState.creatures(creatureId)
+      creatureBodies(creature.params.id).body.setTransform(
+        pos.x,
+        pos.y,
+        creatureBodies(creature.params.id).body.getAngle
+      )
     }
 
+    eventQueue = eventQueue.filter(eventsToBeProcessed.contains(_))
+
     creatureBodies.values.foreach(_.update(gameState))
+  }
+
+  def scheduleEvent(event: Event): Unit = {
+    eventQueue = eventQueue.appended(event)
   }
 
   def getCreaturePositions: Map[EntityId[Creature], Vector2] = {

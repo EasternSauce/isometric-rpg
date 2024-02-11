@@ -83,6 +83,7 @@ case class Gameplay() {
       creaturePositions,
       input,
       clientInformation,
+      physics,
       delta
     )
   }
