@@ -1,13 +1,8 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.{
-  CreatureBehavior,
-  EnemyBehavior,
-  PlayerBehavior
-}
+import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
 import com.mygdx.game.input.Input
-import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
 import com.mygdx.game.view.CreatureAnimationType
@@ -25,35 +20,42 @@ case class Creature(
       clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
-    Outcome[Creature](
-      this
-        .modify(_.params.teleportPos)
-        .setTo(None)
-    ) ++
-      (_.updateMovement(newPos, input, clientInformation, gameState)) ++
-      (_.updateTimers(delta)) ++
-      (creature => Outcome(creature.pipeIf(_.deathToBeHandled)(_.onDeath())))
+    for {
+      a <- Outcome(this)
+      b <- Outcome(
+        a
+          .modify(_.params.teleportPos)
+          .setTo(None)
+      )
+      c <- b.updateMovement(newPos, input, clientInformation, gameState)
+      d <- c.updateTimers(delta)
+      e <- Outcome.when(d)(_.deathToBeHandled)(_.onDeath())
+    } yield e
   }
 
-  private def onDeath(): Creature = {
-    this
-      .modify(_.params.deathRegistered)
-      .setTo(true)
-      .modify(_.params.deathAnimationTimer)
-      .using(_.restart())
-      .modify(_.params.attackAnimationTimer)
-      .using(_.restart().stop())
-      // TODO: do all this after few seconds delay... and only do this for player
-      .modify(_.params.teleportPos)
-      .setTo(Some(Vector2(5, 5)))
-      .modify(_.params.life)
-      .setTo(100)
-      .modify(_.params.deathRegistered)
-      .setTo(false)
+  private def onDeath(): Outcome[Creature] = {
+    Outcome(
+      this
+        .modify(_.params.deathRegistered)
+        .setTo(true)
+        .modify(_.params.deathAnimationTimer)
+        .using(_.restart())
+        .modify(_.params.attackAnimationTimer)
+        .using(_.restart().stop())
+        // TODO: do all this after few seconds delay... and only do this for player
+        .modify(_.params.teleportPos)
+        .setTo(Some(Vector2(5, 5)))
+        .modify(_.params.life)
+        .setTo(100)
+        .modify(_.params.deathRegistered)
+        .setTo(false)
+    )
   }
 
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathRegistered
+
+  def alive: Boolean = params.life > 0
 
   private def updateMovement(
       newPos: Vector2,
@@ -61,19 +63,17 @@ case class Creature(
       clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
-    Outcome(this) ++
-      (_.setPos(newPos)) ++
-      (creature =>
-        Outcome(creature.pipeIf(_.alive)(
-          creatureBehavior
-            .updateMovement(_, input, clientInformation, gameState)
-        ))
-      ) ++
-      (_.stopMovingIfStuck()) ++
-      (_.updateVelocity())
+    for {
+      a <- Outcome(this)
+      b <- a.setPos(newPos)
+      c <- Outcome.when(b)(_.alive)(
+        creatureBehavior
+          .updateMovement(_, input, clientInformation, gameState)
+      )
+      d <- c.stopMovingIfStuck()
+      e <- d.updateVelocity()
+    } yield e
   }
-
-  def alive: Boolean = params.life > 0
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = params.pos.vectorTowards(params.destination)
@@ -86,27 +86,35 @@ case class Creature(
       vectorTowardsDest.withLength(0f)
     }
 
-    this
-      .modify(_.params.velocity)
-      .setTo(velocity)
-      .modify(_.params.facingVector)
-      .setToIf(velocity.length > 0)(velocity)
+    Outcome(
+      this
+        .modify(_.params.velocity)
+        .setTo(velocity)
+        .modify(_.params.facingVector)
+        .setToIf(velocity.length > 0)(velocity)
+    )
   }
 
   private def stopMovingIfStuck(): Outcome[Creature] = {
-    this
-      .pipeIf(_.params.lastPosTimer.time > 0.5f)(
-        _.modify(_.params.lastPosTimer)
-          .using(_.restart())
-          .pipeIf { creature =>
-            val v1 = creature.params.lastPos
-            val v2 = creature.params.pos
+    Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
+      for {
+        a <- Outcome(
+          creature
+            .modify(_.params.lastPosTimer)
+            .using(_.restart())
+        )
+        b <- Outcome.when(a) { creature =>
+          val v1 = creature.params.lastPos
+          val v2 = creature.params.pos
 
-            v1.distance(v2) < 0.2f
-          }(_.stopMoving())
-          .modify(_.params.lastPos)
-          .setTo(this.params.pos)
-      )
+          v1.distance(v2) < 0.2f
+        }(_.stopMoving())
+        c <- Outcome(
+          b.modify(_.params.lastPos)
+            .setTo(this.params.pos)
+        )
+      } yield c
+    )
   }
 
   private def setPos(pos: Vector2): Outcome[Creature] = {
@@ -162,63 +170,73 @@ case class Creature(
   private[creature] def moveTowardsTarget(
       input: Input,
       mouseWorldPos: Vector2
-  ): Creature = {
+  ): Outcome[Creature] = {
     if (input.moveButtonPressed) {
-      this
-        .modify(_.params.destination)
-        .setTo(mouseWorldPos)
-        .modify(_.params.attackAnimationTimer)
-        .usingIf(params.attackAnimationTimer.isRunning)(_.stop())
+      Outcome(
+        this
+          .modify(_.params.destination)
+          .setTo(mouseWorldPos)
+          .modify(_.params.attackAnimationTimer)
+          .usingIf(params.attackAnimationTimer.isRunning)(_.stop())
+      )
     } else {
-      this
-        .modify(_.params.destination)
-        .setTo(params.pos)
+      Outcome(
+        this
+          .modify(_.params.destination)
+          .setTo(params.pos)
+      )
     }
   }
 
   private[creature] def performAttack(
       mouseWorldPos: Vector2,
       gameState: GameState
-  ): Creature = {
-    val closestCreature =
+  ): Outcome[Creature] = {
+    val maybeClosestCreature =
       CreaturesFinderUtils.getAliveCreatureClosestTo(
         mouseWorldPos,
         List(params.id),
         gameState
       )
 
-    (closestCreature match {
+    for {
+      a <- attackCreature(maybeClosestCreature)
+      b <- Outcome(
+        a.modify(_.params.attackAnimationTimer)
+          .using(_.restart())
+      )
+      c <- b.stopMoving()
+    } yield c
+  }
+
+  private def attackCreature(
+      maybeClosestCreature: Option[Creature]
+  ): Outcome[Creature] = maybeClosestCreature match {
       case Some(closestCreature) =>
-        this
-          .pipeIf(_ =>
-            closestCreature.params.pos
-              .distance(params.pos) < params.attackRange
-          )(creature =>
+        Outcome.when(this)(_ =>
+          closestCreature.params.pos
+            .distance(params.pos) < params.attackRange
+        )(creature =>
+          Outcome(
             creature
               .modify(_.params.facingVector)
               .setTo(
                 creature.params.pos
                   .vectorTowards(closestCreature.params.pos)
               )
-              .attack(closestCreature)
+              .modify(_.params.attackedCreatureId)
+              .setTo(Some(closestCreature.params.id))
           )
-      case None => this
-    })
-      .modify(_.params.attackAnimationTimer)
-      .using(_.restart())
-      .stopMoving()
-  }
+        )
+      case None => Outcome(this)
+    }
 
-  private[creature] def stopMoving(): Creature = {
-    this
-      .modify(_.params.destination)
-      .setTo(params.pos)
-  }
-
-  private[creature] def attack(otherCreature: Creature): Creature = {
-    this
-      .modify(_.params.attackedCreatureId)
-      .setTo(Some(otherCreature.params.id))
+  private[creature] def stopMoving(): Outcome[Creature] = {
+    Outcome(
+      this
+        .modify(_.params.destination)
+        .setTo(params.pos)
+    )
   }
 
   private[creature] def attackingAllowed: Boolean =

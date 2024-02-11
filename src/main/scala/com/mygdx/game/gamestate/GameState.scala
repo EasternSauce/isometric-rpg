@@ -21,13 +21,15 @@ case class GameState(
     this
       .modify(_.creatures.each)
       .using { creature =>
-        creature.update(
-          delta = delta,
-          newPos = creaturePositions(creature.params.id),
-          input = input,
-          clientInformation = clientInformation,
-          gameState = this
-        )
+        creature
+          .update(
+            delta = delta,
+            newPos = creaturePositions(creature.params.id),
+            input = input,
+            clientInformation = clientInformation,
+            gameState = this
+          )
+          .obj // TODO: handle side effects!
       }
       .pipe(EnemySpawnUtils.processSpawns)
       .pipe(CreatureAttackUtils.processAttacks)

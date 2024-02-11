@@ -1,10 +1,9 @@
 package com.mygdx.game.gamestate.creature.behavior
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
-import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.IsometricProjection
 
@@ -14,16 +13,17 @@ case class PlayerBehavior() extends CreatureBehavior {
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
-  ): Creature = {
+  ): Outcome[Creature] = {
     val mouseWorldPos: Vector2 = getMouseWorldPos(creature.params.pos, input)
 
-    creature
-      .pipeIf(_.alive)(_.moveTowardsTarget(input, mouseWorldPos))
-      .pipeIf(creature =>
-        creature.alive && input.attackButtonJustPressed && creature.attackingAllowed
-      )(
-        _.performAttack(mouseWorldPos, gameState)
+    for {
+      a <- Outcome.when(creature)(_.alive)(
+        _.moveTowardsTarget(input, mouseWorldPos)
       )
+      b <- Outcome.when(a)(creature =>
+        creature.alive && input.attackButtonJustPressed && creature.attackingAllowed
+      )(_.performAttack(mouseWorldPos, gameState))
+    } yield b
   }
 
   private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {

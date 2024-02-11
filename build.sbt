@@ -28,3 +28,5 @@ libraryDependencies += "com.esotericsoftware" % "kryonet" % "2.22.0-RC1"
 libraryDependencies += "space.earlygrey" % "shapedrawer" % "2.4.0"
 
 libraryDependencies += "com.twitter" %% "chill" % "0.10.0"
+
+libraryDependencies += "org.typelevel" %% "cats-core" % "2.10.0"

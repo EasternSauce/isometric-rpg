@@ -1,9 +1,8 @@
 package com.mygdx.game.gamestate.creature.behavior
 
-import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
-import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
@@ -15,7 +14,7 @@ case class EnemyBehavior() extends CreatureBehavior {
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
-  ): Creature = {
+  ): Outcome[Creature] = {
     val enemyAggroed: Option[Creature] =
       gameState.creatures.values.toList.filter(otherCreature =>
         otherCreature.params.player && otherCreature.alive && otherCreature.params.pos
@@ -29,33 +28,40 @@ case class EnemyBehavior() extends CreatureBehavior {
     enemyAggroed match {
       case Some(otherCreature) =>
         enemyPursuePlayer(creature, otherCreature)
-      case _ => creature
+      case _ => Outcome(creature)
     }
   }
 
   private def enemyPursuePlayer(
       creature: Creature,
       aggroedCreature: Creature
-  ): Creature = {
+  ): Outcome[Creature] = {
     creature
       .pipe { creature =>
         val distanceToPlayer =
           creature.params.pos.distance(aggroedCreature.params.pos)
 
         if (distanceToPlayer > creature.params.attackRange) {
-          creature
-            .modify(_.params.destination)
-            .setTo(aggroedCreature.params.pos)
+          Outcome(
+            creature
+              .modify(_.params.destination)
+              .setTo(aggroedCreature.params.pos)
+          )
         } else {
-          creature
-            .pipeIf(creature =>
-              aggroedCreature.alive && creature.attackingAllowed
-            )(
-              _.modify(_.params.attackAnimationTimer)
-                .using(_.restart())
-                .attack(aggroedCreature)
+          for {
+            a <- Outcome.when(creature)(
+              aggroedCreature.alive && _.attackingAllowed
+            )(creature =>
+              Outcome(
+                creature
+                  .modify(_.params.attackAnimationTimer)
+                  .using(_.restart())
+                  .modify(_.params.attackedCreatureId)
+                  .setTo(Some(aggroedCreature.params.id))
+              )
             )
-            .stopMoving()
+            b <- a.stopMoving()
+          } yield b
         }
       }
   }
