@@ -1,7 +1,11 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
+import com.mygdx.game.gamestate.creature.behavior.{
+  CreatureBehavior,
+  EnemyBehavior,
+  PlayerBehavior
+}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
@@ -34,22 +38,28 @@ case class Creature(
   }
 
   private def onDeath(): Outcome[Creature] = {
-    Outcome(
-      this
-        .modify(_.params.deathRegistered)
-        .setTo(true)
-        .modify(_.params.deathAnimationTimer)
-        .using(_.restart())
-        .modify(_.params.attackAnimationTimer)
-        .using(_.restart().stop())
-        // TODO: do all this after few seconds delay... and only do this for player
-        .modify(_.params.teleportPos)
-        .setTo(Some(Vector2(5, 5)))
-        .modify(_.params.life)
-        .setTo(100)
-        .modify(_.params.deathRegistered)
-        .setTo(false)
-    )
+    for {
+      a <- Outcome(
+        this
+          .modify(_.params.deathRegistered)
+          .setTo(true)
+          .modify(_.params.deathAnimationTimer)
+          .using(_.restart())
+          .modify(_.params.attackAnimationTimer)
+          .using(_.restart().stop())
+      )
+      b <- Outcome.when(a)(_.params.player)(creature =>
+        Outcome(
+          creature
+            .modify(_.params.teleportPos)
+            .setTo(Some(Vector2(5, 5)))
+            .modify(_.params.life)
+            .setTo(100)
+            .modify(_.params.deathRegistered)
+            .setTo(false)
+        )
+      )
+    } yield b
   }
 
   private def deathToBeHandled: Boolean =
@@ -212,24 +222,24 @@ case class Creature(
   private def attackCreature(
       maybeClosestCreature: Option[Creature]
   ): Outcome[Creature] = maybeClosestCreature match {
-      case Some(closestCreature) =>
-        Outcome.when(this)(_ =>
-          closestCreature.params.pos
-            .distance(params.pos) < params.attackRange
-        )(creature =>
-          Outcome(
-            creature
-              .modify(_.params.facingVector)
-              .setTo(
-                creature.params.pos
-                  .vectorTowards(closestCreature.params.pos)
-              )
-              .modify(_.params.attackedCreatureId)
-              .setTo(Some(closestCreature.params.id))
-          )
+    case Some(closestCreature) =>
+      Outcome.when(this)(_ =>
+        closestCreature.params.pos
+          .distance(params.pos) < params.attackRange
+      )(creature =>
+        Outcome(
+          creature
+            .modify(_.params.facingVector)
+            .setTo(
+              creature.params.pos
+                .vectorTowards(closestCreature.params.pos)
+            )
+            .modify(_.params.attackedCreatureId)
+            .setTo(Some(closestCreature.params.id))
         )
-      case None => Outcome(this)
-    }
+      )
+    case None => Outcome(this)
+  }
 
   private[creature] def stopMoving(): Outcome[Creature] = {
     Outcome(
