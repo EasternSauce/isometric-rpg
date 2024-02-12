@@ -26,5 +26,6 @@ case class CreatureParams(
     deathAnimationTimer: SimpleTimer,
     animationDefinition: AnimationDefinition,
     attackRange: Float,
-    respawnTimer: SimpleTimer
+    respawnTimer: SimpleTimer,
+    currentTarget: Option[EntityId[Creature]]
 ) {}
