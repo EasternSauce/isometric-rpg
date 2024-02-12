@@ -2,7 +2,7 @@ package com.mygdx.game.physics
 
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.{Event, TeleportEvent}
+import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
@@ -24,7 +24,7 @@ case class Physics() {
 
     val player = gameState.creatures(clientInformation.clientCreatureId)
     val playerBody = CreatureBody(clientInformation.clientCreatureId)
-    playerBody.init(world, player.params.pos)
+    playerBody.init(world, player.pos)
 
     creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
 
@@ -64,28 +64,39 @@ case class Physics() {
       gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
 
     bodiesToCreate.foreach { creatureId =>
-      val creatureBody = CreatureBody(creatureId)
-
       val creature = gameState.creatures(creatureId)
 
-      creatureBody.init(world, creature.params.pos)
+      val creatureBody = CreatureBody(creatureId)
+
+      creatureBody.init(world, creature.pos)
+
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
 
-    val eventsToBeProcessed = eventQueue.filter(_.isInstanceOf[TeleportEvent])
+    val eventsToBeProcessed = eventQueue.filter(_.isInstanceOf[PhysicsEvent])
 
-    eventsToBeProcessed.foreach { case TeleportEvent(creatureId, pos) =>
-      val creature = gameState.creatures(creatureId)
-      creatureBodies(creature.params.id).body.setTransform(
-        pos.x,
-        pos.y,
-        creatureBodies(creature.params.id).body.getAngle
-      )
-    }
-
-    eventQueue = eventQueue.filter(eventsToBeProcessed.contains(_))
+    handleEvents(eventsToBeProcessed, gameState)
 
     creatureBodies.values.foreach(_.update(gameState))
+  }
+
+  private def handleEvents(
+      eventsToBeProcessed: List[Event],
+      gameState: GameState
+  ): Unit = {
+    eventsToBeProcessed.foreach {
+      case TeleportEvent(creatureId, pos) =>
+        val creature = gameState.creatures(creatureId)
+        creatureBodies(creature.id).setPos(pos)
+      case MakeBodySensorEvent(creatureId) =>
+        val creature = gameState.creatures(creatureId)
+        creatureBodies(creature.id).makeSensor()
+      case MakeBodyNonSensorEvent(creatureId) =>
+        val creature = gameState.creatures(creatureId)
+        creatureBodies(creature.id).makeNonSensor()
+    }
+
+    eventQueue = eventQueue.filter(!eventsToBeProcessed.contains(_))
   }
 
   def scheduleEvent(event: Event): Unit = {

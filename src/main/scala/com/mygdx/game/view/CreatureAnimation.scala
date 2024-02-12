@@ -99,7 +99,7 @@ case class CreatureAnimation(
           .getKeyFrame(creature.params.deathAnimationTimer.time, false)
       }
 
-    val pos = IsometricProjection.translateIsoToScreen(creature.params.pos)
+    val pos = IsometricProjection.translateIsoToScreen(creature.pos)
 
     batch.draw(
       frame,

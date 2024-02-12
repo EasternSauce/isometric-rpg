@@ -17,12 +17,12 @@ case class EnemyBehavior() extends CreatureBehavior {
   ): Outcome[Creature] = {
     val enemyAggroed: Option[Creature] =
       gameState.creatures.values.toList.filter(otherCreature =>
-        otherCreature.params.player && otherCreature.alive && otherCreature.params.pos
-          .distance(creature.params.pos) < Constants.EnemyAggroDistance
+        otherCreature.params.player && otherCreature.alive && otherCreature.pos
+          .distance(creature.pos) < Constants.EnemyAggroDistance
       ) match {
         case List() => None
         case creatures =>
-          Some(creatures.minBy(_.params.pos.distance(creature.params.pos)))
+          Some(creatures.minBy(_.pos.distance(creature.pos)))
       }
 
     enemyAggroed match {
@@ -39,17 +39,17 @@ case class EnemyBehavior() extends CreatureBehavior {
     creature
       .pipe { creature =>
         val distanceToPlayer =
-          creature.params.pos.distance(aggroedCreature.params.pos)
+          creature.pos.distance(aggroedCreature.pos)
 
         if (distanceToPlayer > creature.params.attackRange) {
           Outcome(
             creature
               .modify(_.params.destination)
-              .setTo(aggroedCreature.params.pos)
+              .setTo(aggroedCreature.pos)
           )
         } else {
           for {
-            a <- Outcome.when(creature)(
+            creature <- Outcome.when(creature)(
               aggroedCreature.alive && _.attackingAllowed
             )(creature =>
               Outcome(
@@ -57,11 +57,11 @@ case class EnemyBehavior() extends CreatureBehavior {
                   .modify(_.params.attackAnimationTimer)
                   .using(_.restart())
                   .modify(_.params.attackedCreatureId)
-                  .setTo(Some(aggroedCreature.params.id))
+                  .setTo(Some(aggroedCreature.id))
               )
             )
-            b <- a.stopMoving()
-          } yield b
+            creature <- creature.stopMoving()
+          } yield creature
         }
       }
   }

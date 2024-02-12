@@ -13,13 +13,13 @@ object CreatureAttackUtils {
         .modify(_.creatures.each)
         .using { creature =>
           val totalDamage = creatureAttackEvents
-            .filter(_.attackedCreatureId == creature.params.id)
+            .filter(_.attackedCreatureId == creature.id)
             .map(_.damage)
             .sum
 
           val attackDone = creatureAttackEvents
             .map(_.attackingCreatureId)
-            .contains(creature.params.id)
+            .contains(creature.id)
 
           creature
             .pipeIf(_ => totalDamage != 0)(_.takeDamage(totalDamage))
@@ -44,7 +44,7 @@ object CreatureAttackUtils {
       .map(creature =>
         CreatureAttackEvent(
           creature.params.attackedCreatureId.get,
-          creature.params.id,
+          creature.id,
           creature.params.damage
         )
       )

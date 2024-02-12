@@ -12,14 +12,12 @@ object CreaturesFinderUtils {
     var closestCreature: Option[Creature] = None
 
     gameState.creatures.values
-      .filter(creature =>
-        creature.alive && !ignored.contains(creature.params.id)
-      )
+      .filter(creature => creature.alive && !ignored.contains(creature.id))
       .foreach { creature =>
         if (
-          closestCreature.isEmpty || closestCreature.get.params.pos.distance(
+          closestCreature.isEmpty || closestCreature.get.pos.distance(
             point
-          ) > creature.params.pos.distance(point)
+          ) > creature.pos.distance(point)
         ) {
           closestCreature = Some(creature)
         }

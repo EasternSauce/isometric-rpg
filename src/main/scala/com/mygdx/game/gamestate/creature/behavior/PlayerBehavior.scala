@@ -14,16 +14,16 @@ case class PlayerBehavior() extends CreatureBehavior {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
-    val mouseWorldPos: Vector2 = getMouseWorldPos(creature.params.pos, input)
+    val mouseWorldPos: Vector2 = getMouseWorldPos(creature.pos, input)
 
     for {
-      a <- Outcome.when(creature)(_.alive)(
+      creature <- Outcome.when(creature)(_.alive)(
         _.moveTowardsTarget(input, mouseWorldPos)
       )
-      b <- Outcome.when(a)(creature =>
+      creature <- Outcome.when(creature)(creature =>
         creature.alive && input.attackButtonJustPressed && creature.attackingAllowed
       )(_.performAttack(mouseWorldPos, gameState))
-    } yield b
+    } yield creature
   }
 
   private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {

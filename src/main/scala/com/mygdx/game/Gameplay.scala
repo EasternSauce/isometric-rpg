@@ -56,7 +56,7 @@ case class Gameplay() {
     spriteBatch.begin()
 
     gameState.creatures.values
-      .map(_.params.pos)
+      .map(_.pos)
       .foreach(pos => {
         val worldPos = IsometricProjection.translateIsoToScreen(pos)
         spriteBatch.filledRectangle(

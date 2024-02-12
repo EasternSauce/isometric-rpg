@@ -26,7 +26,7 @@ case class GameState(
         val outcome = creature
           .update(
             delta = delta,
-            newPos = creaturePositions(creature.params.id),
+            newPos = creaturePositions(creature.id),
             input = input,
             clientInformation = clientInformation,
             gameState = this
