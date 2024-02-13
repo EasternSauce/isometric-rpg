@@ -1,6 +1,6 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.ModifyPimp
 
@@ -15,7 +15,7 @@ object EnemySpawnUtils {
       val nextCreatureId =
         EntityId[Creature]("creature_" + gameState.creatureCounter)
 
-      val newEnemy = Creature.rat(
+      val newEnemy = CreatureFactory.rat(
         nextCreatureId,
         Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
         player = false,

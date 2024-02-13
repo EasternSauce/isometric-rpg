@@ -1,7 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.creature.{Creature, CreatureAttackUtils}
+import com.mygdx.game.gamestate.creature.{Creature, CreatureAttackUtils, CreatureFactory}
 import com.mygdx.game.input.Input
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Vector2
@@ -44,7 +44,7 @@ case class GameState(
 object GameState {
   def initialState(clientInformation: ClientInformation): GameState = {
     val player =
-      Creature.male1(
+      CreatureFactory.male1(
         clientInformation.clientCreatureId,
         Vector2(5f, 5f),
         player = true,

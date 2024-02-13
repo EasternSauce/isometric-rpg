@@ -1,12 +1,11 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.{CreatureBehavior, EnemyBehavior, PlayerBehavior}
+import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
 import com.mygdx.game.gamestate.event.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
-import com.mygdx.game.util.{SimpleTimer, Vector2, WorldDirection}
-import com.mygdx.game.view.CreatureAnimationType
+import com.mygdx.game.util.{Vector2, WorldDirection}
 import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
@@ -77,6 +76,8 @@ case class Creature(
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
 
+  def alive: Boolean = params.life > 0
+
   private def updateMovement(
       newPos: Vector2,
       input: Input,
@@ -94,10 +95,6 @@ case class Creature(
       creature <- creature.updateVelocity()
     } yield creature
   }
-
-  def alive: Boolean = params.life > 0
-
-  def id: EntityId[Creature] = params.id
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = pos.vectorTowards(params.destination)
@@ -237,6 +234,8 @@ case class Creature(
     } yield creature
   }
 
+  def id: EntityId[Creature] = params.id
+
   private def attackCreature(
       maybeClosestCreature: Option[Creature]
   ): Outcome[Creature] = maybeClosestCreature match {
@@ -267,85 +266,8 @@ case class Creature(
     )
   }
 
+  def pos: Vector2 = params.pos
+
   private[creature] def attackingAllowed: Boolean =
     !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
-
-  def pos: Vector2 = params.pos
-}
-
-object Creature {
-  def male1(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float
-  ): Creature = {
-    Creature(
-      creature.CreatureParams(
-        id = creatureId,
-        pos = pos,
-        velocity = Vector2(0, 0),
-        destination = pos,
-        facingVector = Vector2(0, 0),
-        lastPos = pos,
-        textureNames = Map(
-          CreatureAnimationType.Body -> "steel_armor",
-          CreatureAnimationType.Head -> "male_head1",
-          CreatureAnimationType.Weapon -> "greatstaff",
-          CreatureAnimationType.Shield -> "shield"
-        ),
-        animationTimer = SimpleTimer(isRunning = true),
-        lastPosTimer = SimpleTimer(isRunning = true),
-        attackAnimationTimer = SimpleTimer(isRunning = false),
-        player = player,
-        baseSpeed = baseSpeed,
-        life = 100f,
-        maxLife = 100f,
-        attackedCreatureId = None,
-        damage = 20f,
-        deathAcknowledged = false,
-        deathAnimationTimer = SimpleTimer(isRunning = false),
-        animationDefinition = Constants.HumanAnimationDefinition,
-        attackRange = 1f,
-        respawnTimer = SimpleTimer(isRunning = false)
-      ),
-      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
-    )
-  }
-
-  def rat(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float
-  ): Creature = {
-    Creature(
-      creature.CreatureParams(
-        id = creatureId,
-        pos = pos,
-        velocity = Vector2(0, 0),
-        destination = pos,
-        facingVector = Vector2(0, 0),
-        lastPos = pos,
-        textureNames = Map(
-          CreatureAnimationType.Body -> "rat"
-        ),
-        animationTimer = SimpleTimer(isRunning = true),
-        lastPosTimer = SimpleTimer(isRunning = true),
-        attackAnimationTimer = SimpleTimer(isRunning = false),
-        player = player,
-        baseSpeed = baseSpeed,
-        life = 40f,
-        maxLife = 40f,
-        attackedCreatureId = None,
-        damage = 100f,
-        deathAcknowledged = false,
-        deathAnimationTimer = SimpleTimer(isRunning = false),
-        animationDefinition = Constants.RatAnimationDefinition,
-        attackRange = 0.8f,
-        respawnTimer = SimpleTimer(isRunning = false)
-      ),
-      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
-    )
-  }
 }
