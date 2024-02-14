@@ -38,7 +38,7 @@ object CreatureAttackUtils {
   ): List[CreatureAttackEvent] = {
     gameState.creatures.values.toList
       .filter(creature =>
-        creature.params.attackedCreatureId.nonEmpty && creature.params.attackAnimationTimer.isRunning &&
+        creature.params.attackedCreatureId.nonEmpty && creature.params.attackAnimationTimer.running &&
           creature.params.attackAnimationTimer.time > creature.params.animationDefinition.attackFrames.totalDuration * 0.8f
       )
       .map(creature =>

@@ -73,6 +73,8 @@ case class Creature(
     } yield creature
   }
 
+  def id: EntityId[Creature] = params.id
+
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
 
@@ -139,6 +141,14 @@ case class Creature(
     )
   }
 
+  private[creature] def stopMoving(): Outcome[Creature] = {
+    Outcome(
+      this
+        .modify(_.params.destination)
+        .setTo(pos)
+    )
+  }
+
   private def setPos(pos: Vector2): Outcome[Creature] = {
     Outcome(this)
       .map(
@@ -159,6 +169,8 @@ case class Creature(
         .modify(_.params.deathAnimationTimer)
         .using(_.update(delta))
         .modify(_.params.respawnTimer)
+        .using(_.update(delta))
+        .modify(_.params.loseAggroTimer)
         .using(_.update(delta))
     )
   }
@@ -201,7 +213,7 @@ case class Creature(
           .modify(_.params.destination)
           .setTo(mouseWorldPos)
           .modify(_.params.attackAnimationTimer)
-          .usingIf(params.attackAnimationTimer.isRunning)(_.stop())
+          .usingIf(params.attackAnimationTimer.running)(_.stop())
       )
     } else {
       Outcome(
@@ -211,6 +223,8 @@ case class Creature(
       )
     }
   }
+
+  def pos: Vector2 = params.pos
 
   private[creature] def performAttack(
       mouseWorldPos: Vector2,
@@ -234,8 +248,6 @@ case class Creature(
     } yield creature
   }
 
-  def id: EntityId[Creature] = params.id
-
   private def attackCreature(
       maybeClosestCreature: Option[Creature]
   ): Outcome[Creature] = maybeClosestCreature match {
@@ -258,16 +270,6 @@ case class Creature(
     case None => Outcome(this)
   }
 
-  private[creature] def stopMoving(): Outcome[Creature] = {
-    Outcome(
-      this
-        .modify(_.params.destination)
-        .setTo(pos)
-    )
-  }
-
-  def pos: Vector2 = params.pos
-
   private[creature] def attackingAllowed: Boolean =
-    !this.params.attackAnimationTimer.isRunning || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
+    !this.params.attackAnimationTimer.running || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
 }

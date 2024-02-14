@@ -13,9 +13,9 @@ case class CreatureParams(
     facingVector: Vector2 = Vector2(0, 0),
     lastPos: Vector2,
     textureNames: Map[CreatureAnimationType, String],
-    animationTimer: SimpleTimer = SimpleTimer(isRunning = true),
-    lastPosTimer: SimpleTimer = SimpleTimer(isRunning = true),
-    attackAnimationTimer: SimpleTimer = SimpleTimer(isRunning = false),
+    animationTimer: SimpleTimer = SimpleTimer(running = true),
+    lastPosTimer: SimpleTimer = SimpleTimer(running = true),
+    attackAnimationTimer: SimpleTimer = SimpleTimer(running = false),
     player: Boolean,
     baseSpeed: Float,
     life: Float,
@@ -23,9 +23,10 @@ case class CreatureParams(
     attackedCreatureId: Option[EntityId[Creature]] = None,
     damage: Float,
     deathAcknowledged: Boolean = false,
-    deathAnimationTimer: SimpleTimer = SimpleTimer(isRunning = false),
+    deathAnimationTimer: SimpleTimer = SimpleTimer(running = false),
     animationDefinition: AnimationDefinition,
     attackRange: Float,
-    respawnTimer: SimpleTimer = SimpleTimer(isRunning = false),
-    currentTargetId: Option[EntityId[Creature]] = None
+    respawnTimer: SimpleTimer = SimpleTimer(running = false),
+    currentTargetId: Option[EntityId[Creature]] = None,
+    loseAggroTimer: SimpleTimer = SimpleTimer(running = false)
 ) {}

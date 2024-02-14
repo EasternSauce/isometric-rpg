@@ -32,6 +32,27 @@ object CreatureFactory {
     )
   }
 
+  def rat(
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float
+  ): Creature = {
+    CreatureFactory.produce(
+      creatureId = creatureId,
+      pos = pos,
+      player = player,
+      baseSpeed = baseSpeed,
+      maxLife = 40f,
+      damage = 10f,
+      attackRange = 0.8f,
+      textureNames = Map(
+        CreatureAnimationType.Body -> "rat"
+      ),
+      animationDefinition = Constants.RatAnimationDefinition
+    )
+  }
+
   private def produce(
       creatureId: EntityId[Creature],
       pos: Vector2,
@@ -59,27 +80,6 @@ object CreatureFactory {
         attackRange = attackRange
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
-    )
-  }
-
-  def rat(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float
-  ): Creature = {
-    CreatureFactory.produce(
-      creatureId = creatureId,
-      pos = pos,
-      player = player,
-      baseSpeed = baseSpeed,
-      maxLife = 40f,
-      damage = 10f,
-      attackRange = 0.8f,
-      textureNames = Map(
-        CreatureAnimationType.Body -> "rat"
-      ),
-      animationDefinition = Constants.RatAnimationDefinition
     )
   }
 }

@@ -44,4 +44,7 @@ object Constants {
   val EnemyAggroDistance = 3f
 
   val RespawnTime = 5f
+
+  val EnemyLoseAggroRange = 5f
+  val EnemyLoseAggroTime = 2f
 }
