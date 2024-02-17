@@ -2,7 +2,7 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
-import com.mygdx.game.gamestate.event.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
+import com.mygdx.game.gamestate.event._
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{Vector2, WorldDirection}
@@ -29,45 +29,23 @@ case class Creature(
         gameState
       )
       creature <- creature.updateTimers(delta)
-      creature <- Outcome.when(creature)(_.deathToBeHandled)(_.onDeath())
+      creature <- Outcome.when(creature)(_.deathToBeHandled)(creature =>
+        Outcome(creature).withEvents(
+          List(
+            CreatureDeathEvent(creature.id),
+            MakeBodySensorEvent(creature.id)
+          )
+        )
+      )
       creature <- Outcome.when(creature)(creature =>
         creature.params.deathAcknowledged && creature.params.respawnTimer.time > Constants.RespawnTime
-      )(_.respawn())
-    } yield creature
-  }
-
-  private def respawn(): Outcome[Creature] = {
-    Outcome(this)
-      .map(
-        _.modify(_.params.life)
-          .setTo(this.params.maxLife)
-          .modify(_.params.deathAcknowledged)
-          .setTo(false)
-          .modify(_.params.respawnTimer)
-          .using(_.stop())
-      )
-      .withEvents(
-        List(TeleportEvent(id, Vector2(5, 5)), MakeBodyNonSensorEvent(id))
-      )
-  }
-
-  private def onDeath(): Outcome[Creature] = {
-    for {
-      creature <- Outcome(this)
-      creature <- Outcome(
-        creature
-          .modify(_.params.deathAcknowledged)
-          .setTo(true)
-          .modify(_.params.deathAnimationTimer)
-          .using(_.restart())
-          .modify(_.params.attackAnimationTimer)
-          .using(_.restart().stop())
-      ).withEvents(List(MakeBodySensorEvent(creature.id)))
-      creature <- Outcome.when(creature)(_.params.player)(creature =>
-        Outcome(
-          creature
-            .modify(_.params.respawnTimer)
-            .using(_.restart())
+      )(creature =>
+        Outcome(creature).withEvents(
+          List(
+            CreatureRespawnEvent(creature.id),
+            TeleportEvent(id, Vector2(5, 5)),
+            MakeBodyNonSensorEvent(id)
+          )
         )
       )
     } yield creature
@@ -117,6 +95,8 @@ case class Creature(
         .setToIf(velocity.length > 0)(velocity)
     )
   }
+
+  def pos: Vector2 = params.pos
 
   private def stopMovingIfStuck(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
@@ -223,8 +203,6 @@ case class Creature(
       )
     }
   }
-
-  def pos: Vector2 = params.pos
 
   private[creature] def performAttack(
       mouseWorldPos: Vector2,

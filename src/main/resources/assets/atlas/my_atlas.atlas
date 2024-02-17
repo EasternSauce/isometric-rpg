@@ -6,11 +6,13 @@ bounds:2,5390,4096,1024
 greatbow
 bounds:2,4364,4096,1024
 ground
-bounds:2,2,128,256
+bounds:5766,7184,128,256
 leather_armor
 bounds:2,2312,4096,1024
 male_head1
 bounds:2,3338,4096,1024
+projectiles
+bounds:4100,6222,512,192
 rat
 bounds:2,6416,5376,1024
 staff
@@ -18,7 +20,7 @@ bounds:2,260,4096,1024
 steel_armor
 bounds:2,1286,4096,1024
 tree
-bounds:4100,6158,128,256
+bounds:2,2,128,256
 wanderer
 bounds:5380,6416,384,1024
 

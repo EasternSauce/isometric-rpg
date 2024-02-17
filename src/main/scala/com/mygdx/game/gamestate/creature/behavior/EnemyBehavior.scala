@@ -37,7 +37,7 @@ case class EnemyBehavior() extends CreatureBehavior {
               )
             )
             creature <- Outcome.when(creature)(creature =>
-              creature.params.loseAggroTimer.running && creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime
+              !targetCreature.alive || (creature.params.loseAggroTimer.running && creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime)
             )(loseAggro)
           } yield creature
       }
@@ -68,6 +68,7 @@ case class EnemyBehavior() extends CreatureBehavior {
 
     maybeClosestCreature match {
       case Some(closestCreature) =>
+        println("target found! is alive = " + closestCreature.alive)
         Outcome(
           creature
             .modify(_.params.currentTargetId)

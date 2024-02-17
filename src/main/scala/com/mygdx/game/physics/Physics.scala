@@ -73,9 +73,7 @@ case class Physics() {
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
 
-    val eventsToBeProcessed = eventQueue.filter(_.isInstanceOf[PhysicsEvent])
-
-    handleEvents(eventsToBeProcessed, gameState)
+    handleEvents(eventQueue, gameState)
 
     creatureBodies.values.foreach(_.update(gameState))
   }
@@ -94,13 +92,14 @@ case class Physics() {
       case MakeBodyNonSensorEvent(creatureId) =>
         val creature = gameState.creatures(creatureId)
         creatureBodies(creature.id).makeNonSensor()
+      case _ =>
     }
 
     eventQueue = eventQueue.filter(!eventsToBeProcessed.contains(_))
   }
 
-  def scheduleEvent(event: Event): Unit = {
-    eventQueue = eventQueue.appended(event)
+  def scheduleEvents(event: List[Event]): Unit = {
+    eventQueue = eventQueue.appendedAll(event)
   }
 
   def getCreaturePositions: Map[EntityId[Creature], Vector2] = {
