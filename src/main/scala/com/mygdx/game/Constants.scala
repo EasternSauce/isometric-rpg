@@ -18,7 +18,9 @@ object Constants {
     walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.075f),
     attackFrames =
       FramesDefinition(start = 12, count = 4, frameDuration = 0.1f),
-    deathFrames = FramesDefinition(start = 16, count = 8, frameDuration = 0.12f)
+    deathFrames = FramesDefinition(start = 16, count = 8, frameDuration = 0.12f),
+    spellcastFrames = Some(FramesDefinition(start = 24, count = 4, frameDuration = 0.3f)),
+    bowFrames = Some(FramesDefinition(start = 28, count = 4, frameDuration = 0.1f))
   )
 
   val RatAnimationDefinition: AnimationDefinition = AnimationDefinition(

@@ -1,7 +1,8 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType}
+import com.mygdx.game.gamestate.creature.PrimaryWeaponType.None
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
@@ -15,6 +16,8 @@ case class CreatureAnimation(
   private var attackAnimations: Array[Animation[TextureRegion]] = _
   private var walkAnimations: Array[Animation[TextureRegion]] = _
   private var deathAnimations: Array[Animation[TextureRegion]] = _
+  private var spellcastAnimations: Array[Animation[TextureRegion]] = _
+  private var bowAnimations: Array[Animation[TextureRegion]] = _
   private var textureRegion: TextureRegion = _
 
   def init(gameState: GameState): Unit = {
@@ -48,6 +51,16 @@ case class CreatureAnimation(
     deathAnimations = loadAnimations(
       creature.params.animationDefinition.deathFrames
     )
+    if(creature.params.animationDefinition.spellcastFrames.nonEmpty) {
+      spellcastAnimations = loadAnimations(
+        creature.params.animationDefinition.spellcastFrames.get
+      )
+    }
+    if(creature.params.animationDefinition.bowFrames.nonEmpty) {
+      bowAnimations = loadAnimations(
+        creature.params.animationDefinition.bowFrames.get
+      )
+    }
 
     standstillAnimations.foreach(
       _.setPlayMode(Animation.PlayMode.LOOP_PINGPONG)
@@ -86,8 +99,13 @@ case class CreatureAnimation(
       if (
         creature.params.attackAnimationTimer.running && creature.params.attackAnimationTimer.time < creature.params.animationDefinition.attackFrames.totalDuration
       ) {
-        attackAnimations(creature.facingDirection.id)
-          .getKeyFrame(creature.params.attackAnimationTimer.time, false)
+        if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
+          bowAnimations(creature.facingDirection.id)
+            .getKeyFrame(creature.params.attackAnimationTimer.time, false)
+        } else {
+          attackAnimations(creature.facingDirection.id)
+            .getKeyFrame(creature.params.attackAnimationTimer.time, false)
+        }
       } else if (creature.moving) {
         walkAnimations(creature.facingDirection.id)
           .getKeyFrame(creature.params.animationTimer.time, true)

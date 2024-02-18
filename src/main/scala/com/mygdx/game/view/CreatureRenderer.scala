@@ -1,7 +1,11 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.creature.{
+  Creature,
+  PrimaryWeaponType,
+  SecondaryWeaponType
+}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
@@ -39,7 +43,16 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
     val creature = gameState.creatures(creatureId)
 
     if (creature.invisible) {
-      animations.values.foreach(_.render(batch, gameState))
+      animations(CreatureAnimationType.Body).render(batch, gameState)
+      if (!creature.params.renderBodyOnly) {
+        animations(CreatureAnimationType.Head).render(batch, gameState)
+      }
+      if (creature.params.primaryWeaponType != PrimaryWeaponType.None) {
+        animations(CreatureAnimationType.Weapon).render(batch, gameState)
+      }
+      if (creature.params.secondaryWeaponType == SecondaryWeaponType.Shield) {
+        animations(CreatureAnimationType.Shield).render(batch, gameState)
+      }
     }
   }
 

@@ -1,10 +1,12 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate.EntityId
+import com.mygdx.game.gamestate.creature.PrimaryWeaponType.{Bow, None, PrimaryWeaponType}
+import com.mygdx.game.gamestate.creature.SecondaryWeaponType.SecondaryWeaponType
 import com.mygdx.game.gamestate.creature.behavior.{EnemyBehavior, PlayerBehavior}
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.CreatureAnimationType
-import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
+import com.mygdx.game.view.CreatureAnimationType.{CreatureAnimationType, Weapon}
 import com.mygdx.game.{AnimationDefinition, Constants}
 
 object CreatureFactory {
@@ -25,23 +27,29 @@ object CreatureFactory {
       textureNames = Map(
         CreatureAnimationType.Body -> "steel_armor",
         CreatureAnimationType.Head -> "male_head1",
-        CreatureAnimationType.Weapon -> "greatstaff",
+        CreatureAnimationType.Weapon -> "longbow",
         CreatureAnimationType.Shield -> "shield"
       ),
-      animationDefinition = Constants.HumanAnimationDefinition
+      animationDefinition = Constants.HumanAnimationDefinition,
+      primaryWeaponType = PrimaryWeaponType.Bow,
+      secondaryWeaponType = SecondaryWeaponType.None,
+      renderBodyOnly = false
     )
   }
 
   private def produce(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float,
-      maxLife: Float,
-      damage: Float,
-      attackRange: Float,
-      textureNames: Map[CreatureAnimationType, String],
-      animationDefinition: AnimationDefinition
+                       creatureId: EntityId[Creature],
+                       pos: Vector2,
+                       player: Boolean,
+                       baseSpeed: Float,
+                       maxLife: Float,
+                       damage: Float,
+                       attackRange: Float,
+                       textureNames: Map[CreatureAnimationType, String],
+                       animationDefinition: AnimationDefinition,
+                       primaryWeaponType: PrimaryWeaponType,
+                       secondaryWeaponType: SecondaryWeaponType,
+                       renderBodyOnly: Boolean
   ): Creature = {
     Creature(
       CreatureParams(
@@ -56,7 +64,10 @@ object CreatureFactory {
         maxLife = maxLife,
         damage = damage,
         animationDefinition = animationDefinition,
-        attackRange = attackRange
+        attackRange = attackRange,
+        primaryWeaponType = primaryWeaponType,
+        secondaryWeaponType = secondaryWeaponType,
+        renderBodyOnly = renderBodyOnly
       ),
       creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
@@ -79,7 +90,10 @@ object CreatureFactory {
       textureNames = Map(
         CreatureAnimationType.Body -> "rat"
       ),
-      animationDefinition = Constants.RatAnimationDefinition
+      animationDefinition = Constants.RatAnimationDefinition,
+      primaryWeaponType = PrimaryWeaponType.None,
+      secondaryWeaponType = SecondaryWeaponType.None,
+      renderBodyOnly = true
     )
   }
 }
