@@ -51,12 +51,8 @@ case class Creature(
     } yield creature
   }
 
-  def id: EntityId[Creature] = params.id
-
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
-
-  def alive: Boolean = params.life > 0
 
   private def updateMovement(
       newPos: Vector2,
@@ -71,10 +67,27 @@ case class Creature(
         creatureBehavior
           .updateMovement(_, input, clientInformation, gameState)
       )
+      creature <- Outcome.when(creature)(_.creatureAttackCompleted) {
+        creature =>
+          Outcome(creature.modify(_.params.attackPending).setTo(false))
+            .withEvents(
+              List(
+                CreatureAttackEvent(
+                  creature.id,
+                  creature.params.attackedCreatureId.get,
+                  creature.params.damage
+                )
+              )
+            )
+      }
       creature <- creature.stopMovingIfStuck()
       creature <- creature.updateVelocity()
     } yield creature
   }
+
+  def id: EntityId[Creature] = params.id
+
+  def alive: Boolean = params.life > 0
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = pos.vectorTowards(params.destination)
@@ -95,8 +108,6 @@ case class Creature(
         .setToIf(velocity.length > 0)(velocity)
     )
   }
-
-  def pos: Vector2 = params.pos
 
   private def stopMovingIfStuck(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
@@ -137,6 +148,11 @@ case class Creature(
       )
   }
 
+  private[creature] def creatureAttackCompleted: Boolean = {
+    this.params.attackedCreatureId.nonEmpty && this.params.attackAnimationTimer.running &&
+    this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
+  }
+
   private def updateTimers(delta: Float): Outcome[Creature] = {
     Outcome(
       this
@@ -175,14 +191,6 @@ case class Creature(
 
   def moving: Boolean = params.velocity.length > 0
 
-  def takeDamage(damage: Float): Creature = {
-    if (params.life - damage > 0) {
-      this.modify(_.params.life).setTo(params.life - damage)
-    } else {
-      this.modify(_.params.life).setTo(0)
-    }
-  }
-
   private[creature] def moveTowardsTarget(
       input: Input,
       mouseWorldPos: Vector2
@@ -204,50 +212,37 @@ case class Creature(
     }
   }
 
-  private[creature] def performAttack(
-      mouseWorldPos: Vector2,
+  def pos: Vector2 = params.pos
+
+  private[creature] def creatureAttackStart(
+      otherCreatureId: EntityId[Creature],
       gameState: GameState
   ): Outcome[Creature] = {
-    val maybeClosestCreature =
-      CreaturesFinderUtils.getAliveCreatureClosestTo(
-        mouseWorldPos,
-        List(id),
-        gameState
-      )
+    val otherCreature = gameState.creatures(otherCreatureId)
 
-    for {
-      creature <- attackCreature(maybeClosestCreature)
-      creature <- Outcome(
+    Outcome.when(this)(_ =>
+      otherCreature.pos
+        .distance(pos) < params.attackRange
+    )(creature =>
+      Outcome(
         creature
+          .modify(_.params.facingVector)
+          .setTo(
+            creature.pos
+              .vectorTowards(otherCreature.pos)
+          )
+          .modify(_.params.attackedCreatureId)
+          .setTo(Some(otherCreature.id))
+          .modify(_.params.attackPending)
+          .setTo(true)
           .modify(_.params.attackAnimationTimer)
           .using(_.restart())
       )
-      creature <- creature.stopMoving()
-    } yield creature
+    )
   }
 
-  private def attackCreature(
-      maybeClosestCreature: Option[Creature]
-  ): Outcome[Creature] = maybeClosestCreature match {
-    case Some(closestCreature) =>
-      Outcome.when(this)(_ =>
-        closestCreature.pos
-          .distance(pos) < params.attackRange
-      )(creature =>
-        Outcome(
-          creature
-            .modify(_.params.facingVector)
-            .setTo(
-              creature.pos
-                .vectorTowards(closestCreature.pos)
-            )
-            .modify(_.params.attackedCreatureId)
-            .setTo(Some(closestCreature.id))
-        )
-      )
-    case None => Outcome(this)
-  }
-
-  private[creature] def attackingAllowed: Boolean =
+  private[creature] def attackAllowed: Boolean = {
     !this.params.attackAnimationTimer.running || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
+  }
+
 }

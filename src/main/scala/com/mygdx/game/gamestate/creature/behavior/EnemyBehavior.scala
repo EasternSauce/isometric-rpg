@@ -68,7 +68,6 @@ case class EnemyBehavior() extends CreatureBehavior {
 
     maybeClosestCreature match {
       case Some(closestCreature) =>
-        println("target found! is alive = " + closestCreature.alive)
         Outcome(
           creature
             .modify(_.params.currentTargetId)
@@ -96,17 +95,9 @@ case class EnemyBehavior() extends CreatureBehavior {
       )
     } else {
       for {
-        creature <- Outcome.when(creature)(
-          targetCreature.alive && _.attackingAllowed
-        )(creature =>
-          Outcome(
-            creature
-              .modify(_.params.attackAnimationTimer)
-              .using(_.restart())
-              .modify(_.params.attackedCreatureId)
-              .setTo(Some(targetCreature.id))
-          )
-        )
+        creature <- Outcome.when(creature)(creature =>
+          targetCreature.alive && creature.attackAllowed
+        )(_.creatureAttackStart(targetCreature.id, gameState))
         creature <- creature.stopMoving()
       } yield creature
     }

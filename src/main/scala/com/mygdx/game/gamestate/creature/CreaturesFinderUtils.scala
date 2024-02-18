@@ -4,11 +4,11 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 object CreaturesFinderUtils {
-  def getAliveCreatureClosestTo(
+  def getAliveCreatureIdClosestTo(
       point: Vector2,
       ignored: List[EntityId[Creature]],
       gameState: GameState
-  ): Option[Creature] = {
+  ): Option[EntityId[Creature]] = {
     var closestCreature: Option[Creature] = None
 
     gameState.creatures.values
@@ -23,6 +23,6 @@ object CreaturesFinderUtils {
         }
       }
 
-    closestCreature
+    closestCreature.map(_.id)
   }
 }

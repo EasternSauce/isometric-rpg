@@ -28,5 +28,6 @@ case class CreatureParams(
     attackRange: Float,
     respawnTimer: SimpleTimer = SimpleTimer(running = false),
     currentTargetId: Option[EntityId[Creature]] = None,
-    loseAggroTimer: SimpleTimer = SimpleTimer(running = false)
+    loseAggroTimer: SimpleTimer = SimpleTimer(running = false),
+    attackPending: Boolean = false
 ) {}

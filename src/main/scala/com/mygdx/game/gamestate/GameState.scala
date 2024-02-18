@@ -1,8 +1,8 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.creature.{Creature, CreatureAttackUtils, CreatureFactory}
-import com.mygdx.game.gamestate.event.{CreatureDeathEvent, CreatureRespawnEvent, Event}
+import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
+import com.mygdx.game.gamestate.event.{CreatureAttackEvent, CreatureDeathEvent, CreatureRespawnEvent, Event}
 import com.mygdx.game.input.Input
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Chaining.customUtilChainingOps
@@ -40,7 +40,6 @@ case class GameState(
         outcome.obj
       }
       .pipe(EnemySpawnUtils.processSpawns)
-      .pipe(CreatureAttackUtils.processAttacks)
       .pipe(handleEvents(events))
 
     physics.scheduleEvents(events)
@@ -61,7 +60,7 @@ case class GameState(
                 .modify(_.params.deathAnimationTimer)
                 .using(_.restart())
                 .modify(_.params.attackAnimationTimer)
-                .using(_.restart().stop())
+                .using(_.stop())
                 .pipeIf(_.params.player)(
                   _.modify(_.params.respawnTimer)
                     .using(_.restart())
@@ -79,6 +78,23 @@ case class GameState(
                 .modify(_.params.respawnTimer)
                 .using(_.stop())
             )
+        case CreatureAttackEvent(
+              _,
+              destinationCreatureId,
+              damage
+            ) =>
+          gameState
+            .modify(_.creatures.at(destinationCreatureId))
+            .using(creature =>
+              if (creature.params.life - damage > 0) {
+                creature
+                  .modify(_.params.life)
+                  .setTo(creature.params.life - damage)
+              } else {
+                creature.modify(_.params.life).setTo(0)
+              }
+            )
+
         case _ => gameState
       }
 

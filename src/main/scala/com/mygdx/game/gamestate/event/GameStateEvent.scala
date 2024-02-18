@@ -10,3 +10,9 @@ case class CreatureDeathEvent(creatureId: EntityId[Creature])
 
 case class CreatureRespawnEvent(creatureId: EntityId[Creature])
     extends GameStateEvent
+
+case class CreatureAttackEvent(
+    sourceCreatureId: EntityId[Creature],
+    destinationCreatureId: EntityId[Creature],
+    damage: Float
+) extends GameStateEvent
