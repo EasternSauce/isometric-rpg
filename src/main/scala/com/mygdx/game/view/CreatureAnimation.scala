@@ -2,7 +2,6 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
 import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType}
-import com.mygdx.game.gamestate.creature.PrimaryWeaponType.None
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.WorldDirection
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
@@ -51,12 +50,12 @@ case class CreatureAnimation(
     deathAnimations = loadAnimations(
       creature.params.animationDefinition.deathFrames
     )
-    if(creature.params.animationDefinition.spellcastFrames.nonEmpty) {
+    if (creature.params.animationDefinition.spellcastFrames.nonEmpty) {
       spellcastAnimations = loadAnimations(
         creature.params.animationDefinition.spellcastFrames.get
       )
     }
-    if(creature.params.animationDefinition.bowFrames.nonEmpty) {
+    if (creature.params.animationDefinition.bowFrames.nonEmpty) {
       bowAnimations = loadAnimations(
         creature.params.animationDefinition.bowFrames.get
       )
