@@ -36,7 +36,11 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
   }
 
   override def render(batch: SpriteBatch, gameState: GameState): Unit = {
-    animations.values.foreach(_.render(batch, gameState))
+    val creature = gameState.creatures(creatureId)
+
+    if (creature.invisible) {
+      animations.values.foreach(_.render(batch, gameState))
+    }
   }
 
   def renderLifeBar(spriteBatch: SpriteBatch, gameState: GameState): Unit = {
@@ -71,5 +75,11 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
       Rectangle(barPos.x, barPos.y, lifeBarWidth, lifeBarHeight),
       color
     )
+  }
+
+  override def alive(gameState: GameState): Boolean = {
+    val creature = gameState.creatures(creatureId)
+
+    creature.alive
   }
 }

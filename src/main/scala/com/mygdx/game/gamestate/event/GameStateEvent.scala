@@ -8,6 +8,9 @@ sealed trait GameStateEvent extends Event
 case class CreatureDeathEvent(creatureId: EntityId[Creature])
     extends GameStateEvent
 
+case class CreatureRespawnDelayStartEvent(creatureId: EntityId[Creature])
+    extends GameStateEvent
+
 case class CreatureRespawnEvent(creatureId: EntityId[Creature])
     extends GameStateEvent
 

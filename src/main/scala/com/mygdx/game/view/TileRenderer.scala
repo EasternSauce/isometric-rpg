@@ -31,4 +31,6 @@ case class TileRenderer(cell: TiledMapTileLayer.Cell, pos: Vector2)
   def walkable: Boolean = {
     cell.getTile.getProperties.get("walkable").asInstanceOf[Boolean]
   }
+
+  override def alive(gameState: GameState): Boolean = false
 }

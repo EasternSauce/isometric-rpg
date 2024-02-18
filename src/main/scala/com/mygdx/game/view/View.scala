@@ -53,24 +53,38 @@ case class View() {
 
     layer0Cells.foreach(_.render(batch, gameState))
 
-    val creatureRenderables =
-      gameState.creatures.keys.toList.map(creatureId =>
-        creatureRenderers(creatureId)
-      )
+    val aliveCreatureRenderables =
+      gameState.creatures
+        .filter { case (_, creature) => creature.alive }
+        .keys
+        .toList
+        .map(creatureId => creatureRenderers(creatureId))
 
-    val overgroundRenderables = layer1Cells ++ creatureRenderables
+    val deadCreatureRenderables =
+      gameState.creatures
+        .filter { case (_, creature) => !creature.alive }
+        .keys
+        .toList
+        .map(creatureId => creatureRenderers(creatureId))
 
     def distanceFromCameraPlane(pos: Vector2): Float = {
       Math.abs(-pos.x + pos.y + levelMap.getMapWidth) / Math.sqrt(2).toFloat
     }
 
-    overgroundRenderables
-      .sorted((renderableA: Renderable, renderableB: Renderable) => {
+    val sortFunction: Ordering[Renderable] =
+      (renderableA: Renderable, renderableB: Renderable) => {
         val posA = renderableA.pos(gameState)
         val posB = renderableB.pos(gameState)
 
         distanceFromCameraPlane(posB).compare(distanceFromCameraPlane(posA))
-      })
+      }
+
+    deadCreatureRenderables
+      .sorted(sortFunction)
+      .foreach(_.render(batch, gameState))
+
+    (layer1Cells ++ aliveCreatureRenderables)
+      .sorted(sortFunction)
       .foreach(_.render(batch, gameState))
 
     creatureRenderers.values.foreach(_.renderLifeBar(batch, gameState))

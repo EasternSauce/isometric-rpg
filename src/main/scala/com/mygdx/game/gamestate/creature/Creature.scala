@@ -38,21 +38,32 @@ case class Creature(
         )
       )
       creature <- Outcome.when(creature)(creature =>
-        creature.params.deathAcknowledged && creature.params.respawnTimer.time > Constants.RespawnTime
+        creature.params.deathAcknowledged && creature.params.respawnTimer.time > Constants.RespawnTime && !creature.params.respawnDelayInProgress
       )(creature =>
         Outcome(creature).withEvents(
           List(
-            CreatureRespawnEvent(creature.id),
+            CreatureRespawnDelayStartEvent(creature.id),
             TeleportEvent(id, Vector2(5, 5)),
             MakeBodyNonSensorEvent(id)
           )
         )
+      )
+      creature <- Outcome.when(creature)(creature =>
+        creature.params.respawnDelayInProgress && creature.params.respawnDelayTimer.time > Constants.RespawnDelayTime
+      )(creature =>
+        Outcome(
+          creature
+            .modify(_.params.respawnDelayInProgress)
+            .setTo(false)
+        ).withEvents(List(CreatureRespawnEvent(creature.id)))
       )
     } yield creature
   }
 
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
+
+  def alive: Boolean = params.life > 0
 
   private def updateMovement(
       newPos: Vector2,
@@ -84,10 +95,6 @@ case class Creature(
       creature <- creature.updateVelocity()
     } yield creature
   }
-
-  def id: EntityId[Creature] = params.id
-
-  def alive: Boolean = params.life > 0
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = pos.vectorTowards(params.destination)
@@ -153,6 +160,8 @@ case class Creature(
     this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
   }
 
+  def id: EntityId[Creature] = params.id
+
   private def updateTimers(delta: Float): Outcome[Creature] = {
     Outcome(
       this
@@ -167,6 +176,8 @@ case class Creature(
         .modify(_.params.respawnTimer)
         .using(_.update(delta))
         .modify(_.params.loseAggroTimer)
+        .using(_.update(delta))
+        .modify(_.params.respawnDelayTimer)
         .using(_.update(delta))
     )
   }
@@ -190,6 +201,8 @@ case class Creature(
   }
 
   def moving: Boolean = params.velocity.length > 0
+
+  def invisible: Boolean = !params.respawnDelayInProgress
 
   private[creature] def moveTowardsTarget(
       input: Input,

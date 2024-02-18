@@ -29,5 +29,7 @@ case class CreatureParams(
     respawnTimer: SimpleTimer = SimpleTimer(running = false),
     currentTargetId: Option[EntityId[Creature]] = None,
     loseAggroTimer: SimpleTimer = SimpleTimer(running = false),
-    attackPending: Boolean = false
+    attackPending: Boolean = false,
+    respawnDelayTimer: SimpleTimer = SimpleTimer(running = false),
+    respawnDelayInProgress: Boolean = false
 ) {}

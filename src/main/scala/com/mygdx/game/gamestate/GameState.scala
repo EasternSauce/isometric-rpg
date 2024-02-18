@@ -2,7 +2,7 @@ package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
-import com.mygdx.game.gamestate.event.{CreatureAttackEvent, CreatureDeathEvent, CreatureRespawnEvent, Event}
+import com.mygdx.game.gamestate.event._
 import com.mygdx.game.input.Input
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Chaining.customUtilChainingOps
@@ -65,6 +65,15 @@ case class GameState(
                   _.modify(_.params.respawnTimer)
                     .using(_.restart())
                 )
+            )
+        case CreatureRespawnDelayStartEvent(creatureId) =>
+          gameState
+            .modify(_.creatures.at(creatureId))
+            .using(
+              _.modify(_.params.respawnDelayTimer)
+                .using(_.restart())
+                .modify(_.params.respawnDelayInProgress)
+                .setTo(true)
             )
         case CreatureRespawnEvent(creatureId) =>
           gameState
