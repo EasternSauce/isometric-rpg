@@ -63,8 +63,6 @@ case class Creature(
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
 
-  def alive: Boolean = params.life > 0
-
   private def updateMovement(
       newPos: Vector2,
       input: Input,
@@ -96,6 +94,8 @@ case class Creature(
     } yield creature
   }
 
+  def alive: Boolean = params.life > 0
+
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = pos.vectorTowards(params.destination)
 
@@ -115,6 +115,8 @@ case class Creature(
         .setToIf(velocity.length > 0)(velocity)
     )
   }
+
+  def pos: Vector2 = params.pos
 
   private def stopMovingIfStuck(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
@@ -224,8 +226,6 @@ case class Creature(
       )
     }
   }
-
-  def pos: Vector2 = params.pos
 
   private[creature] def creatureAttackStart(
       otherCreatureId: EntityId[Creature],

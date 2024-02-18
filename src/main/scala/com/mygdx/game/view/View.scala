@@ -1,6 +1,7 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
+import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
@@ -13,6 +14,7 @@ case class View() {
   private val b2DebugViewport: Viewport = Viewport()
 
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
+  private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
   private var levelMap: LevelMap = _
 
   def init(
@@ -29,6 +31,8 @@ case class View() {
     )
 
     creatureRenderers.values.foreach(_.init(gameState))
+
+    abilityRenderers = Map()
 
     worldViewport.init(
       1,
@@ -87,6 +91,8 @@ case class View() {
       .sorted(sortFunction)
       .foreach(_.render(batch, gameState))
 
+    abilityRenderers.values.foreach(_.render(batch, gameState))
+
     creatureRenderers.values.foreach(_.renderLifeBar(batch, gameState))
 
     batch.end()
@@ -99,14 +105,23 @@ case class View() {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
-    val renderersToCreate =
+    val creatureRenderersToCreate =
       gameState.creatures.keys.toSet -- creatureRenderers.keys.toSet
 
-    renderersToCreate.foreach { creatureId =>
+    creatureRenderersToCreate.foreach { creatureId =>
       val creatureRenderer = CreatureRenderer(creatureId)
       creatureRenderer.init(gameState)
       creatureRenderers =
         creatureRenderers.updated(creatureId, creatureRenderer)
+    }
+
+    val abilityRenderersToCreate =
+      gameState.abilities.keys.toSet -- abilityRenderers.keys.toSet
+
+    abilityRenderersToCreate.foreach { abilityId =>
+      val abilityRenderer = AbilityRenderer(abilityId)
+      abilityRenderer.init(gameState)
+      abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
     }
 
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)

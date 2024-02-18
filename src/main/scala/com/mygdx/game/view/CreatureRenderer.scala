@@ -86,7 +86,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
     )
   }
 
-  override def alive(gameState: GameState): Boolean = {
+  override def renderPriority(gameState: GameState): Boolean = {
     val creature = gameState.creatures(creatureId)
 
     creature.alive

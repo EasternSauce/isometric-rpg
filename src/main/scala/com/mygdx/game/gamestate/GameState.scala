@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.ClientInformation
+import com.mygdx.game.gamestate.ability.{Ability, AbilityParams, Arrow}
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.input.Input
@@ -13,6 +14,7 @@ import scala.util.chaining.scalaUtilChainingOps
 
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
+    abilities: Map[EntityId[Ability], Ability],
     creatureCounter: Int
 ) {
 
@@ -124,6 +126,11 @@ object GameState {
       creatures = Map(
         clientInformation.clientCreatureId ->
           player
+      ),
+      abilities = Map(
+        EntityId[Ability]("testability1") -> Arrow(
+          AbilityParams(EntityId[Ability]("testability1"), Vector2(3, 0))
+        )
       ),
       creatureCounter = 0
     )

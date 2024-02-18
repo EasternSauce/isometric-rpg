@@ -34,7 +34,7 @@ case class CreatureAnimation(
     deathAnimations =
       new Array[Animation[TextureRegion]](WorldDirection.values.size)
 
-    textureRegion = Assets.atlas.get.findRegion(
+    textureRegion = Assets.atlas.findRegion(
       creature.params.textureNames(creatureAnimationType)
     )
 
