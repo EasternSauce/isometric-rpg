@@ -76,22 +76,30 @@ case class Creature(
         creatureBehavior
           .updateMovement(_, input, clientInformation, gameState)
       )
-      creature <- Outcome.when(creature)(_.creatureAttackCompleted) {
-        creature =>
-          Outcome(creature.modify(_.params.attackPending).setTo(false))
-            .withEvents(
-              List(
-                CreatureAttackEvent(
-                  creature.id,
-                  creature.params.attackedCreatureId.get,
-                  creature.params.damage
-                )
-              )
-            )
-      }
-      creature <- creature.stopMovingIfStuck()
+      creature <- creature.attackTarget()
+      creature <- creature.handleWalkingIntoObstacles()
       creature <- creature.updateVelocity()
     } yield creature
+  }
+
+  private def attackTarget(): Outcome[Creature] = {
+    Outcome.when(this)(_.creatureAttackCompleted) { creature =>
+      Outcome(creature.modify(_.params.attackPending).setTo(false))
+        .withEvents(
+          List(
+            CreatureAttackEvent(
+              creature.id,
+              creature.params.attackedCreatureId.get,
+              creature.params.damage
+            )
+          )
+        )
+    }
+  }
+
+  private[creature] def creatureAttackCompleted: Boolean = {
+    this.params.attackedCreatureId.nonEmpty && this.params.attackAnimationTimer.running &&
+    this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
   }
 
   def alive: Boolean = params.life > 0
@@ -116,9 +124,7 @@ case class Creature(
     )
   }
 
-  def pos: Vector2 = params.pos
-
-  private def stopMovingIfStuck(): Outcome[Creature] = {
+  private def handleWalkingIntoObstacles(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
       for {
         creature <- Outcome(
@@ -155,11 +161,6 @@ case class Creature(
         _.modify(_.params.pos)
           .setTo(pos)
       )
-  }
-
-  private[creature] def creatureAttackCompleted: Boolean = {
-    this.params.attackedCreatureId.nonEmpty && this.params.attackAnimationTimer.running &&
-    this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
   }
 
   def id: EntityId[Creature] = params.id
@@ -227,6 +228,8 @@ case class Creature(
     }
   }
 
+  def pos: Vector2 = params.pos
+
   private[creature] def creatureAttackStart(
       otherCreatureId: EntityId[Creature],
       gameState: GameState
@@ -248,8 +251,6 @@ case class Creature(
           .setTo(Some(otherCreature.id))
           .modify(_.params.attackPending)
           .setTo(true)
-          .modify(_.params.attackAnimationTimer)
-          .using(_.restart())
       )
     )
   }

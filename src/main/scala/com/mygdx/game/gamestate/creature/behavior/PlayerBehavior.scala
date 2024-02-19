@@ -23,7 +23,7 @@ case class PlayerBehavior() extends CreatureBehavior {
       )
       creature <- Outcome.when(creature)(creature =>
         creature.alive && input.attackButtonJustPressed && creature.attackAllowed
-      )(performAttack(mouseWorldPos, gameState))
+      )(playerAttackClick(mouseWorldPos, gameState))
     } yield creature
   }
 
@@ -37,7 +37,7 @@ case class PlayerBehavior() extends CreatureBehavior {
     mouseWorldPos
   }
 
-  private def performAttack(
+  private def playerAttackClick(
       mouseWorldPos: Vector2,
       gameState: GameState
   ): Creature => Outcome[Creature] = { creature =>
@@ -50,8 +50,7 @@ case class PlayerBehavior() extends CreatureBehavior {
 
     for {
       creature <- Outcome.when(creature)(_ => maybeClosestCreatureId.nonEmpty)(
-        creature =>
-          creature.creatureAttackStart(maybeClosestCreatureId.get, gameState)
+        _.creatureAttackStart(maybeClosestCreatureId.get, gameState)
       )
       creature <- Outcome(
         creature

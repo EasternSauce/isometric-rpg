@@ -12,7 +12,7 @@ case class CreatureParams(
     pos: Vector2,
     velocity: Vector2 = Vector2(0, 0),
     destination: Vector2,
-    facingVector: Vector2 = Vector2(0, 0),
+    facingVector: Vector2 = Vector2(1, 0),
     lastPos: Vector2,
     textureNames: Map[CreatureAnimationType, String],
     animationTimer: SimpleTimer = SimpleTimer(running = true),

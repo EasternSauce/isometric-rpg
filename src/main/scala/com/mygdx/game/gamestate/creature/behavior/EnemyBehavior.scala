@@ -14,10 +14,9 @@ case class EnemyBehavior() extends CreatureBehavior {
       gameState: GameState
   ): Outcome[Creature] = {
     for {
-      creature <- Outcome.when(creature)(_.params.currentTargetId.isEmpty) {
-        creature =>
-          lookForNewTarget(creature, gameState)
-      }
+      creature <- Outcome.when(creature)(_.params.currentTargetId.isEmpty)(
+        lookForNewTarget(_, gameState)
+      )
       creature <- Outcome.when(creature)(_.params.currentTargetId.nonEmpty) {
         creature =>
           val targetCreature =
@@ -98,7 +97,10 @@ case class EnemyBehavior() extends CreatureBehavior {
         creature <- Outcome.when(creature)(creature =>
           targetCreature.alive && creature.attackAllowed
         )(_.creatureAttackStart(targetCreature.id, gameState))
-        creature <- creature.stopMoving()
+        creature <- creature
+          .modify(_.params.attackAnimationTimer)
+          .using(_.restart())
+          .stopMoving()
       } yield creature
     }
 

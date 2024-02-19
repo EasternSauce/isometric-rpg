@@ -1,12 +1,12 @@
 package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
-case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
-  def init(world: World, pos: Vector2): Unit = {
+case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
+  override def init(world: World, pos: Vector2): Unit = {
     this.body = {
       import com.badlogic.gdx.physics.box2d._
 
@@ -20,25 +20,17 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       val shape = new CircleShape()
       shape.setRadius(0.2f)
       fixtureDef.shape = shape
+      fixtureDef.isSensor = true
 
       body.createFixture(fixtureDef)
-
-      body.setLinearDamping(10f)
-
-      val massData = new MassData
-      massData.mass = 1000f
-      body.setMassData(massData)
 
       body
     }
   }
 
   override def update(gameState: GameState): Unit = {
-    val creature = gameState.creatures(creatureId)
+    val ability = gameState.abilities(abilityId)
 
-    body.setLinearVelocity(
-      creature.params.velocity.x,
-      creature.params.velocity.y
-    )
+    body.setLinearVelocity(ability.params.velocity.x, ability.params.velocity.y)
   }
 }

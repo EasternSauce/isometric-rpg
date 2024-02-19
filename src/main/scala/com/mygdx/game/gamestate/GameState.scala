@@ -15,11 +15,12 @@ import scala.util.chaining.scalaUtilChainingOps
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
     abilities: Map[EntityId[Ability], Ability],
-    creatureCounter: Int
+    creatureCounter: Int = 0
 ) {
 
   def update(
       creaturePositions: Map[EntityId[Creature], Vector2],
+      abilityPositions: Map[EntityId[Ability], Vector2],
       input: Input,
       clientInformation: ClientInformation,
       physics: Physics,
@@ -37,6 +38,17 @@ case class GameState(
             clientInformation = clientInformation,
             gameState = this
           )
+
+        events = events.appendedAll(outcome.events)
+        outcome.obj
+      }
+      .modify(_.abilities.each)
+      .using { ability =>
+        val outcome = ability.update(
+          delta = delta,
+          newPos = abilityPositions(ability.id),
+          gameState = this
+        )
 
         events = events.appendedAll(outcome.events)
         outcome.obj
@@ -129,10 +141,13 @@ object GameState {
       ),
       abilities = Map(
         EntityId[Ability]("testability1") -> Arrow(
-          AbilityParams(EntityId[Ability]("testability1"), Vector2(3, 0))
+          AbilityParams(
+            EntityId[Ability]("testability1"),
+            pos = Vector2(3, 3),
+            velocity = Vector2(0f, 2f)
+          )
         )
-      ),
-      creatureCounter = 0
+      )
     )
   }
 }

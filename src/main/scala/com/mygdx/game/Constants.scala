@@ -9,7 +9,7 @@ object Constants {
 
   val TileSize = 64
 
-  val EnableDebug = false
+  val EnableDebug = true
 
   val MapTextureScale = 2f
 

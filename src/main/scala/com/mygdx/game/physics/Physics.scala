@@ -1,6 +1,7 @@
 package com.mygdx.game.physics
 
 import com.mygdx.game.ClientInformation
+import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.{EntityId, GameState}
@@ -10,6 +11,7 @@ import com.mygdx.game.util.Vector2
 case class Physics() {
   private var world: World = _
   private var creatureBodies: Map[EntityId[Creature], CreatureBody] = _
+  private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
   private var staticBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
   private var eventQueue: List[Event] = _
@@ -27,6 +29,7 @@ case class Physics() {
     playerBody.init(world, player.pos)
 
     creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
+    abilityBodies = Map()
 
     this.clientInformation = clientInformation
 
@@ -60,10 +63,10 @@ case class Physics() {
   def update(gameState: GameState): Unit = {
     world.update()
 
-    val bodiesToCreate =
+    val creatureBodiesToCreate =
       gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
 
-    bodiesToCreate.foreach { creatureId =>
+    creatureBodiesToCreate.foreach { creatureId =>
       val creature = gameState.creatures(creatureId)
 
       val creatureBody = CreatureBody(creatureId)
@@ -73,9 +76,23 @@ case class Physics() {
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
 
+    val abilityBodiesToCreate =
+      gameState.abilities.keys.toSet -- abilityBodies.keys.toSet
+
+    abilityBodiesToCreate.foreach { abilityId =>
+      val creature = gameState.abilities(abilityId)
+
+      val abilityBody = AbilityBody(abilityId)
+
+      abilityBody.init(world, creature.pos)
+
+      abilityBodies = abilityBodies.updated(abilityId, abilityBody)
+    }
+
     handleEvents(eventQueue, gameState)
 
     creatureBodies.values.foreach(_.update(gameState))
+    abilityBodies.values.foreach(_.update(gameState))
   }
 
   private def handleEvents(
@@ -107,6 +124,15 @@ case class Physics() {
       .map(creatureBody => {
         val pos = creatureBody.pos
         (creatureBody.creatureId, pos)
+      })
+      .toMap
+  }
+
+  def getAbilityPositions: Map[EntityId[Ability], Vector2] = {
+    abilityBodies.values
+      .map(abilityBody => {
+        val pos = abilityBody.pos
+        (abilityBody.abilityId, pos)
       })
       .toMap
   }

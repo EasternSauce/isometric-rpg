@@ -1,6 +1,7 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
+import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.input.Input
@@ -33,7 +34,12 @@ case class Gameplay() {
     val input = Input.poll()
 
     physics.update(gameState)
-    updateGameState(physics.getCreaturePositions, input, delta)
+    updateGameState(
+      physics.getCreaturePositions,
+      physics.getAbilityPositions,
+      input,
+      delta
+    )
     view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
@@ -76,11 +82,13 @@ case class Gameplay() {
 
   private def updateGameState(
       creaturePositions: Map[EntityId[Creature], Vector2],
+      abilityPositions: Map[EntityId[Ability], Vector2],
       input: Input,
       delta: Float
   ): Unit = {
     gameState = gameState.update(
       creaturePositions,
+      abilityPositions,
       input,
       clientInformation,
       physics,

@@ -1,12 +1,11 @@
 package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.badlogic.gdx.physics.box2d.{Body, BodyDef, FixtureDef, PolygonShape}
+import com.badlogic.gdx.physics.box2d.{BodyDef, FixtureDef, PolygonShape}
+import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
 case class TerrainBody(terrainId: String) extends PhysicsBody {
-  var body: Body = _
-
   def init(world: World, pos: Vector2): Unit = {
     val bodyDef = new BodyDef()
     bodyDef.`type` = BodyType.StaticBody
@@ -26,4 +25,5 @@ case class TerrainBody(terrainId: String) extends PhysicsBody {
     this.body = body
   }
 
+  override def update(gameState: GameState): Unit = {}
 }

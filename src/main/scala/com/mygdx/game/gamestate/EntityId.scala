@@ -1,6 +1,6 @@
 package com.mygdx.game.gamestate
 
-class EntityId[T <: Entity](val value: String) {
+case class EntityId[T <: Entity](value: String) {
   override def toString: String = value
 }
 
