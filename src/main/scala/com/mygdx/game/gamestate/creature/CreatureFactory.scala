@@ -27,7 +27,7 @@ object CreatureFactory {
       textureNames = Map(
         CreatureAnimationType.Body -> "steel_armor",
         CreatureAnimationType.Head -> "male_head1",
-        CreatureAnimationType.Weapon -> "longbow",
+        CreatureAnimationType.Weapon -> "greatbow",
         CreatureAnimationType.Shield -> "shield"
       ),
       animationDefinition = Constants.HumanAnimationDefinition,

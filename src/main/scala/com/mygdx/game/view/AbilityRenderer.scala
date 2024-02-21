@@ -33,7 +33,11 @@ case class AbilityRenderer(abilityId: EntityId[Ability]) extends Renderable {
 
     val pos = IsometricProjection.translateIsoToScreen(ability.pos)
 
-    batch.draw(textureRegions(ability.facingDirection), pos.x - 16, pos.y - 16)
+    batch.draw(
+      textureRegions(ability.facingDirection),
+      pos.x - ability.atlasRegionWidth / 2f,
+      pos.y - ability.atlasRegionHeight / 2f
+    )
   }
 
   override def pos(gameState: GameState): Vector2 = {

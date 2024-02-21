@@ -15,7 +15,8 @@ import scala.util.chaining.scalaUtilChainingOps
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
     abilities: Map[EntityId[Ability], Ability],
-    creatureCounter: Int = 0
+    creatureCounter: Int = 0,
+    abilityCounter: Int = 0
 ) {
 
   def update(
@@ -101,7 +102,7 @@ case class GameState(
                 .modify(_.params.respawnTimer)
                 .using(_.stop())
             )
-        case CreatureAttackEvent(
+        case CreatureMeleeAttackEvent(
               _,
               destinationCreatureId,
               damage
@@ -117,6 +118,35 @@ case class GameState(
                 creature.modify(_.params.life).setTo(0)
               }
             )
+
+        case CreatureShootArrowEvent(
+              sourceCreatureId,
+              arrowDirection,
+              damage
+            ) =>
+          val abilityId: EntityId[Ability] =
+            EntityId("ability" + gameState.abilityCounter)
+
+          val creature = gameState.creatures(sourceCreatureId)
+
+          gameState
+            .modify(_.abilities)
+            .using(
+              _.updated(
+                abilityId,
+                Arrow(
+                  AbilityParams(
+                    abilityId,
+                    creature.params.pos,
+                    arrowDirection.normalized.multiply(3f),
+                    arrowDirection,
+                    damage
+                  )
+                )
+              )
+            )
+            .modify(_.abilityCounter)
+            .using(_ + 1)
 
         case _ => gameState
       }
@@ -144,7 +174,8 @@ object GameState {
           AbilityParams(
             EntityId[Ability]("testability1"),
             pos = Vector2(3, 3),
-            velocity = Vector2(0f, 2f)
+            velocity = Vector2(0f, 2f),
+            damage = 10f
           )
         )
       )

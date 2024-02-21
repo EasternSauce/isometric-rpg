@@ -84,25 +84,40 @@ case class Creature(
 
   private def attackTarget(): Outcome[Creature] = {
     Outcome.when(this)(_.creatureAttackCompleted) { creature =>
-      Outcome(creature.modify(_.params.attackPending).setTo(false))
-        .withEvents(
-          List(
-            CreatureAttackEvent(
-              creature.id,
-              creature.params.attackedCreatureId.get,
-              creature.params.damage
+      if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
+        Outcome(creature.modify(_.params.attackPending).setTo(false))
+          .withEvents(
+            List(
+              CreatureShootArrowEvent(
+                creature.id,
+                creature.params.facingVector,
+                creature.params.damage
+              )
             )
           )
+      } else {
+        Outcome.when(creature)(_.params.attackedCreatureId.nonEmpty)(creature =>
+          Outcome(creature.modify(_.params.attackPending).setTo(false))
+            .withEvents(
+              List(
+                CreatureMeleeAttackEvent(
+                  creature.id,
+                  creature.params.attackedCreatureId.get,
+                  creature.params.damage
+                )
+              )
+            )
         )
+      }
     }
   }
 
   private[creature] def creatureAttackCompleted: Boolean = {
-    this.params.attackedCreatureId.nonEmpty && this.params.attackAnimationTimer.running &&
+    this.params.attackAnimationTimer.running &&
     this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
   }
 
-  def alive: Boolean = params.life > 0
+  def id: EntityId[Creature] = params.id
 
   private def updateVelocity(): Outcome[Creature] = {
     val vectorTowardsDest = pos.vectorTowards(params.destination)
@@ -123,6 +138,8 @@ case class Creature(
         .setToIf(velocity.length > 0)(velocity)
     )
   }
+
+  def alive: Boolean = params.life > 0
 
   private def handleWalkingIntoObstacles(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
@@ -155,6 +172,8 @@ case class Creature(
     )
   }
 
+  def pos: Vector2 = params.pos
+
   private def setPos(pos: Vector2): Outcome[Creature] = {
     Outcome(this)
       .map(
@@ -162,8 +181,6 @@ case class Creature(
           .setTo(pos)
       )
   }
-
-  def id: EntityId[Creature] = params.id
 
   private def updateTimers(delta: Float): Outcome[Creature] = {
     Outcome(
@@ -228,31 +245,38 @@ case class Creature(
     }
   }
 
-  def pos: Vector2 = params.pos
-
   private[creature] def creatureAttackStart(
       otherCreatureId: EntityId[Creature],
       gameState: GameState
   ): Outcome[Creature] = {
     val otherCreature = gameState.creatures(otherCreatureId)
 
-    Outcome.when(this)(_ =>
-      otherCreature.pos
-        .distance(pos) < params.attackRange
-    )(creature =>
+    if (params.primaryWeaponType == PrimaryWeaponType.Bow) {
       Outcome(
-        creature
-          .modify(_.params.facingVector)
-          .setTo(
-            creature.pos
-              .vectorTowards(otherCreature.pos)
-          )
-          .modify(_.params.attackedCreatureId)
-          .setTo(Some(otherCreature.id))
+        this
           .modify(_.params.attackPending)
           .setTo(true)
       )
-    )
+    } else {
+      Outcome.when(this)(_ =>
+        otherCreature.pos
+          .distance(pos) < params.attackRange
+      )(creature =>
+        Outcome(
+          creature
+            .modify(_.params.facingVector)
+            .setTo(
+              creature.pos
+                .vectorTowards(otherCreature.pos)
+            )
+            .modify(_.params.attackedCreatureId)
+            .setTo(Some(otherCreature.id))
+            .modify(_.params.attackPending)
+            .setTo(true)
+        )
+      )
+    }
+
   }
 
   private[creature] def attackAllowed: Boolean = {
