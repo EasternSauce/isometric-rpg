@@ -1,7 +1,7 @@
 package com.mygdx.game.gamestate.creature.behavior
 
 import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.creature.{Creature, CreaturesFinderUtils}
+import com.mygdx.game.gamestate.creature.{Creature, CreaturesFinderUtils, PrimaryWeaponType}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
@@ -50,7 +50,17 @@ case class PlayerBehavior() extends CreatureBehavior {
 
     for {
       creature <- Outcome.when(creature)(_ => maybeClosestCreatureId.nonEmpty)(
-        _.creatureAttackStart(maybeClosestCreatureId.get, gameState)
+        creature =>
+          if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
+            creature.creatureRangedAttackStart(
+              creature.pos.vectorTowards(mouseWorldPos)
+            )
+          } else {
+            creature.creatureMeleeAttackStart(
+              maybeClosestCreatureId.get,
+              gameState
+            )
+          }
       )
       creature <- Outcome(
         creature

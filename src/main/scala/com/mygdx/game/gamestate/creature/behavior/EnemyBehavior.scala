@@ -96,7 +96,7 @@ case class EnemyBehavior() extends CreatureBehavior {
       for {
         creature <- Outcome.when(creature)(creature =>
           targetCreature.alive && creature.attackAllowed
-        )(_.creatureAttackStart(targetCreature.id, gameState))
+        )(_.creatureMeleeAttackStart(targetCreature.id, gameState))
         creature <- creature
           .modify(_.params.attackAnimationTimer)
           .using(_.restart())
