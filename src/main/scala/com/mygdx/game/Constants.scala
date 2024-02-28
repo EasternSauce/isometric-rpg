@@ -37,9 +37,6 @@ object Constants {
 
   val AttackCooldown = 0.3f
 
-  val SpriteCenterX = 64
-  val SpriteCenterY = 64
-
   val SpriteTextureWidth = 128
   val SpriteTextureHeight = 128
 

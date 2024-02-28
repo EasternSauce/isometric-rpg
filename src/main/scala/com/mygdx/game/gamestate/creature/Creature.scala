@@ -82,8 +82,6 @@ case class Creature(
     } yield creature
   }
 
-  def alive: Boolean = params.life > 0
-
   private def attackTarget(): Outcome[Creature] = {
     Outcome.when(this)(_.creatureAttackCompleted) { creature =>
       if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
@@ -138,6 +136,8 @@ case class Creature(
         .setToIf(velocity.length > 0)(velocity)
     )
   }
+
+  def alive: Boolean = params.life > 0
 
   private def handleWalkingIntoObstacles(): Outcome[Creature] = {
     Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>

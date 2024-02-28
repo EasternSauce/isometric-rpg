@@ -31,48 +31,12 @@ object CreatureFactory {
         CreatureAnimationType.Shield -> "shield"
       ),
       size = 128,
+      spriteVerticalShift = 10f,
+      bodyRadius = 0.3f,
       animationDefinition = Constants.HumanAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.Bow,
       secondaryWeaponType = SecondaryWeaponType.None,
       renderBodyOnly = false
-    )
-  }
-
-  private def produce(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float,
-      maxLife: Float,
-      damage: Float,
-      attackRange: Float,
-      textureNames: Map[CreatureAnimationType, String],
-      size: Int,
-      animationDefinition: AnimationDefinition,
-      primaryWeaponType: PrimaryWeaponType,
-      secondaryWeaponType: SecondaryWeaponType,
-      renderBodyOnly: Boolean
-  ): Creature = {
-    Creature(
-      CreatureParams(
-        id = creatureId,
-        pos = pos,
-        destination = pos,
-        lastPos = pos,
-        textureNames = textureNames,
-        size = size,
-        player = player,
-        baseSpeed = baseSpeed,
-        life = maxLife,
-        maxLife = maxLife,
-        damage = damage,
-        animationDefinition = animationDefinition,
-        attackRange = attackRange,
-        primaryWeaponType = primaryWeaponType,
-        secondaryWeaponType = secondaryWeaponType,
-        renderBodyOnly = renderBodyOnly
-      ),
-      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 
@@ -93,11 +57,55 @@ object CreatureFactory {
       textureNames = Map(
         CreatureAnimationType.Body -> "rat"
       ),
-      size = 128,
+      size = 192,
+      spriteVerticalShift = 35f,
+      bodyRadius = 0.3f,
       animationDefinition = Constants.RatAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.None,
       secondaryWeaponType = SecondaryWeaponType.None,
       renderBodyOnly = true
+    )
+  }
+
+  private def produce(
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float,
+      maxLife: Float,
+      damage: Float,
+      attackRange: Float,
+      textureNames: Map[CreatureAnimationType, String],
+      size: Int,
+      spriteVerticalShift: Float,
+      bodyRadius: Float,
+      animationDefinition: AnimationDefinition,
+      primaryWeaponType: PrimaryWeaponType,
+      secondaryWeaponType: SecondaryWeaponType,
+      renderBodyOnly: Boolean
+  ): Creature = {
+    Creature(
+      CreatureParams(
+        id = creatureId,
+        pos = pos,
+        destination = pos,
+        lastPos = pos,
+        textureNames = textureNames,
+        size = size,
+        spriteVerticalShift = spriteVerticalShift,
+        bodyRadius = bodyRadius,
+        player = player,
+        baseSpeed = baseSpeed,
+        life = maxLife,
+        maxLife = maxLife,
+        damage = damage,
+        animationDefinition = animationDefinition,
+        attackRange = attackRange,
+        primaryWeaponType = primaryWeaponType,
+        secondaryWeaponType = secondaryWeaponType,
+        renderBodyOnly = renderBodyOnly
+      ),
+      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 }

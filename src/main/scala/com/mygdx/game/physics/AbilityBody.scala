@@ -6,7 +6,7 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
-  override def init(world: World, pos: Vector2): Unit = {
+  override def init(world: World, pos: Vector2, gameState: GameState): Unit = {
     this.body = {
       import com.badlogic.gdx.physics.box2d._
 

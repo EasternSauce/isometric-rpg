@@ -6,7 +6,7 @@ import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
 case class TerrainBody(terrainId: String) extends PhysicsBody {
-  def init(world: World, pos: Vector2): Unit = {
+  def init(world: World, pos: Vector2, gameState: GameState): Unit = {
     val bodyDef = new BodyDef()
     bodyDef.`type` = BodyType.StaticBody
     bodyDef.position.set(pos.x + 0.5f, pos.y + 0.5f)

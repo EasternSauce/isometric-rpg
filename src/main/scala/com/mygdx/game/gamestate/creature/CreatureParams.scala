@@ -16,6 +16,8 @@ case class CreatureParams(
     lastPos: Vector2,
     textureNames: Map[CreatureAnimationType, String],
     size: Int,
+    spriteVerticalShift: Float,
+    bodyRadius: Float,
     animationTimer: SimpleTimer = SimpleTimer(running = true),
     lastPosTimer: SimpleTimer = SimpleTimer(running = true),
     attackAnimationTimer: SimpleTimer = SimpleTimer(running = false),

@@ -3,7 +3,7 @@ package com.mygdx.game.view
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
 import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType}
 import com.mygdx.game.gamestate.{EntityId, GameState}
-import com.mygdx.game.util.WorldDirection
+import com.mygdx.game.util.{Vector2, WorldDirection}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 import com.mygdx.game.{Assets, Constants, FramesDefinition}
 
@@ -116,12 +116,14 @@ case class CreatureAnimation(
           .getKeyFrame(creature.params.deathAnimationTimer.time, false)
       }
 
-    val pos = IsometricProjection.translatePosIsoToScreen(creature.pos)
+    val pos = IsometricProjection.translatePosIsoToScreen(
+      Vector2(creature.pos.x, creature.pos.y)
+    )
 
     batch.draw(
       frame,
-      pos.x - Constants.SpriteCenterX,
-      pos.y - Constants.SpriteCenterY,
+      pos.x - creature.params.size / 2f,
+      pos.y - creature.params.size / 2f + creature.params.spriteVerticalShift,
       creature.params.size,
       creature.params.size
     )

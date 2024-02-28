@@ -7,7 +7,7 @@ import com.mygdx.game.util.Vector2
 trait PhysicsBody {
   protected var body: Body = _
 
-  def init(world: World, pos: Vector2): Unit
+  def init(world: World, pos: Vector2, gameState: GameState): Unit
 
   def update(gameState: GameState): Unit
 

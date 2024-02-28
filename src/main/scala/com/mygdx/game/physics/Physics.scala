@@ -27,7 +27,7 @@ case class Physics() {
 
     val player = gameState.creatures(clientInformation.clientCreatureId)
     val playerBody = CreatureBody(clientInformation.clientCreatureId)
-    playerBody.init(world, player.pos)
+    playerBody.init(world, player.pos, gameState)
 
     creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
     abilityBodies = Map()
@@ -50,11 +50,11 @@ case class Physics() {
     staticBodies =
       cells.filterNot(_.walkable).map(_.pos(gameState)).distinct.map { pos =>
         val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-        terrainBody.init(world, pos)
+        terrainBody.init(world, pos, gameState)
         terrainBody
       } ++ borders.map { pos =>
         val borderBody = BorderBody("borderBody_" + pos.x + "_" + pos.y)
-        borderBody.init(world, pos)
+        borderBody.init(world, pos, gameState)
         borderBody
       }
 
@@ -73,7 +73,7 @@ case class Physics() {
 
       val creatureBody = CreatureBody(creatureId)
 
-      creatureBody.init(world, creature.pos)
+      creatureBody.init(world, creature.pos, gameState)
 
       creatureBodies = creatureBodies.updated(creatureId, creatureBody)
     }
@@ -86,7 +86,7 @@ case class Physics() {
 
       val abilityBody = AbilityBody(abilityId)
 
-      abilityBody.init(world, creature.pos)
+      abilityBody.init(world, creature.pos, gameState)
 
       abilityBodies = abilityBodies.updated(abilityId, abilityBody)
     }

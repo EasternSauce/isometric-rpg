@@ -6,8 +6,10 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
-  def init(world: World, pos: Vector2): Unit = {
+  def init(world: World, pos: Vector2, gameState: GameState): Unit = {
     this.body = {
+      val creature = gameState.creatures(creatureId)
+
       import com.badlogic.gdx.physics.box2d._
 
       val bodyDef = new BodyDef()
@@ -19,7 +21,7 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
 
       val fixtureDef = new FixtureDef()
       val shape = new CircleShape()
-      shape.setRadius(0.2f)
+      shape.setRadius(creature.params.bodyRadius)
       fixtureDef.shape = shape
 
       body.createFixture(fixtureDef)

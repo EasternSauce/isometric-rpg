@@ -15,7 +15,6 @@ case class PhysicsContactListener(physics: Physics) extends ContactListener {
   def onContactStart(objA: Any, objB: Any): Unit = {
     (objA, objB) match {
       case (abilityBody: AbilityBody, creatureBody: CreatureBody) =>
-        println("coll")
         physics.scheduleCollisions(
           List(
             AbilityHitsCreatureEvent(
