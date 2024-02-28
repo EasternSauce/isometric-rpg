@@ -31,7 +31,7 @@ case class PlayerBehavior() extends CreatureBehavior {
     val mousePos = input.mousePos
 
     val mouseScreenPos =
-      IsometricProjection.translateScreenToIso(mousePos)
+      IsometricProjection.translatePosScreenToIso(mousePos)
 
     val mouseWorldPos = playerPos.add(mouseScreenPos)
     mouseWorldPos

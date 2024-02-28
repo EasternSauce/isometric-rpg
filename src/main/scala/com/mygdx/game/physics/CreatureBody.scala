@@ -15,6 +15,7 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       bodyDef.position.set(pos.x, pos.y)
 
       val body = world.createBody(bodyDef)
+      body.setUserData(this)
 
       val fixtureDef = new FixtureDef()
       val shape = new CircleShape()

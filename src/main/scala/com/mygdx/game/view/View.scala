@@ -36,7 +36,7 @@ case class View() {
 
     worldViewport.init(
       1,
-      pos => IsometricProjection.translateIsoToScreen(pos)
+      pos => IsometricProjection.translatePosIsoToScreen(pos)
     )
     b2DebugViewport.init(0.02f, Predef.identity)
   }

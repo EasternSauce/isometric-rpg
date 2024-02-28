@@ -51,7 +51,7 @@ case class Gameplay() {
     val mousePos = input.mousePos
 
     val isoMousePos =
-      IsometricProjection.translateScreenToIso(mousePos)
+      IsometricProjection.translatePosScreenToIso(mousePos)
 
     val mouseWorldPos = gameState
       .creatures(clientInformation.clientCreatureId)
@@ -64,14 +64,15 @@ case class Gameplay() {
     gameState.creatures.values
       .map(_.pos)
       .foreach(pos => {
-        val worldPos = IsometricProjection.translateIsoToScreen(pos)
+        val worldPos = IsometricProjection.translatePosIsoToScreen(pos)
         spriteBatch.filledRectangle(
           Rectangle(worldPos.x - 5, worldPos.y - 5, 10, 10),
           Color.CYAN
         )
       })
 
-    val mouseScreenPos = IsometricProjection.translateIsoToScreen(mouseWorldPos)
+    val mouseScreenPos =
+      IsometricProjection.translatePosIsoToScreen(mouseWorldPos)
 
     spriteBatch.filledRectangle(
       Rectangle(mouseScreenPos.x - 5, mouseScreenPos.y - 5, 10, 10),

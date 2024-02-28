@@ -15,6 +15,7 @@ case class Physics() {
   private var staticBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
   private var eventQueue: List[Event] = _
+  private var collisionQueue: List[CollisionEvent] = _
 
   def init(
       clientInformation: ClientInformation,
@@ -22,7 +23,7 @@ case class Physics() {
       gameState: GameState
   ): Unit = {
     world = World()
-    world.init()
+    world.init(PhysicsContactListener(this))
 
     val player = gameState.creatures(clientInformation.clientCreatureId)
     val playerBody = CreatureBody(clientInformation.clientCreatureId)
@@ -58,6 +59,7 @@ case class Physics() {
       }
 
     eventQueue = List()
+    collisionQueue = List()
   }
 
   def update(gameState: GameState): Unit = {
@@ -115,8 +117,20 @@ case class Physics() {
     eventQueue = eventQueue.filter(!eventsToBeProcessed.contains(_))
   }
 
-  def scheduleEvents(event: List[Event]): Unit = {
-    eventQueue = eventQueue.appendedAll(event)
+  def pollCollisionEvents(): List[CollisionEvent] = {
+    val collisionEvents = collisionQueue
+
+    collisionQueue = List()
+
+    collisionEvents
+  }
+
+  def scheduleEvents(events: List[Event]): Unit = {
+    eventQueue = eventQueue.appendedAll(events)
+  }
+
+  def scheduleCollisions(collisions: List[CollisionEvent]): Unit = {
+    collisionQueue = collisionQueue.appendedAll(collisions)
   }
 
   def getCreaturePositions: Map[EntityId[Creature], Vector2] = {

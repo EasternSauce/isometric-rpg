@@ -63,8 +63,6 @@ case class Creature(
   private def deathToBeHandled: Boolean =
     !this.alive && !this.params.deathAcknowledged
 
-  def alive: Boolean = params.life > 0
-
   private def updateMovement(
       newPos: Vector2,
       input: Input,
@@ -83,6 +81,8 @@ case class Creature(
       creature <- creature.updateVelocity()
     } yield creature
   }
+
+  def alive: Boolean = params.life > 0
 
   private def attackTarget(): Outcome[Creature] = {
     Outcome.when(this)(_.creatureAttackCompleted) { creature =>

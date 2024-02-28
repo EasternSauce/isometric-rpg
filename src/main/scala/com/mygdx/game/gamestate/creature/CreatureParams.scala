@@ -15,6 +15,7 @@ case class CreatureParams(
     facingVector: Vector2 = Vector2(1, 0),
     lastPos: Vector2,
     textureNames: Map[CreatureAnimationType, String],
+    size: Int,
     animationTimer: SimpleTimer = SimpleTimer(running = true),
     lastPosTimer: SimpleTimer = SimpleTimer(running = true),
     attackAnimationTimer: SimpleTimer = SimpleTimer(running = false),

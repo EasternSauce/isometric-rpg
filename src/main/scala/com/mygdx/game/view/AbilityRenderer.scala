@@ -5,38 +5,38 @@ import com.mygdx.game.Assets
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.util.WorldDirection.WorldDirection
 
 case class AbilityRenderer(abilityId: EntityId[Ability]) extends Renderable {
-  var textureRegions: Map[WorldDirection, TextureRegion] = _
+  var textureRegion: TextureRegion = _
 
   def init(gameState: GameState): Unit = {
     val ability = gameState.abilities(abilityId)
 
-    textureRegions = ability.worldDirectionRegionMapping.map {
-      case (worldDirection, (x, y)) =>
-        (
-          worldDirection,
-          new TextureRegion(
-            Assets.atlas.findRegion(ability.atlasRegionName),
-            x,
-            y,
-            ability.atlasRegionWidth,
-            ability.atlasRegionHeight
-          )
-        )
-    }
+    textureRegion = new TextureRegion(
+      Assets.atlas.findRegion(ability.atlasRegionName),
+      ability.atlasRegionX,
+      ability.atlasRegionY,
+      ability.atlasRegionWidth,
+      ability.atlasRegionHeight
+    )
   }
 
   def render(batch: SpriteBatch, gameState: GameState): Unit = {
     val ability = gameState.abilities(abilityId)
 
-    val pos = IsometricProjection.translateIsoToScreen(ability.pos)
+    val pos = IsometricProjection.translatePosIsoToScreen(ability.pos)
+
+    val angle = IsometricProjection
+      .translatePosIsoToScreen(ability.params.facingVector)
+      .angleDeg
 
     batch.draw(
-      textureRegions(ability.facingDirection),
+      textureRegion,
       pos.x - ability.atlasRegionWidth / 2f,
-      pos.y - ability.atlasRegionHeight / 2f
+      pos.y - ability.atlasRegionHeight / 2f,
+      ability.worldWidth,
+      ability.worldHeight,
+      angle
     )
   }
 

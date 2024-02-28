@@ -10,11 +10,14 @@ trait Ability extends Entity {
 
   val atlasRegionName: String
 
-  val worldDirectionRegionMapping: Map[WorldDirection, (Int, Int)]
-
+  val atlasRegionX: Int
+  val atlasRegionY: Int
+  val worldWidth: Int
+  val worldHeight: Int
   val atlasRegionWidth: Int
-
   val atlasRegionHeight: Int
+
+  val speed: Float = 0f
 
   def id: EntityId[Ability] = params.id
 
@@ -54,13 +57,15 @@ trait Ability extends Entity {
   }
 
   private def updateFacingVector(): Outcome[Ability] = {
-    val velocity = this.params.velocity
-
     Outcome(
       this
         .modify(_.params.facingVector)
         .setToIf(velocity.length > 0)(velocity)
     )
+  }
+
+  def velocity: Vector2 = {
+    this.params.facingVector.normalized.multiply(this.speed)
   }
 
   def copy(params: AbilityParams): Ability

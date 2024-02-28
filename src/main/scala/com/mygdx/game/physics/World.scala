@@ -9,9 +9,11 @@ case class World() {
   var b2World: B2World = _
   var debugRenderer: Box2DDebugRenderer = _
 
-  def init(): Unit = {
+  def init(physicsContactListener: PhysicsContactListener): Unit = {
     b2World = new B2World(new Vector2(0, 0), true)
     debugRenderer = new Box2DDebugRenderer()
+
+    b2World.setContactListener(physicsContactListener)
   }
 
   def renderDebug(b2DebugViewport: Viewport): Unit = {

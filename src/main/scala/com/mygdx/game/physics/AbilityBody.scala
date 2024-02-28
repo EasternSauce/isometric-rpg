@@ -15,10 +15,11 @@ case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
       bodyDef.position.set(pos.x, pos.y)
 
       val body = world.createBody(bodyDef)
+      body.setUserData(this)
 
       val fixtureDef = new FixtureDef()
       val shape = new CircleShape()
-      shape.setRadius(0.2f)
+      shape.setRadius(0.3f)
       fixtureDef.shape = shape
       fixtureDef.isSensor = true
 
@@ -31,6 +32,6 @@ case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
   override def update(gameState: GameState): Unit = {
     val ability = gameState.abilities(abilityId)
 
-    body.setLinearVelocity(ability.params.velocity.x, ability.params.velocity.y)
+    body.setLinearVelocity(ability.velocity.x, ability.velocity.y)
   }
 }

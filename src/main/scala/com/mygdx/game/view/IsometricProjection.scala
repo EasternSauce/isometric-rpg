@@ -23,7 +23,7 @@ object IsometricProjection {
     new Matrix4(isoTransform).inv
   }
 
-  def translateIsoToScreen(pos: Vector2): Vector2 = {
+  def translatePosIsoToScreen(pos: Vector2): Vector2 = {
     val screenPos = new Vector3()
     screenPos.set(pos.x, pos.y, 0)
     screenPos.mul(isoTransform)
@@ -33,7 +33,7 @@ object IsometricProjection {
     )
   }
 
-  def translateScreenToIso(pos: Vector2): Vector2 = {
+  def translatePosScreenToIso(pos: Vector2): Vector2 = {
     val screenPos = new Vector3()
     screenPos.set(
       pos.x / (Constants.TileSize * Constants.MapTextureScale),

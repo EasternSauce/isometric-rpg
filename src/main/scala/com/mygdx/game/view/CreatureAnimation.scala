@@ -116,12 +116,14 @@ case class CreatureAnimation(
           .getKeyFrame(creature.params.deathAnimationTimer.time, false)
       }
 
-    val pos = IsometricProjection.translateIsoToScreen(creature.pos)
+    val pos = IsometricProjection.translatePosIsoToScreen(creature.pos)
 
     batch.draw(
       frame,
       pos.x - Constants.SpriteCenterX,
-      pos.y - Constants.SpriteCenterY
+      pos.y - Constants.SpriteCenterY,
+      creature.params.size,
+      creature.params.size
     )
   }
 }

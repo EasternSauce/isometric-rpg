@@ -61,7 +61,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
         lifeBarWidth * creature.params.life / creature.params.maxLife
 
       val creatureScreenPos =
-        IsometricProjection.translateIsoToScreen(creature.pos)
+        IsometricProjection.translatePosIsoToScreen(creature.pos)
 
       val barPos = Vector2(
         creatureScreenPos.x - lifeBarWidth / 2f,

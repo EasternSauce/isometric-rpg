@@ -15,7 +15,7 @@ case class TileRenderer(cell: TiledMapTileLayer.Cell, pos: Vector2)
     val textureHeight = textureRegion.getRegionHeight
 
     val screenPos =
-      IsometricProjection.translateIsoToScreen(
+      IsometricProjection.translatePosIsoToScreen(
         Vector2(pos.x + 0.75f, pos.y - 0.85f)
       )
 

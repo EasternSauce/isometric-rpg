@@ -40,9 +40,21 @@ case class SpriteBatch() {
       x: Float,
       y: Float,
       width: Int,
-      height: Int
+      height: Int,
+      rotation: Float = 0f
   ): Unit = {
-    spriteBatch.draw(region, x, y, width, height)
+    spriteBatch.draw(
+      region,
+      x,
+      y,
+      width / 2f,
+      height / 2f,
+      width,
+      height,
+      1f,
+      1f,
+      rotation
+    )
   }
 
   def setProjectionMatrix(projection: Matrix4): Unit = {

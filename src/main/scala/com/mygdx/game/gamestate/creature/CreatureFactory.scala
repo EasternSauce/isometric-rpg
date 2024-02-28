@@ -30,10 +30,49 @@ object CreatureFactory {
         CreatureAnimationType.Weapon -> "greatbow",
         CreatureAnimationType.Shield -> "shield"
       ),
+      size = 128,
       animationDefinition = Constants.HumanAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.Bow,
       secondaryWeaponType = SecondaryWeaponType.None,
       renderBodyOnly = false
+    )
+  }
+
+  private def produce(
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float,
+      maxLife: Float,
+      damage: Float,
+      attackRange: Float,
+      textureNames: Map[CreatureAnimationType, String],
+      size: Int,
+      animationDefinition: AnimationDefinition,
+      primaryWeaponType: PrimaryWeaponType,
+      secondaryWeaponType: SecondaryWeaponType,
+      renderBodyOnly: Boolean
+  ): Creature = {
+    Creature(
+      CreatureParams(
+        id = creatureId,
+        pos = pos,
+        destination = pos,
+        lastPos = pos,
+        textureNames = textureNames,
+        size = size,
+        player = player,
+        baseSpeed = baseSpeed,
+        life = maxLife,
+        maxLife = maxLife,
+        damage = damage,
+        animationDefinition = animationDefinition,
+        attackRange = attackRange,
+        primaryWeaponType = primaryWeaponType,
+        secondaryWeaponType = secondaryWeaponType,
+        renderBodyOnly = renderBodyOnly
+      ),
+      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 
@@ -54,46 +93,11 @@ object CreatureFactory {
       textureNames = Map(
         CreatureAnimationType.Body -> "rat"
       ),
+      size = 128,
       animationDefinition = Constants.RatAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.None,
       secondaryWeaponType = SecondaryWeaponType.None,
       renderBodyOnly = true
-    )
-  }
-
-  private def produce(
-      creatureId: EntityId[Creature],
-      pos: Vector2,
-      player: Boolean,
-      baseSpeed: Float,
-      maxLife: Float,
-      damage: Float,
-      attackRange: Float,
-      textureNames: Map[CreatureAnimationType, String],
-      animationDefinition: AnimationDefinition,
-      primaryWeaponType: PrimaryWeaponType,
-      secondaryWeaponType: SecondaryWeaponType,
-      renderBodyOnly: Boolean
-  ): Creature = {
-    Creature(
-      CreatureParams(
-        id = creatureId,
-        pos = pos,
-        destination = pos,
-        lastPos = pos,
-        textureNames = textureNames,
-        player = player,
-        baseSpeed = baseSpeed,
-        life = maxLife,
-        maxLife = maxLife,
-        damage = damage,
-        animationDefinition = animationDefinition,
-        attackRange = attackRange,
-        primaryWeaponType = primaryWeaponType,
-        secondaryWeaponType = secondaryWeaponType,
-        renderBodyOnly = renderBodyOnly
-      ),
-      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 }

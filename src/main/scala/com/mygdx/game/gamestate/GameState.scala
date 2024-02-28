@@ -28,6 +28,9 @@ case class GameState(
       delta: Float
   ): GameState = {
     var events: List[Event] = List()
+
+    events = events.appendedAll(physics.pollCollisionEvents())
+
     val newGameState = this
       .modify(_.creatures.each)
       .using { creature =>
@@ -109,15 +112,7 @@ case class GameState(
             ) =>
           gameState
             .modify(_.creatures.at(destinationCreatureId))
-            .using(creature =>
-              if (creature.params.life - damage > 0) {
-                creature
-                  .modify(_.params.life)
-                  .setTo(creature.params.life - damage)
-              } else {
-                creature.modify(_.params.life).setTo(0)
-              }
-            )
+            .using(dealDamageToCreature(damage))
 
         case CreatureShootArrowEvent(
               sourceCreatureId,
@@ -127,7 +122,7 @@ case class GameState(
           val abilityId: EntityId[Ability] =
             EntityId("ability" + gameState.abilityCounter)
 
-          val creature = gameState.creatures(sourceCreatureId)
+          val sourceCreature = gameState.creatures(sourceCreatureId)
 
           gameState
             .modify(_.abilities)
@@ -137,8 +132,8 @@ case class GameState(
                 Arrow(
                   AbilityParams(
                     abilityId,
-                    creature.params.pos,
-                    arrowDirection.normalized.multiply(3f),
+                    sourceCreatureId,
+                    sourceCreature.params.pos,
                     arrowDirection,
                     damage
                   )
@@ -148,10 +143,34 @@ case class GameState(
             .modify(_.abilityCounter)
             .using(_ + 1)
 
+        case AbilityHitsCreatureEvent(abilityId, creatureId) =>
+          val ability = abilities(abilityId)
+
+          if (ability.params.creatureId != creatureId) {
+            gameState
+              .modify(_.creatures.at(creatureId))
+              .using(dealDamageToCreature(ability.params.damage))
+          } else {
+            gameState
+          }
+
+        case AbilityHitsTerrainEvent(abilityId, _) => gameState
+
         case _ => gameState
       }
 
     }
+
+  private def dealDamageToCreature(damage: Float): Creature => Creature = {
+    creature =>
+      if (creature.params.life - damage > 0) {
+        creature
+          .modify(_.params.life)
+          .setTo(creature.params.life - damage)
+      } else {
+        creature.modify(_.params.life).setTo(0)
+      }
+  }
 }
 
 object GameState {
@@ -169,16 +188,7 @@ object GameState {
         clientInformation.clientCreatureId ->
           player
       ),
-      abilities = Map(
-        EntityId[Ability]("testability1") -> Arrow(
-          AbilityParams(
-            EntityId[Ability]("testability1"),
-            pos = Vector2(3, 3),
-            velocity = Vector2(0f, 2f),
-            damage = 10f
-          )
-        )
-      )
+      abilities = Map()
     )
   }
 }
