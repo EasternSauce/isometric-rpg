@@ -93,15 +93,21 @@ case class EnemyBehavior() extends CreatureBehavior {
           .setTo(targetCreature.pos)
       )
     } else {
-      for {
-        creature <- Outcome.when(creature)(creature =>
-          targetCreature.alive && creature.attackAllowed
-        )(_.creatureMeleeAttackStart(targetCreature.id, gameState))
-        creature <- creature
-          .modify(_.params.attackAnimationTimer)
-          .using(_.restart())
-          .stopMoving()
-      } yield creature
+      if (targetCreature.alive && creature.attackAllowed) {
+        for {
+          creature <- creature.creatureMeleeAttackStart(
+            targetCreature.id,
+            gameState
+          )
+          creature <- creature
+            .modify(_.params.attackAnimationTimer)
+            .using(_.restart())
+            .stopMoving()
+        } yield creature
+      } else {
+        Outcome(creature)
+      }
+
     }
 
   }
