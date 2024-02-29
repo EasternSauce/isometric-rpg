@@ -37,7 +37,8 @@ case class GameState(
         val outcome = creature
           .update(
             delta = delta,
-            newPos = creaturePositions(creature.id),
+            newPos =
+              creaturePositions.getOrElse(creature.id, creature.params.pos),
             input = input,
             clientInformation = clientInformation,
             gameState = this
@@ -145,16 +146,24 @@ case class GameState(
 
         case AbilityHitsCreatureEvent(abilityId, creatureId) =>
           val ability = abilities(abilityId)
+          val creature = creatures(creatureId)
 
           if (ability.params.creatureId != creatureId) {
             gameState
               .modify(_.creatures.at(creatureId))
               .using(dealDamageToCreature(ability.params.damage))
+              .modify(_.abilities)
+              .usingIf(creature.alive && ability.destroyedOnContact)(
+                _.removed(abilityId)
+              )
           } else {
             gameState
           }
 
-        case AbilityHitsTerrainEvent(abilityId, _) => gameState
+        case AbilityHitsTerrainEvent(abilityId, _) =>
+          gameState
+            .modify(_.abilities)
+            .using(_.removed(abilityId))
 
         case _ => gameState
       }

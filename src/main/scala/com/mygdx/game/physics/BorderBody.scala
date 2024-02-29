@@ -12,6 +12,7 @@ case class BorderBody(borderId: String) extends PhysicsBody {
     bodyDef.position.set(pos.x + 0.5f, pos.y + 0.5f)
 
     val body = world.createBody(bodyDef)
+    body.setUserData(this)
 
     val fixtureDef = new FixtureDef()
     val shape = new PolygonShape()
@@ -21,8 +22,10 @@ case class BorderBody(borderId: String) extends PhysicsBody {
 
     body.createFixture(fixtureDef)
 
-    this.body = body
+    this.b2Body = body
   }
 
   override def update(gameState: GameState): Unit = {}
+
+  override def onRemove(): Unit = {}
 }

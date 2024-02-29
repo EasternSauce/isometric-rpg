@@ -18,6 +18,8 @@ case class Gameplay() {
   private val physics: Physics = Physics()
   private val view: View = View()
   private val spriteBatch: SpriteBatch = SpriteBatch()
+  private val modelEventsScheduler: ModelEventsScheduler =
+    ModelEventsScheduler()
   private var gameState: GameState = _
 
   def init(): Unit = {
@@ -34,12 +36,16 @@ case class Gameplay() {
     val input = Input.poll()
 
     physics.update(gameState)
+
     updateGameState(
       physics.getCreaturePositions,
       physics.getAbilityPositions,
       input,
       delta
     )
+
+    processModelEvents(gameState)
+
     view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
@@ -87,7 +93,7 @@ case class Gameplay() {
       input: Input,
       delta: Float
   ): Unit = {
-    gameState = gameState.update(
+    val newGameState = gameState.update(
       creaturePositions,
       abilityPositions,
       input,
@@ -95,6 +101,67 @@ case class Gameplay() {
       physics,
       delta
     )
+
+    scheduleModelEvents(gameState, newGameState)
+
+    gameState = newGameState
+  }
+
+  def scheduleModelEvents(
+      oldGameState: GameState,
+      newGameState: GameState
+  ): Unit = {
+    val creatureModelsToCreate =
+      newGameState.creatures.keys.toSet -- oldGameState.creatures.keys.toSet
+
+    val creatureModelsToRemove =
+      oldGameState.creatures.keys.toSet -- newGameState.creatures.keys.toSet
+
+    val abilityModelsToCreate =
+      newGameState.abilities.keys.toSet -- oldGameState.abilities.keys.toSet
+
+    val abilityModelsToRemove =
+      oldGameState.abilities.keys.toSet -- newGameState.abilities.keys.toSet
+
+    creatureModelsToCreate.foreach(
+      modelEventsScheduler.scheduleCreatureModelAdded
+    )
+    creatureModelsToRemove.foreach(
+      modelEventsScheduler.scheduleCreatureModelRemoved
+    )
+    abilityModelsToCreate.foreach(
+      modelEventsScheduler.scheduleAbilityModelAdded
+    )
+    abilityModelsToRemove.foreach(
+      modelEventsScheduler.scheduleAbilityModelRemoved
+    )
+  }
+
+  private def processModelEvents(gameState: GameState): Unit = {
+    modelEventsScheduler
+      .pollCreatureModelAdded()
+      .foreach(creatureId => {
+        view.createCreatureRenderer(creatureId, gameState)
+        physics.createCreatureBody(creatureId, gameState)
+      })
+    modelEventsScheduler
+      .pollCreatureModelRemoved()
+      .foreach(creatureId => {
+        view.removeCreatureRenderer(creatureId, gameState)
+        physics.removeCreatureBody(creatureId, gameState)
+      })
+    modelEventsScheduler
+      .pollAbilityModelAdded()
+      .foreach(abilityId => {
+        view.createAbilityRenderer(abilityId, gameState)
+        physics.createAbilityBody(abilityId, gameState)
+      })
+    modelEventsScheduler
+      .pollAbilityModelRemoved()
+      .foreach(abilityId => {
+        view.removeAbilityRenderer(abilityId, gameState)
+        physics.removeAbilityBody(abilityId, gameState)
+      })
   }
 
   def dispose(): Unit = {

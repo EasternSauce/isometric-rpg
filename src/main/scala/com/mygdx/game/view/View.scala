@@ -59,14 +59,18 @@ case class View() {
 
     val aliveCreatureRenderables =
       gameState.creatures
-        .filter { case (_, creature) => creature.alive }
+        .filter { case (_, creature) =>
+          creature.alive && creatureRenderers.contains(creature.id)
+        }
         .keys
         .toList
         .map(creatureId => creatureRenderers(creatureId))
 
     val deadCreatureRenderables =
       gameState.creatures
-        .filter { case (_, creature) => !creature.alive }
+        .filter { case (_, creature) =>
+          !creature.alive && creatureRenderers.contains(creature.id)
+        }
         .keys
         .toList
         .map(creatureId => creatureRenderers(creatureId))
@@ -105,32 +109,44 @@ case class View() {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
-    val creatureRenderersToCreate =
-      gameState.creatures.keys.toSet -- creatureRenderers.keys.toSet
-
-    creatureRenderersToCreate.foreach { creatureId =>
-      val creatureRenderer = CreatureRenderer(creatureId)
-      creatureRenderer.init(gameState)
-      creatureRenderers =
-        creatureRenderers.updated(creatureId, creatureRenderer)
-    }
-
-    val abilityRenderersToCreate =
-      gameState.abilities.keys.toSet -- abilityRenderers.keys.toSet
-
-    abilityRenderersToCreate.foreach { abilityId =>
-      val abilityRenderer = AbilityRenderer(abilityId)
-      abilityRenderer.init(gameState)
-      abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
-    }
-
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
+  }
+
+  def createCreatureRenderer(
+      creatureId: EntityId[Creature],
+      gameState: GameState
+  ): Unit = {
+    val creatureRenderer = CreatureRenderer(creatureId)
+    creatureRenderer.init(gameState)
+    creatureRenderers = creatureRenderers.updated(creatureId, creatureRenderer)
+  }
+
+  def removeCreatureRenderer(
+      creatureId: EntityId[Creature],
+      gameState: GameState
+  ): Unit = {
+    creatureRenderers = creatureRenderers.removed(creatureId)
+  }
+
+  def createAbilityRenderer(
+      abilityId: EntityId[Ability],
+      gameState: GameState
+  ): Unit = {
+    val abilityRenderer = AbilityRenderer(abilityId)
+    abilityRenderer.init(gameState)
+    abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
+  }
+
+  def removeAbilityRenderer(
+      abilityId: EntityId[Ability],
+      gameState: GameState
+  ): Unit = {
+    abilityRenderers = abilityRenderers.removed(abilityId)
   }
 
   def resize(width: Int, height: Int): Unit = {
     worldViewport.update(width, height)
     b2DebugViewport.update(width, height)
   }
-
 }

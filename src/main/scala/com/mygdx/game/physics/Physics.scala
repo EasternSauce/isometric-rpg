@@ -65,32 +65,6 @@ case class Physics() {
   def update(gameState: GameState): Unit = {
     world.update()
 
-    val creatureBodiesToCreate =
-      gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
-
-    creatureBodiesToCreate.foreach { creatureId =>
-      val creature = gameState.creatures(creatureId)
-
-      val creatureBody = CreatureBody(creatureId)
-
-      creatureBody.init(world, creature.pos, gameState)
-
-      creatureBodies = creatureBodies.updated(creatureId, creatureBody)
-    }
-
-    val abilityBodiesToCreate =
-      gameState.abilities.keys.toSet -- abilityBodies.keys.toSet
-
-    abilityBodiesToCreate.foreach { abilityId =>
-      val creature = gameState.abilities(abilityId)
-
-      val abilityBody = AbilityBody(abilityId)
-
-      abilityBody.init(world, creature.pos, gameState)
-
-      abilityBodies = abilityBodies.updated(abilityId, abilityBody)
-    }
-
     handleEvents(eventQueue, gameState)
 
     creatureBodies.values.foreach(_.update(gameState))
@@ -152,5 +126,47 @@ case class Physics() {
   }
 
   def getWorld: World = world
+
+  def createCreatureBody(
+      creatureId: EntityId[Creature],
+      gameState: GameState
+  ): Unit = {
+    val creature = gameState.creatures(creatureId)
+
+    val creatureBody = CreatureBody(creatureId)
+
+    creatureBody.init(world, creature.pos, gameState)
+
+    creatureBodies = creatureBodies.updated(creatureId, creatureBody)
+  }
+
+  def removeCreatureBody(
+      creatureId: EntityId[Creature],
+      gameState: GameState
+  ): Unit = {
+    creatureBodies(creatureId).onRemove()
+    creatureBodies = creatureBodies.removed(creatureId)
+  }
+
+  def createAbilityBody(
+      abilityId: EntityId[Ability],
+      gameState: GameState
+  ): Unit = {
+    val creature = gameState.abilities(abilityId)
+
+    val abilityBody = AbilityBody(abilityId)
+
+    abilityBody.init(world, creature.pos, gameState)
+
+    abilityBodies = abilityBodies.updated(abilityId, abilityBody)
+  }
+
+  def removeAbilityBody(
+      abilityId: EntityId[Ability],
+      gameState: GameState
+  ): Unit = {
+    abilityBodies(abilityId).onRemove()
+    abilityBodies = abilityBodies.removed(abilityId)
+  }
 
 }

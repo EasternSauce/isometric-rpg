@@ -68,5 +68,7 @@ trait Ability extends Entity {
     this.params.facingVector.normalized.multiply(this.speed)
   }
 
+  def destroyedOnContact: Boolean
+
   def copy(params: AbilityParams): Ability
 }

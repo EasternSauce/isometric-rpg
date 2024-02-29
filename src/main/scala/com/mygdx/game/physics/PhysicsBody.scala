@@ -5,29 +5,31 @@ import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
 trait PhysicsBody {
-  protected var body: Body = _
+  protected var b2Body: Body = _
 
   def init(world: World, pos: Vector2, gameState: GameState): Unit
 
   def update(gameState: GameState): Unit
 
   def makeSensor(): Unit = {
-    body.getFixtureList.get(0).setSensor(true)
+    b2Body.getFixtureList.get(0).setSensor(true)
   }
 
   def makeNonSensor(): Unit = {
-    body.getFixtureList.get(0).setSensor(false)
+    b2Body.getFixtureList.get(0).setSensor(false)
   }
 
   def setPos(pos: Vector2): Unit = {
-    body.setTransform(
+    b2Body.setTransform(
       pos.x,
       pos.y,
-      body.getAngle
+      b2Body.getAngle
     )
   }
 
   def pos: Vector2 = {
-    Vector2(body.getPosition.x, body.getPosition.y)
+    Vector2(b2Body.getPosition.x, b2Body.getPosition.y)
   }
+
+  def onRemove(): Unit
 }

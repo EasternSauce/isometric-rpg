@@ -6,8 +6,10 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
+  var world: World = _
+
   def init(world: World, pos: Vector2, gameState: GameState): Unit = {
-    this.body = {
+    this.b2Body = {
       val creature = gameState.creatures(creatureId)
 
       import com.badlogic.gdx.physics.box2d._
@@ -34,14 +36,20 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
 
       body
     }
+
+    this.world = world
   }
 
   override def update(gameState: GameState): Unit = {
     val creature = gameState.creatures(creatureId)
 
-    body.setLinearVelocity(
+    b2Body.setLinearVelocity(
       creature.params.velocity.x,
       creature.params.velocity.y
     )
+  }
+
+  override def onRemove(): Unit = {
+    world.b2World.destroyBody(b2Body)
   }
 }

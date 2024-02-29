@@ -6,8 +6,10 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
+  var world: World = _
+
   override def init(world: World, pos: Vector2, gameState: GameState): Unit = {
-    this.body = {
+    this.b2Body = {
       import com.badlogic.gdx.physics.box2d._
 
       val bodyDef = new BodyDef()
@@ -27,11 +29,17 @@ case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
 
       body
     }
+
+    this.world = world
   }
 
   override def update(gameState: GameState): Unit = {
     val ability = gameState.abilities(abilityId)
 
-    body.setLinearVelocity(ability.velocity.x, ability.velocity.y)
+    b2Body.setLinearVelocity(ability.velocity.x, ability.velocity.y)
+  }
+
+  override def onRemove(): Unit = {
+    world.b2World.destroyBody(b2Body)
   }
 }
