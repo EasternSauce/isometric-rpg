@@ -37,8 +37,8 @@ case class EnemyBehavior() extends CreatureBehavior {
             )
             creature <- Outcome.when(creature)(creature =>
               !targetCreature.alive ||
-                (!creature.params.loseAggroTimer.running || (creature.params.loseAggroTimer.running && creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime)) &&
-                  (!creature.params.lastAttackedTimer.running || (creature.params.lastAttackedTimer.running && creature.params.lastAttackedTimer.time > Constants.AttackedByCreatureLoseAggroTime))
+                (!creature.params.loseAggroTimer.running || creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime) &&
+                (!creature.params.lastAttackedTimer.running || creature.params.lastAttackedTimer.time > Constants.AttackedByCreatureLoseAggroTime)
             )(loseAggro)
           } yield creature
       }

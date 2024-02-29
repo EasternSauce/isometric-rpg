@@ -155,9 +155,13 @@ case class GameState(
           if (ability.params.creatureId != creatureId) {
             gameState
               .modify(_.creatures.at(creatureId))
-              .using(creature => creature
-                .pipe(registerLastAttackedByCreature(ability.params.creatureId))
-                .pipe(dealDamageToCreature(ability.params.damage)))
+              .using(creature =>
+                creature
+                  .pipe(
+                    registerLastAttackedByCreature(ability.params.creatureId)
+                  )
+                  .pipe(dealDamageToCreature(ability.params.damage))
+              )
               .modify(_.abilities)
               .usingIf(creature.alive && ability.destroyedOnContact)(
                 _.removed(abilityId)

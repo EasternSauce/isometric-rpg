@@ -25,9 +25,9 @@ object CreatureFactory {
       damage = 20f,
       attackRange = 1f,
       textureNames = Map(
-        CreatureAnimationType.Body -> "steel_armor",
+        CreatureAnimationType.Body -> "clothes",
         CreatureAnimationType.Head -> "male_head1",
-        CreatureAnimationType.Weapon -> "greatbow",
+        CreatureAnimationType.Weapon -> "shortbow",
         CreatureAnimationType.Shield -> "shield"
       ),
       size = 128,
