@@ -15,7 +15,7 @@ case class CreatureRespawnDelayStartEvent(creatureId: EntityId[Creature])
 case class CreatureRespawnEvent(creatureId: EntityId[Creature])
     extends GameStateEvent
 
-case class CreatureMeleeAttackEvent(
+case class MeleeAttackHitsCreatureEvent(
     sourceCreatureId: EntityId[Creature],
     destinationCreatureId: EntityId[Creature],
     damage: Float

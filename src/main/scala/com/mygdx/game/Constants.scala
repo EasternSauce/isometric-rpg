@@ -43,12 +43,14 @@ object Constants {
   val TileCenterX = 0
   val TileCenterY = 0
 
-  val EnemyAggroDistance = 3f
+  val EnemyAggroDistance = 5f
 
   val RespawnTime = 5f
 
-  val EnemyLoseAggroRange = 5f
-  val EnemyLoseAggroTime = 2f
+  val EnemyLoseAggroRange = 8f
+  val EnemyLoseAggroTime = 3f
 
   val RespawnDelayTime = 0.5f
+
+  val AttackedByCreatureLoseAggroTime = 8f
 }

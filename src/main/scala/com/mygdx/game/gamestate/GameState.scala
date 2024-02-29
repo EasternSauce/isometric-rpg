@@ -106,14 +106,18 @@ case class GameState(
                 .modify(_.params.respawnTimer)
                 .using(_.stop())
             )
-        case CreatureMeleeAttackEvent(
-              _,
+        case MeleeAttackHitsCreatureEvent(
+              sourceCreatureId,
               destinationCreatureId,
               damage
             ) =>
           gameState
             .modify(_.creatures.at(destinationCreatureId))
-            .using(dealDamageToCreature(damage))
+            .using(creature =>
+              creature
+                .pipe(registerLastAttackedByCreature(sourceCreatureId))
+                .pipe(dealDamageToCreature(damage))
+            )
 
         case CreatureShootArrowEvent(
               sourceCreatureId,
@@ -151,7 +155,9 @@ case class GameState(
           if (ability.params.creatureId != creatureId) {
             gameState
               .modify(_.creatures.at(creatureId))
-              .using(dealDamageToCreature(ability.params.damage))
+              .using(creature => creature
+                .pipe(registerLastAttackedByCreature(ability.params.creatureId))
+                .pipe(dealDamageToCreature(ability.params.damage)))
               .modify(_.abilities)
               .usingIf(creature.alive && ability.destroyedOnContact)(
                 _.removed(abilityId)
@@ -169,6 +175,16 @@ case class GameState(
       }
 
     }
+
+  private def registerLastAttackedByCreature(
+      sourceCreatureId: EntityId[Creature]
+  ): Creature => Creature = { creature =>
+    creature
+      .modify(_.params.lastAttackedTimer)
+      .using(_.restart())
+      .modify(_.params.currentTargetId)
+      .setTo(Some(sourceCreatureId))
+  }
 
   private def dealDamageToCreature(damage: Float): Creature => Creature = {
     creature =>

@@ -100,7 +100,7 @@ case class Creature(
           Outcome(creature.modify(_.params.attackPending).setTo(false))
             .withEvents(
               List(
-                CreatureMeleeAttackEvent(
+                MeleeAttackHitsCreatureEvent(
                   creature.id,
                   creature.params.attackedCreatureId.get,
                   creature.params.damage
@@ -194,6 +194,8 @@ case class Creature(
         .modify(_.params.loseAggroTimer)
         .using(_.update(delta))
         .modify(_.params.respawnDelayTimer)
+        .using(_.update(delta))
+        .modify(_.params.lastAttackedTimer)
         .using(_.update(delta))
     )
   }
