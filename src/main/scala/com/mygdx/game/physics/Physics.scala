@@ -67,6 +67,23 @@ case class Physics() {
 
     handleEvents(eventQueue, gameState)
 
+    gameState.creatures.values.foreach(creature =>
+      if (
+        creatureBodies.contains(creature.id) && creatureBodies(creature.id).pos
+          .distance(creature.pos) > 0.5f
+      ) {
+        creatureBodies(creature.id).setPos(creature.pos)
+      }
+    )
+    gameState.abilities.values.foreach(ability =>
+      if (
+        abilityBodies.contains(ability.id) && abilityBodies(ability.id).pos
+          .distance(ability.pos) > 0.5f
+      ) {
+        abilityBodies(ability.id).setPos(ability.pos)
+      }
+    )
+
     creatureBodies.values.foreach(_.update(gameState))
     abilityBodies.values.foreach(_.update(gameState))
   }
@@ -77,14 +94,20 @@ case class Physics() {
   ): Unit = {
     eventsToBeProcessed.foreach {
       case TeleportEvent(creatureId, pos) =>
-        val creature = gameState.creatures(creatureId)
-        creatureBodies(creature.id).setPos(pos)
+        if (gameState.creatures.contains(creatureId)) {
+          val creature = gameState.creatures(creatureId)
+          creatureBodies(creature.id).setPos(pos)
+        }
       case MakeBodySensorEvent(creatureId) =>
-        val creature = gameState.creatures(creatureId)
-        creatureBodies(creature.id).makeSensor()
+        if (gameState.creatures.contains(creatureId)) {
+          val creature = gameState.creatures(creatureId)
+          creatureBodies(creature.id).makeSensor()
+        }
       case MakeBodyNonSensorEvent(creatureId) =>
-        val creature = gameState.creatures(creatureId)
-        creatureBodies(creature.id).makeNonSensor()
+        if (gameState.creatures.contains(creatureId)) {
+          val creature = gameState.creatures(creatureId)
+          creatureBodies(creature.id).makeNonSensor()
+        }
       case _ =>
     }
 
@@ -144,8 +167,10 @@ case class Physics() {
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
-    creatureBodies(creatureId).onRemove()
-    creatureBodies = creatureBodies.removed(creatureId)
+    if (creatureBodies.contains(creatureId)) {
+      creatureBodies(creatureId).onRemove()
+      creatureBodies = creatureBodies.removed(creatureId)
+    }
   }
 
   def createAbilityBody(

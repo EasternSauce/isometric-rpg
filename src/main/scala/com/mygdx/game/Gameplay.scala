@@ -11,6 +11,7 @@ import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
 case class Gameplay() {
+
   private val clientInformation: ClientInformation =
     ClientInformation(clientCreatureId = EntityId("player"))
 
@@ -32,9 +33,7 @@ case class Gameplay() {
     spriteBatch.init()
   }
 
-  def update(delta: Float): Unit = {
-    val input = Input.poll()
-
+  def update(input: Input, delta: Float): Unit = {
     physics.update(gameState)
 
     updateGameState(
@@ -45,7 +44,9 @@ case class Gameplay() {
     )
 
     processModelEvents(gameState)
+  }
 
+  def render(input: Input): Unit = {
     view.update(clientInformation, gameState)
 
     view.draw(spriteBatch, physics, gameState)
@@ -169,4 +170,11 @@ case class Gameplay() {
   }
 
   def resize(width: Int, height: Int): Unit = view.resize(width, height)
+
+  def currentGameState: GameState = gameState
+
+  def overrideGameState(gameState: GameState): Unit = {
+    this.gameState = gameState
+  }
+
 }

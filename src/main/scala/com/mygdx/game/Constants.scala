@@ -1,6 +1,7 @@
 package com.mygdx.game
 
 object Constants {
+
   val WindowWidth = 1360
   val WindowHeight = 720
 
@@ -53,4 +54,7 @@ object Constants {
   val RespawnDelayTime = 0.5f
 
   val AttackedByCreatureLoseAggroTime = 8f
+
+  val TIME_BETWEEN_GAMESTATE_BROADCASTS = 0.5f
+
 }

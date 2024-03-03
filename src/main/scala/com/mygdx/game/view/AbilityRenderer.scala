@@ -22,22 +22,24 @@ case class AbilityRenderer(abilityId: EntityId[Ability]) extends Renderable {
   }
 
   def render(batch: SpriteBatch, gameState: GameState): Unit = {
-    val ability = gameState.abilities(abilityId)
+    if (gameState.abilities.contains(abilityId)) {
+      val ability = gameState.abilities(abilityId)
 
-    val pos = IsometricProjection.translatePosIsoToScreen(ability.pos)
+      val pos = IsometricProjection.translatePosIsoToScreen(ability.pos)
 
-    val angle = IsometricProjection
-      .translatePosIsoToScreen(ability.params.facingVector)
-      .angleDeg
+      val angle = IsometricProjection
+        .translatePosIsoToScreen(ability.params.facingVector)
+        .angleDeg
 
-    batch.draw(
-      textureRegion,
-      pos.x - ability.atlasRegionWidth / 2f,
-      pos.y - ability.atlasRegionHeight / 2f,
-      ability.worldWidth,
-      ability.worldHeight,
-      angle
-    )
+      batch.draw(
+        textureRegion,
+        pos.x - ability.atlasRegionWidth / 2f,
+        pos.y - ability.atlasRegionHeight / 2f,
+        ability.worldWidth,
+        ability.worldHeight,
+        angle
+      )
+    }
   }
 
   override def pos(gameState: GameState): Vector2 = {

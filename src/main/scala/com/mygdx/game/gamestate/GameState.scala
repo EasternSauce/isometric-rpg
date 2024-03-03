@@ -37,8 +37,7 @@ case class GameState(
         val outcome = creature
           .update(
             delta = delta,
-            newPos =
-              creaturePositions.getOrElse(creature.id, creature.params.pos),
+            newPos = creaturePositions.getOrElse(creature.id, creature.pos),
             input = input,
             clientInformation = clientInformation,
             gameState = this
@@ -51,7 +50,7 @@ case class GameState(
       .using { ability =>
         val outcome = ability.update(
           delta = delta,
-          newPos = abilityPositions(ability.id),
+          newPos = abilityPositions.getOrElse(ability.id, ability.pos),
           gameState = this
         )
 
@@ -149,23 +148,27 @@ case class GameState(
             .using(_ + 1)
 
         case AbilityHitsCreatureEvent(abilityId, creatureId) =>
-          val ability = abilities(abilityId)
-          val creature = creatures(creatureId)
+          if (abilities.contains(abilityId) && creatures.contains(creatureId)) {
+            val ability = abilities(abilityId)
+            val creature = creatures(creatureId)
 
-          if (ability.params.creatureId != creatureId) {
-            gameState
-              .modify(_.creatures.at(creatureId))
-              .using(creature =>
-                creature
-                  .pipe(
-                    registerLastAttackedByCreature(ability.params.creatureId)
-                  )
-                  .pipe(dealDamageToCreature(ability.params.damage))
-              )
-              .modify(_.abilities)
-              .usingIf(creature.alive && ability.destroyedOnContact)(
-                _.removed(abilityId)
-              )
+            if (ability.params.creatureId != creatureId) {
+              gameState
+                .modify(_.creatures.at(creatureId))
+                .using(creature =>
+                  creature
+                    .pipe(
+                      registerLastAttackedByCreature(ability.params.creatureId)
+                    )
+                    .pipe(dealDamageToCreature(ability.params.damage))
+                )
+                .modify(_.abilities)
+                .usingIf(creature.alive && ability.destroyedOnContact)(
+                  _.removed(abilityId)
+                )
+            } else {
+              gameState
+            }
           } else {
             gameState
           }

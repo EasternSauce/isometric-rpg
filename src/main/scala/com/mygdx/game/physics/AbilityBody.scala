@@ -34,9 +34,11 @@ case class AbilityBody(abilityId: EntityId[Ability]) extends PhysicsBody {
   }
 
   override def update(gameState: GameState): Unit = {
-    val ability = gameState.abilities(abilityId)
+    if (gameState.abilities.contains(abilityId)) {
+      val ability = gameState.abilities(abilityId)
 
-    b2Body.setLinearVelocity(ability.velocity.x, ability.velocity.y)
+      b2Body.setLinearVelocity(ability.velocity.x, ability.velocity.y)
+    }
   }
 
   override def onRemove(): Unit = {

@@ -41,12 +41,14 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
   }
 
   override def update(gameState: GameState): Unit = {
-    val creature = gameState.creatures(creatureId)
+    if (gameState.creatures.contains(creatureId)) {
+      val creature = gameState.creatures(creatureId)
 
-    b2Body.setLinearVelocity(
-      creature.params.velocity.x,
-      creature.params.velocity.y
-    )
+      b2Body.setLinearVelocity(
+        creature.params.velocity.x,
+        creature.params.velocity.y
+      )
+    }
   }
 
   override def onRemove(): Unit = {
