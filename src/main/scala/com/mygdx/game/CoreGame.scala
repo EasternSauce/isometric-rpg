@@ -8,7 +8,7 @@ abstract class CoreGame extends Game {
   val playScreen: Screen
   val endPoint: EndPoint
 
-  val gameplay: Gameplay = Gameplay()
+  private val _gameplay: Gameplay = Gameplay(this)
 
   override def create(): Unit = {
     Assets.load()
@@ -19,4 +19,6 @@ abstract class CoreGame extends Game {
   }
 
   def onCreate(): Unit
+
+  def gameplay: Gameplay = _gameplay
 }

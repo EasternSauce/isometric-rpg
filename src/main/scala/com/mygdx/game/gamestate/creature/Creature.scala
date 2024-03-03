@@ -1,5 +1,6 @@
 package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.action.CreatureMoveToDestinationAction
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
 import com.mygdx.game.gamestate.event._
@@ -227,19 +228,15 @@ case class Creature(
       mouseWorldPos: Vector2
   ): Outcome[Creature] = {
     if (input.moveButtonPressed) {
-      Outcome(
+      Outcome[Creature](
         this
-          .modify(_.params.destination)
-          .setTo(mouseWorldPos)
           .modify(_.params.attackAnimationTimer)
           .usingIf(params.attackAnimationTimer.running)(_.stop())
-      )
+      ).withActions(List(CreatureMoveToDestinationAction(id, mouseWorldPos)))
     } else {
       Outcome(
         this
-          .modify(_.params.destination)
-          .setTo(pos)
-      )
+      ).withActions(List(CreatureMoveToDestinationAction(id, pos)))
     }
   }
 

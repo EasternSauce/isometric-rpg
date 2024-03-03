@@ -10,46 +10,46 @@ import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
-case class Gameplay() {
+case class Gameplay(game: CoreGame) {
 
-  private val clientInformation: ClientInformation =
+  private val _clientInformation: ClientInformation =
     ClientInformation(clientCreatureId = EntityId("player"))
 
-  private val levelMap: LevelMap = LevelMap()
-  private val physics: Physics = Physics()
-  private val view: View = View()
+  private val _levelMap: LevelMap = LevelMap()
+  private val _physics: Physics = Physics()
+  private val _view: View = View()
   private val spriteBatch: SpriteBatch = SpriteBatch()
   private val modelEventsScheduler: ModelEventsScheduler =
     ModelEventsScheduler()
-  private var gameState: GameState = _
+  private var _gameState: GameState = _
 
   def init(): Unit = {
-    gameState = GameState.initialState(clientInformation)
+    _gameState = GameState.initialState(_clientInformation)
 
-    levelMap.init()
-    view.init(clientInformation, levelMap, gameState)
-    physics.init(clientInformation, levelMap, gameState)
+    _levelMap.init()
+    _view.init(_clientInformation, _levelMap, _gameState)
+    _physics.init(_clientInformation, _levelMap, _gameState)
 
     spriteBatch.init()
   }
 
   def update(input: Input, delta: Float): Unit = {
-    physics.update(gameState)
+    _physics.update(_gameState)
 
     updateGameState(
-      physics.getCreaturePositions,
-      physics.getAbilityPositions,
+      _physics.getCreaturePositions,
+      _physics.getAbilityPositions,
       input,
       delta
     )
 
-    processModelEvents(gameState)
+    processModelEvents(_gameState)
   }
 
   def render(input: Input): Unit = {
-    view.update(clientInformation, gameState)
+    _view.update(_clientInformation, _gameState)
 
-    view.draw(spriteBatch, physics, gameState)
+    _view.draw(spriteBatch, _physics, _gameState)
 
     if (Constants.EnableDebug) drawMouseAimDebug(input)
   }
@@ -60,15 +60,15 @@ case class Gameplay() {
     val isoMousePos =
       IsometricProjection.translatePosScreenToIso(mousePos)
 
-    val mouseWorldPos = gameState
-      .creatures(clientInformation.clientCreatureId)
+    val mouseWorldPos = _gameState
+      .creatures(_clientInformation.clientCreatureId)
       .params
       .pos
       .add(isoMousePos)
 
     spriteBatch.begin()
 
-    gameState.creatures.values
+    _gameState.creatures.values
       .map(_.pos)
       .foreach(pos => {
         val worldPos = IsometricProjection.translatePosIsoToScreen(pos)
@@ -94,18 +94,17 @@ case class Gameplay() {
       input: Input,
       delta: Float
   ): Unit = {
-    val newGameState = gameState.update(
+    val newGameState = _gameState.update(
       creaturePositions,
       abilityPositions,
       input,
-      clientInformation,
-      physics,
-      delta
+      delta,
+      game
     )
 
-    scheduleModelEvents(gameState, newGameState)
+    scheduleModelEvents(_gameState, newGameState)
 
-    gameState = newGameState
+    _gameState = newGameState
   }
 
   def scheduleModelEvents(
@@ -142,26 +141,26 @@ case class Gameplay() {
     modelEventsScheduler
       .pollCreatureModelAdded()
       .foreach(creatureId => {
-        view.createCreatureRenderer(creatureId, gameState)
-        physics.createCreatureBody(creatureId, gameState)
+        _view.createCreatureRenderer(creatureId, gameState)
+        _physics.createCreatureBody(creatureId, gameState)
       })
     modelEventsScheduler
       .pollCreatureModelRemoved()
       .foreach(creatureId => {
-        view.removeCreatureRenderer(creatureId, gameState)
-        physics.removeCreatureBody(creatureId, gameState)
+        _view.removeCreatureRenderer(creatureId, gameState)
+        _physics.removeCreatureBody(creatureId, gameState)
       })
     modelEventsScheduler
       .pollAbilityModelAdded()
       .foreach(abilityId => {
-        view.createAbilityRenderer(abilityId, gameState)
-        physics.createAbilityBody(abilityId, gameState)
+        _view.createAbilityRenderer(abilityId, gameState)
+        _physics.createAbilityBody(abilityId, gameState)
       })
     modelEventsScheduler
       .pollAbilityModelRemoved()
       .foreach(abilityId => {
-        view.removeAbilityRenderer(abilityId, gameState)
-        physics.removeAbilityBody(abilityId, gameState)
+        _view.removeAbilityRenderer(abilityId, gameState)
+        _physics.removeAbilityBody(abilityId, gameState)
       })
   }
 
@@ -169,12 +168,15 @@ case class Gameplay() {
     spriteBatch.dispose()
   }
 
-  def resize(width: Int, height: Int): Unit = view.resize(width, height)
-
-  def currentGameState: GameState = gameState
+  def resize(width: Int, height: Int): Unit = _view.resize(width, height)
 
   def overrideGameState(gameState: GameState): Unit = {
-    this.gameState = gameState
+    this._gameState = gameState
   }
 
+  def gameState: GameState = _gameState
+  def clientInformation: ClientInformation = _clientInformation
+  def levelMap: LevelMap = _levelMap
+  def physics: Physics = _physics
+  def view: View = _view
 }

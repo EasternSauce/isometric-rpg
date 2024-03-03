@@ -31,6 +31,6 @@ object GameDataBroadcaster {
   }
 
   def broadcastToConnection(connection: Connection): Unit = {
-    connection.sendTCP(CoreGameServer.gameplay.currentGameState)
+    connection.sendTCP(CoreGameServer.gameplay.gameState)
   }
 }

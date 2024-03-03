@@ -1,13 +1,13 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.ClientInformation
+import com.mygdx.game.action.GameStateAction
 import com.mygdx.game.gamestate.ability.{Ability, AbilityParams, Arrow}
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.input.Input
-import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.Vector2
+import com.mygdx.game.{ClientInformation, CoreGame}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.chaining.scalaUtilChainingOps
@@ -23,13 +23,11 @@ case class GameState(
       creaturePositions: Map[EntityId[Creature], Vector2],
       abilityPositions: Map[EntityId[Ability], Vector2],
       input: Input,
-      clientInformation: ClientInformation,
-      physics: Physics,
-      delta: Float
+      delta: Float,
+      game: CoreGame
   ): GameState = {
-    var events: List[Event] = List()
-
-    events = events.appendedAll(physics.pollCollisionEvents())
+    var events: List[Event] = game.gameplay.physics.pollCollisionEvents()
+    var actions: List[GameStateAction] = List()
 
     val newGameState = this
       .modify(_.creatures.each)
@@ -39,11 +37,12 @@ case class GameState(
             delta = delta,
             newPos = creaturePositions.getOrElse(creature.id, creature.pos),
             input = input,
-            clientInformation = clientInformation,
+            clientInformation = game.gameplay.clientInformation,
             gameState = this
           )
 
         events = events.appendedAll(outcome.events)
+        actions = actions.appendedAll(outcome.actions)
         outcome.obj
       }
       .modify(_.abilities.each)
@@ -55,14 +54,20 @@ case class GameState(
         )
 
         events = events.appendedAll(outcome.events)
+        actions = actions.appendedAll(outcome.actions)
         outcome.obj
       }
       .pipe(EnemySpawnUtils.processSpawns)
       .pipe(handleEvents(events))
 
-    physics.scheduleEvents(events)
+    game.gameplay.physics.scheduleEvents(events)
 
-    newGameState
+    // TODO: if server then broadcast all actions
+
+    actions.foldLeft(newGameState) {
+      case (gameState: GameState, action: GameStateAction) =>
+        action.applyToGameState(gameState)
+    }
   }
 
   def handleEvents(events: List[Event]): GameState => GameState = gameState =>
