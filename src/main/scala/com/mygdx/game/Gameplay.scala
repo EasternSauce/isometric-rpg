@@ -1,6 +1,7 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
+import com.mygdx.game.action.GameStateAction
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
@@ -107,7 +108,7 @@ case class Gameplay(game: CoreGame) {
     _gameState = newGameState
   }
 
-  def scheduleModelEvents(
+  private def scheduleModelEvents(
       oldGameState: GameState,
       newGameState: GameState
   ): Unit = {
@@ -172,6 +173,15 @@ case class Gameplay(game: CoreGame) {
 
   def overrideGameState(gameState: GameState): Unit = {
     this._gameState = gameState
+  }
+
+  def applyActions(actions: List[GameStateAction]): Unit = {
+    if (_gameState != null) {
+      this._gameState = actions.foldLeft(_gameState) {
+        case (gameState, action) =>
+          action.applyToGameState(gameState)
+      }
+    }
   }
 
   def gameState: GameState = _gameState

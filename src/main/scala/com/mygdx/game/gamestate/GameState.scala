@@ -16,7 +16,8 @@ case class GameState(
     creatures: Map[EntityId[Creature], Creature],
     abilities: Map[EntityId[Ability], Ability],
     creatureCounter: Int = 0,
-    abilityCounter: Int = 0
+    abilityCounter: Int = 0,
+    creatureSpawnQueue: List[Creature] = List()
 ) {
 
   def update(
@@ -57,12 +58,19 @@ case class GameState(
         actions = actions.appendedAll(outcome.actions)
         outcome.obj
       }
-      .pipe(EnemySpawnUtils.processSpawns)
+      .pipe(gameState => {
+        val outcome = EnemySpawnUtils.scheduleEnemySpawnActions(gameState)
+
+        events = events.appendedAll(outcome.events)
+        actions = actions.appendedAll(outcome.actions)
+        outcome.obj
+      })
+      .pipe(EnemySpawnUtils.processCreatureSpawnQueue)
       .pipe(handleEvents(events))
 
     game.gameplay.physics.scheduleEvents(events)
 
-    // TODO: if server then broadcast all actions
+    game.onGameStateUpdate(actions)
 
     actions.foldLeft(newGameState) {
       case (gameState: GameState, action: GameStateAction) =>

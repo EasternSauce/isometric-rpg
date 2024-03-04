@@ -190,8 +190,10 @@ case class Physics() {
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
-    abilityBodies(abilityId).onRemove()
-    abilityBodies = abilityBodies.removed(abilityId)
+    if (abilityBodies.contains(abilityId)) {
+      abilityBodies(abilityId).onRemove()
+      abilityBodies = abilityBodies.removed(abilityId)
+    }
   }
 
 }

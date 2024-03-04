@@ -2,8 +2,8 @@ package com.mygdx.game
 
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
-import com.esotericsoftware.kryonet.{Connection, KryoSerialization, Listener, Server}
-import com.mygdx.game.gamestate.GameState
+import com.esotericsoftware.kryonet.{KryoSerialization, Server}
+import com.mygdx.game.action.GameStateAction
 import com.mygdx.game.screen.ServerCamScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -15,10 +15,11 @@ object CoreGameServer extends CoreGame {
       instantiator.newKryo()
     }
 
-    new Server(16384 * 1000, 2048 * 100, new KryoSerialization(kryo))
+    new Server(16384 * 100, 2048 * 100, new KryoSerialization(kryo))
   }
 
   private def server: Server = endPoint
+  private val listener: ServerListener = ServerListener(this)
 
   override val playScreen: Screen = ServerCamScreen(gameplay)
 
@@ -26,14 +27,7 @@ object CoreGameServer extends CoreGame {
     server.start()
     server.bind(54555, 54777)
 
-    server.addListener(new Listener() {
-      override def received(connection: Connection, obj: Any): Unit = {
-        obj match {
-          case gs: GameState => println(gs)
-          case _             =>
-        }
-      }
-    })
+    server.addListener(listener)
   }
 
   def main(arg: Array[String]): Unit = {
@@ -53,5 +47,17 @@ object CoreGameServer extends CoreGame {
 
   override def onCreate(): Unit = {
     GameDataBroadcaster.start(server)
+  }
+
+  override def onGameStateUpdate(actions: List[GameStateAction]): Unit = {
+    sendActionsToAllConnectedClients(actions)
+  }
+
+  private def sendActionsToAllConnectedClients(
+      actions: List[GameStateAction]
+  ): Unit = {
+    server.getConnections.foreach(connection => {
+      connection.sendTCP(ActionsHolder(actions))
+    })
   }
 }

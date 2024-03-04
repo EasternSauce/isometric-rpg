@@ -3,7 +3,7 @@ package com.mygdx.game
 import com.esotericsoftware.kryonet.{Connection, Listener}
 import com.mygdx.game.gamestate.GameState
 
-case class ClientListener(game: CoreGame) extends Listener {
+case class ServerListener(game: CoreGame) extends Listener {
   override def disconnected(connection: Connection): Unit = {
     System.out.println("Disconnecting...")
     System.exit(0)
@@ -11,10 +11,8 @@ case class ClientListener(game: CoreGame) extends Listener {
 
   override def received(connection: Connection, obj: Any): Unit = {
     obj match {
-      case gameState: GameState =>
-        game.gameplay.overrideGameState(gameState)
-      case ActionsHolder(actions) =>
-        game.gameplay.applyActions(actions)
+      case gameState: GameState => ???
+      case _                    =>
     }
   }
 }
