@@ -20,8 +20,7 @@ case class Gameplay(game: CoreGame) {
   private val _physics: Physics = Physics()
   private val _view: View = View()
   private val spriteBatch: SpriteBatch = SpriteBatch()
-//  private val modelEventsScheduler: ModelEventsScheduler =
-//    ModelEventsScheduler()
+
   private var _gameState: GameState = _
 
   def init(): Unit = {
@@ -43,8 +42,6 @@ case class Gameplay(game: CoreGame) {
       input,
       delta
     )
-
-//    processModelEvents(_gameState)
   }
 
   def render(input: Input): Unit = {
@@ -103,67 +100,8 @@ case class Gameplay(game: CoreGame) {
       game
     )
 
-//    scheduleModelEvents(_gameState, newGameState)
-
     _gameState = newGameState
   }
-
-//  private def scheduleModelEvents(
-//      oldGameState: GameState,
-//      newGameState: GameState
-//  ): Unit = {
-//    val creatureModelsToCreate =
-//      newGameState.creatures.keys.toSet -- oldGameState.creatures.keys.toSet
-//
-//    val creatureModelsToRemove =
-//      oldGameState.creatures.keys.toSet -- newGameState.creatures.keys.toSet
-//
-//    val abilityModelsToCreate =
-//      newGameState.abilities.keys.toSet -- oldGameState.abilities.keys.toSet
-//
-//    val abilityModelsToRemove =
-//      oldGameState.abilities.keys.toSet -- newGameState.abilities.keys.toSet
-//
-//    creatureModelsToCreate.foreach(
-//      modelEventsScheduler.scheduleCreatureModelAdded
-//    )
-//    creatureModelsToRemove.foreach(
-//      modelEventsScheduler.scheduleCreatureModelRemoved
-//    )
-//    abilityModelsToCreate.foreach(
-//      modelEventsScheduler.scheduleAbilityModelAdded
-//    )
-//    abilityModelsToRemove.foreach(
-//      modelEventsScheduler.scheduleAbilityModelRemoved
-//    )
-//  }
-
-//  private def processModelEvents(gameState: GameState): Unit = {
-//    modelEventsScheduler
-//      .pollCreatureModelAdded()
-//      .foreach(creatureId => {
-//        _view.createCreatureRenderer(creatureId, gameState)
-//        _physics.createCreatureBody(creatureId, gameState)
-//      })
-//    modelEventsScheduler
-//      .pollCreatureModelRemoved()
-//      .foreach(creatureId => {
-//        _view.removeCreatureRenderer(creatureId, gameState)
-//        _physics.removeCreatureBody(creatureId, gameState)
-//      })
-//    modelEventsScheduler
-//      .pollAbilityModelAdded()
-//      .foreach(abilityId => {
-//        _view.createAbilityRenderer(abilityId, gameState)
-//        _physics.createAbilityBody(abilityId, gameState)
-//      })
-//    modelEventsScheduler
-//      .pollAbilityModelRemoved()
-//      .foreach(abilityId => {
-//        _view.removeAbilityRenderer(abilityId, gameState)
-//        _physics.removeAbilityBody(abilityId, gameState)
-//      })
-//  }
 
   def dispose(): Unit = {
     spriteBatch.dispose()

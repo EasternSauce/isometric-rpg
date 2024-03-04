@@ -27,16 +27,5 @@ object EnemySpawnUtils {
       } else {
         Outcome(gameState)
       }
-
   }
-
-//  def processCreatureSpawnQueue: GameState => GameState = { gameState =>
-//    gameState.creatureSpawnQueue
-//      .foldLeft(gameState) { case (gameState, creature) =>
-//        gameState.modify(_.creatures).using(_.updated(creature.id, creature))
-//      }
-//      .modify(_.creatureSpawnQueue)
-//      .setTo(List())
-//  }
-
 }

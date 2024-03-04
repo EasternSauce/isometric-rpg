@@ -64,7 +64,6 @@ case class GameState(
         actions = actions.appendedAll(outcome.actions)
         outcome.obj
       })
-//      .pipe(EnemySpawnUtils.processCreatureSpawnQueue)
       .pipe(handleEvents(events))
 
     game.gameplay.physics.scheduleEvents(events)
