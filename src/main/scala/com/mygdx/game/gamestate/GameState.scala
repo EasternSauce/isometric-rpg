@@ -16,8 +16,7 @@ case class GameState(
     creatures: Map[EntityId[Creature], Creature],
     abilities: Map[EntityId[Ability], Ability],
     creatureCounter: Int = 0,
-    abilityCounter: Int = 0,
-    creatureSpawnQueue: List[Creature] = List()
+    abilityCounter: Int = 0
 ) {
 
   def update(
@@ -65,7 +64,7 @@ case class GameState(
         actions = actions.appendedAll(outcome.actions)
         outcome.obj
       })
-      .pipe(EnemySpawnUtils.processCreatureSpawnQueue)
+//      .pipe(EnemySpawnUtils.processCreatureSpawnQueue)
       .pipe(handleEvents(events))
 
     game.gameplay.physics.scheduleEvents(events)

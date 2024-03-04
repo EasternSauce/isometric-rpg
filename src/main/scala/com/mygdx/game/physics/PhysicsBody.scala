@@ -6,17 +6,22 @@ import com.mygdx.game.util.Vector2
 
 trait PhysicsBody {
   protected var b2Body: Body = _
+  protected var _sensor: Boolean = false
 
   def init(world: World, pos: Vector2, gameState: GameState): Unit
 
   def update(gameState: GameState): Unit
 
-  def makeSensor(): Unit = {
+  def sensor: Boolean = _sensor
+
+  def setSensor(): Unit = {
     b2Body.getFixtureList.get(0).setSensor(true)
+    _sensor = true
   }
 
-  def makeNonSensor(): Unit = {
+  def setNonSensor(): Unit = {
     b2Body.getFixtureList.get(0).setSensor(false)
+    _sensor = false
   }
 
   def setPos(pos: Vector2): Unit = {

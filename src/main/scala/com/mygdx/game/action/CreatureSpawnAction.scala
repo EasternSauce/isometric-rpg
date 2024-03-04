@@ -7,8 +7,8 @@ import com.softwaremill.quicklens.ModifyPimp
 case class CreatureSpawnAction(creature: Creature) extends GameStateAction {
   override def applyToGameState(gameState: GameState): GameState = {
     gameState
-      .modify(_.creatureSpawnQueue)
-      .using(_.appended(creature))
+      .modify(_.creatures)
+      .using(_.updated(creature.id, creature))
       .modify(_.creatureCounter)
       .using(_ + 1)
   }

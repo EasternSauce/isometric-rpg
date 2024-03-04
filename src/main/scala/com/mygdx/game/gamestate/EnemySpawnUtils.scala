@@ -3,7 +3,6 @@ package com.mygdx.game.gamestate
 import com.mygdx.game.action.CreatureSpawnAction
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.util.Vector2
-import com.softwaremill.quicklens.ModifyPimp
 
 import scala.util.Random
 
@@ -31,13 +30,13 @@ object EnemySpawnUtils {
 
   }
 
-  def processCreatureSpawnQueue: GameState => GameState = { gameState =>
-    gameState.creatureSpawnQueue
-      .foldLeft(gameState) { case (gameState, creature) =>
-        gameState.modify(_.creatures).using(_.updated(creature.id, creature))
-      }
-      .modify(_.creatureSpawnQueue)
-      .setTo(List())
-  }
+//  def processCreatureSpawnQueue: GameState => GameState = { gameState =>
+//    gameState.creatureSpawnQueue
+//      .foldLeft(gameState) { case (gameState, creature) =>
+//        gameState.modify(_.creatures).using(_.updated(creature.id, creature))
+//      }
+//      .modify(_.creatureSpawnQueue)
+//      .setTo(List())
+//  }
 
 }

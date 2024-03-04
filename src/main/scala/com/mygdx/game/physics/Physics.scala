@@ -1,12 +1,12 @@
 package com.mygdx.game.physics
 
-import com.mygdx.game.ClientInformation
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
+import com.mygdx.game.{ClientInformation, Constants}
 
 case class Physics() {
   private var world: World = _
@@ -67,10 +67,49 @@ case class Physics() {
 
     handleEvents(eventQueue, gameState)
 
+    correctBodyPositions(gameState)
+
+    synchronizeWithGameState(gameState)
+
+    creatureBodies.values.foreach(_.update(gameState))
+    abilityBodies.values.foreach(_.update(gameState))
+  }
+
+  private def synchronizeWithGameState(gameState: GameState): Unit = {
+    val creatureBodiesToCreate =
+      gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
+    val creatureBodiesToDestroy =
+      creatureBodies.keys.toSet -- gameState.creatures.keys.toSet
+
+    creatureBodiesToCreate.foreach(createCreatureBody(_, gameState))
+    creatureBodiesToDestroy.foreach(destroyCreatureBody(_, gameState))
+
+    val abilityBodiesToCreate =
+      gameState.abilities.keys.toSet -- abilityBodies.keys.toSet
+    val abilityBodiesToDestroy =
+      abilityBodies.keys.toSet -- gameState.abilities.keys.toSet
+
+    abilityBodiesToCreate.foreach(createAbilityBody(_, gameState))
+    abilityBodiesToDestroy.foreach(destroyAbilityBody(_, gameState))
+
+    gameState.creatures.values.foreach(creature => {
+      if (creature.alive) {
+        if (!creatureBodies(creature.id).sensor) {
+          creatureBodies(creature.id).setSensor()
+        }
+      } else {
+        if (creatureBodies(creature.id).sensor) {
+          creatureBodies(creature.id).setNonSensor()
+        }
+      }
+    })
+  }
+
+  private def correctBodyPositions(gameState: GameState): Unit = {
     gameState.creatures.values.foreach(creature =>
       if (
         creatureBodies.contains(creature.id) && creatureBodies(creature.id).pos
-          .distance(creature.pos) > 0.5f
+          .distance(creature.pos) > Constants.PhysicalBodyCorrectionDistance
       ) {
         creatureBodies(creature.id).setPos(creature.pos)
       }
@@ -78,14 +117,11 @@ case class Physics() {
     gameState.abilities.values.foreach(ability =>
       if (
         abilityBodies.contains(ability.id) && abilityBodies(ability.id).pos
-          .distance(ability.pos) > 0.5f
+          .distance(ability.pos) > Constants.PhysicalBodyCorrectionDistance
       ) {
         abilityBodies(ability.id).setPos(ability.pos)
       }
     )
-
-    creatureBodies.values.foreach(_.update(gameState))
-    abilityBodies.values.foreach(_.update(gameState))
   }
 
   private def handleEvents(
@@ -101,12 +137,12 @@ case class Physics() {
       case MakeBodySensorEvent(creatureId) =>
         if (gameState.creatures.contains(creatureId)) {
           val creature = gameState.creatures(creatureId)
-          creatureBodies(creature.id).makeSensor()
+          creatureBodies(creature.id).setSensor()
         }
       case MakeBodyNonSensorEvent(creatureId) =>
         if (gameState.creatures.contains(creatureId)) {
           val creature = gameState.creatures(creatureId)
-          creatureBodies(creature.id).makeNonSensor()
+          creatureBodies(creature.id).setNonSensor()
         }
       case _ =>
     }
@@ -163,7 +199,7 @@ case class Physics() {
     creatureBodies = creatureBodies.updated(creatureId, creatureBody)
   }
 
-  def removeCreatureBody(
+  def destroyCreatureBody(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
@@ -186,7 +222,7 @@ case class Physics() {
     abilityBodies = abilityBodies.updated(abilityId, abilityBody)
   }
 
-  def removeAbilityBody(
+  def destroyAbilityBody(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {

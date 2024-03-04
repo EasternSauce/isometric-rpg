@@ -16,7 +16,7 @@ object GameDataBroadcaster {
         true
       }) {
         Thread.sleep(
-          (Constants.TIME_BETWEEN_GAMESTATE_BROADCASTS * 1000f).toInt
+          (Constants.TimeBetweenGameStateBroadcasts * 1000f).toInt
         )
         val connections = endPoint.getConnections
         for (connection <- connections) {

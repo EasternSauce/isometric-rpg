@@ -55,6 +55,8 @@ object Constants {
 
   val AttackedByCreatureLoseAggroTime = 8f
 
-  val TIME_BETWEEN_GAMESTATE_BROADCASTS = 0.5f
+  val TimeBetweenGameStateBroadcasts = 0.5f
+
+  var PhysicalBodyCorrectionDistance = 0.5f
 
 }

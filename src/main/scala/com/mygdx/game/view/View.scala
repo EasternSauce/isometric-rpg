@@ -109,8 +109,28 @@ case class View() {
       clientInformation: ClientInformation,
       gameState: GameState
   ): Unit = {
+    synchronizeWithGameState(gameState)
+
     worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
     b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
+  }
+
+  private def synchronizeWithGameState(gameState: GameState): Unit = {
+    val creatureRenderersToCreate =
+      gameState.creatures.keys.toSet -- creatureRenderers.keys.toSet
+    val creatureRenderersToDestroy =
+      creatureRenderers.keys.toSet -- gameState.creatures.keys.toSet
+
+    creatureRenderersToCreate.foreach(createCreatureRenderer(_, gameState))
+    creatureRenderersToDestroy.foreach(destroyCreatureRenderer(_, gameState))
+
+    val abilityRenderersToCreate =
+      gameState.abilities.keys.toSet -- abilityRenderers.keys.toSet
+    val abilityRenderersToDestroy =
+      abilityRenderers.keys.toSet -- gameState.abilities.keys.toSet
+
+    abilityRenderersToCreate.foreach(createAbilityRenderer(_, gameState))
+    abilityRenderersToDestroy.foreach(destroyAbilityRenderer(_, gameState))
   }
 
   def createCreatureRenderer(
@@ -122,7 +142,7 @@ case class View() {
     creatureRenderers = creatureRenderers.updated(creatureId, creatureRenderer)
   }
 
-  def removeCreatureRenderer(
+  def destroyCreatureRenderer(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
@@ -138,7 +158,7 @@ case class View() {
     abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
   }
 
-  def removeAbilityRenderer(
+  def destroyAbilityRenderer(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
