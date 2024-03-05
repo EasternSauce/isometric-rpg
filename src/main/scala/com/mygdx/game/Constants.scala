@@ -10,7 +10,7 @@ object Constants {
 
   val TileSize = 64
 
-  val EnableDebug = false
+  val EnableDebug = true
 
   val MapTextureScale = 2f
 
@@ -59,4 +59,9 @@ object Constants {
 
   var PhysicalBodyCorrectionDistance = 0.5f
 
+  val LastPosSetInterval = 0.5f
+
+  val LastPosMinimumDifference = 0.2f
+
+  val MinimumDistanceBetweenDestinations = 0.001f
 }

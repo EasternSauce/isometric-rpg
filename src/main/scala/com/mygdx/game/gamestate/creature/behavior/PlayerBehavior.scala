@@ -1,15 +1,20 @@
 package com.mygdx.game.gamestate.creature.behavior
 
-import com.mygdx.game.ClientInformation
-import com.mygdx.game.gamestate.creature.{Creature, CreaturesFinderUtils, PrimaryWeaponType}
+import com.mygdx.game.gamestate.creature.{
+  Creature,
+  CreaturesFinderUtils,
+  PrimaryWeaponType
+}
+import com.mygdx.game.gamestate.event.broadcast.CreatureMoveToDestinationEvent
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.IsometricProjection
+import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class PlayerBehavior() extends CreatureBehavior {
-  override def updateMovement(
+  override def update(
       creature: Creature,
       input: Input,
       clientInformation: ClientInformation,
@@ -19,12 +24,49 @@ case class PlayerBehavior() extends CreatureBehavior {
 
     for {
       creature <- Outcome.when(creature)(_.alive)(
-        _.moveTowardsTarget(input, mouseWorldPos)
+        moveTowardsTarget(input, mouseWorldPos)
       )
       creature <- Outcome.when(creature)(creature =>
         creature.alive && input.attackButtonJustPressed && creature.attackAllowed
-      )(playerAttackClick(mouseWorldPos, gameState))
+      )(performAttackClick(mouseWorldPos, gameState))
     } yield creature
+  }
+
+  private[creature] def moveTowardsTarget(
+      input: Input,
+      mouseWorldPos: Vector2
+  ): Creature => Outcome[Creature] = { creature =>
+    if (input.moveButtonPressed) {
+      Outcome[Creature](
+        creature
+          .modify(_.params.attackAnimationTimer)
+          .usingIf(creature.params.attackAnimationTimer.running)(_.stop())
+      ).withEvents {
+        if (
+          creature.params.destination.distance(
+            mouseWorldPos
+          ) > Constants.MinimumDistanceBetweenDestinations
+        ) {
+          List(CreatureMoveToDestinationEvent(creature.id, mouseWorldPos))
+        } else {
+          List()
+        }
+      }
+    } else {
+      Outcome(
+        creature
+      ).withEvents {
+        if (
+          creature.params.destination.distance(
+            creature.pos
+          ) > Constants.MinimumDistanceBetweenDestinations
+        ) {
+          List(CreatureMoveToDestinationEvent(creature.id, creature.pos))
+        } else {
+          List()
+        }
+      }
+    }
   }
 
   private def getMouseWorldPos(playerPos: Vector2, input: Input): Vector2 = {
@@ -37,7 +79,7 @@ case class PlayerBehavior() extends CreatureBehavior {
     mouseWorldPos
   }
 
-  private def playerAttackClick(
+  private def performAttackClick(
       mouseWorldPos: Vector2,
       gameState: GameState
   ): Creature => Outcome[Creature] = { creature =>

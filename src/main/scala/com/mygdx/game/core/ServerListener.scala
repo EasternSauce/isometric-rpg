@@ -1,4 +1,4 @@
-package com.mygdx.game
+package com.mygdx.game.core
 
 import com.esotericsoftware.kryonet.{Connection, Listener}
 import com.mygdx.game.gamestate.GameState

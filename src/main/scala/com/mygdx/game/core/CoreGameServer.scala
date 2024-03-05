@@ -1,9 +1,10 @@
-package com.mygdx.game
+package com.mygdx.game.core
 
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
 import com.esotericsoftware.kryonet.{KryoSerialization, Server}
-import com.mygdx.game.action.GameStateAction
+import com.mygdx.game.Constants
+import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.screen.ServerCamScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -49,15 +50,17 @@ object CoreGameServer extends CoreGame {
     GameDataBroadcaster.start(server)
   }
 
-  override def onGameStateUpdate(actions: List[GameStateAction]): Unit = {
-    sendActionsToAllConnectedClients(actions)
+  override def onGameStateUpdate(
+      broadcastEvents: List[BroadcastEvent]
+  ): Unit = {
+    sendBroadcastEventsToAllConnectedClients(broadcastEvents)
   }
 
-  private def sendActionsToAllConnectedClients(
-      actions: List[GameStateAction]
+  private def sendBroadcastEventsToAllConnectedClients(
+      broadcastEvents: List[BroadcastEvent]
   ): Unit = {
     server.getConnections.foreach(connection => {
-      connection.sendTCP(ActionsHolder(actions))
+      connection.sendTCP(BroadcastEventsHolder(broadcastEvents))
     })
   }
 }

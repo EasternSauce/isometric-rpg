@@ -43,15 +43,17 @@ trait Ability extends Entity {
 
   def update(
       delta: Float,
-      newPos: Vector2,
+      newPos: Option[Vector2],
       gameState: GameState
   ): Outcome[Ability] = {
     for {
       ability <- this.updateFacingVector()
-      ability <- Outcome(
-        ability
-          .modify(_.params.pos)
-          .setTo(newPos)
+      ability <- Outcome.when(ability)(_ => newPos.nonEmpty)(ability =>
+        Outcome(
+          ability
+            .modify(_.params.pos)
+            .setTo(newPos.get)
+        )
       )
     } yield ability
   }

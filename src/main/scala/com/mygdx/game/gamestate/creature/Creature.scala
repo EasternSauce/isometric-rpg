@@ -1,9 +1,9 @@
 package com.mygdx.game.gamestate.creature
 
-import com.mygdx.game.action.CreatureMoveToDestinationAction
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
-import com.mygdx.game.gamestate.event._
+import com.mygdx.game.gamestate.event.gamestate._
+import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{Vector2, WorldDirection}
@@ -12,11 +12,11 @@ import com.softwaremill.quicklens.ModifyPimp
 
 case class Creature(
     params: CreatureParams,
-    creatureBehavior: CreatureBehavior
+    behavior: CreatureBehavior
 ) extends Entity {
   def update(
       delta: Float,
-      newPos: Vector2,
+      newPos: Option[Vector2],
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
@@ -65,25 +65,26 @@ case class Creature(
     !this.alive && !this.params.deathAcknowledged
 
   private def updateMovement(
-      newPos: Vector2,
+      newPos: Option[Vector2],
       input: Input,
       clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
       creature <- Outcome(this)
-      creature <- creature.setPos(newPos)
-      creature <- Outcome.when(creature)(_.alive)(
-        creatureBehavior
-          .updateMovement(_, input, clientInformation, gameState)
+      creature <- Outcome.when(creature)(_ => newPos.nonEmpty)(
+        _.setPos(newPos.get)
       )
-      creature <- creature.attackTarget()
-      creature <- creature.handleWalkingIntoObstacles()
+      creature <- Outcome.when(creature)(_.alive)(
+        behavior.update(_, input, clientInformation, gameState)
+      )
+      creature <- creature.updateAttacks()
+      creature <- creature.handleWalkingIntoObstacle()
       creature <- creature.updateVelocity()
     } yield creature
   }
 
-  private def attackTarget(): Outcome[Creature] = {
+  private def updateAttacks(): Outcome[Creature] = {
     Outcome.when(this)(_.creatureAttackCompleted) { creature =>
       if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
         Outcome(creature.modify(_.params.attackPending).setTo(false))
@@ -140,8 +141,10 @@ case class Creature(
 
   def alive: Boolean = params.life > 0
 
-  private def handleWalkingIntoObstacles(): Outcome[Creature] = {
-    Outcome.when(this)(_.params.lastPosTimer.time > 0.5f)(creature =>
+  private def handleWalkingIntoObstacle(): Outcome[Creature] = {
+    Outcome.when(this)(
+      _.params.lastPosTimer.time > Constants.LastPosSetInterval
+    )(creature =>
       for {
         creature <- Outcome(
           creature
@@ -152,7 +155,7 @@ case class Creature(
           val v1 = creature.params.lastPos
           val v2 = creature.pos
 
-          v1.distance(v2) < 0.2f
+          v1.distance(v2) < Constants.LastPosMinimumDifference
         }(_.stopMoving())
         creature <- Outcome(
           creature
@@ -223,23 +226,6 @@ case class Creature(
 
   def invisible: Boolean = !params.respawnDelayInProgress
 
-  private[creature] def moveTowardsTarget(
-      input: Input,
-      mouseWorldPos: Vector2
-  ): Outcome[Creature] = {
-    if (input.moveButtonPressed) {
-      Outcome[Creature](
-        this
-          .modify(_.params.attackAnimationTimer)
-          .usingIf(params.attackAnimationTimer.running)(_.stop())
-      ).withActions(List(CreatureMoveToDestinationAction(id, mouseWorldPos)))
-    } else {
-      Outcome(
-        this
-      ).withActions(List(CreatureMoveToDestinationAction(id, pos)))
-    }
-  }
-
   private[creature] def creatureMeleeAttackStart(
       otherCreatureId: EntityId[Creature],
       gameState: GameState
@@ -284,5 +270,4 @@ case class Creature(
   private[creature] def attackAllowed: Boolean = {
     !this.params.attackAnimationTimer.running || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
   }
-
 }

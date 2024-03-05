@@ -7,7 +7,7 @@ import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class EnemyBehavior() extends CreatureBehavior {
-  override def updateMovement(
+  override def update(
       creature: Creature,
       input: Input,
       clientInformation: ClientInformation,

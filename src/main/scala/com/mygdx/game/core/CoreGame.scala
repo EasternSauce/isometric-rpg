@@ -1,8 +1,9 @@
-package com.mygdx.game
+package com.mygdx.game.core
 
 import com.badlogic.gdx.{Game, Screen}
 import com.esotericsoftware.kryonet.EndPoint
-import com.mygdx.game.action.GameStateAction
+import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
+import com.mygdx.game.{Assets, Gameplay}
 
 abstract class CoreGame extends Game {
   val playScreen: Screen
@@ -22,5 +23,5 @@ abstract class CoreGame extends Game {
 
   def gameplay: Gameplay = _gameplay
 
-  def onGameStateUpdate(actions: List[GameStateAction]): Unit
+  def onGameStateUpdate(broadcastEvents: List[BroadcastEvent]): Unit
 }

@@ -1,9 +1,10 @@
-package com.mygdx.game
+package com.mygdx.game.core
 
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
-import com.mygdx.game.action.GameStateAction
+import com.mygdx.game.Constants
+import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.screen.GameplayScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -40,5 +41,7 @@ object CoreGameClient extends CoreGame {
 
   override def onCreate(): Unit = {}
 
-  override def onGameStateUpdate(actions: List[GameStateAction]): Unit = {}
+  override def onGameStateUpdate(
+      broadcastEvents: List[BroadcastEvent]
+  ): Unit = {}
 }

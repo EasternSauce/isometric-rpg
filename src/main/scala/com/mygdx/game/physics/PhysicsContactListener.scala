@@ -1,7 +1,7 @@
 package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.{Contact, ContactImpulse, ContactListener, Manifold}
-import com.mygdx.game.gamestate.event.{AbilityHitsCreatureEvent, AbilityHitsTerrainEvent}
+import com.mygdx.game.gamestate.event.collision.{AbilityHitsCreatureEvent, AbilityHitsTerrainEvent}
 
 case class PhysicsContactListener(physics: Physics) extends ContactListener {
   override def beginContact(contact: Contact): Unit = {

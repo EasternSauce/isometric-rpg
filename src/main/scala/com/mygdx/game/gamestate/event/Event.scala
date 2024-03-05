@@ -1,3 +1,7 @@
 package com.mygdx.game.gamestate.event
 
-trait Event
+import com.mygdx.game.gamestate.GameState
+
+trait Event {
+  def applyToGameState(gameState: GameState): GameState
+}

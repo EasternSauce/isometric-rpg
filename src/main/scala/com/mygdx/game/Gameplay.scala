@@ -1,14 +1,13 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
-import com.mygdx.game.action.GameStateAction
-import com.mygdx.game.gamestate.ability.Ability
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.core.CoreGame
+import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
-import com.mygdx.game.util.{Rectangle, Vector2}
+import com.mygdx.game.util.Rectangle
 import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
 case class Gameplay(game: CoreGame) {
@@ -37,8 +36,6 @@ case class Gameplay(game: CoreGame) {
     _physics.update(_gameState)
 
     updateGameState(
-      _physics.getCreaturePositions,
-      _physics.getAbilityPositions,
       input,
       delta
     )
@@ -87,14 +84,10 @@ case class Gameplay(game: CoreGame) {
   }
 
   private def updateGameState(
-      creaturePositions: Map[EntityId[Creature], Vector2],
-      abilityPositions: Map[EntityId[Ability], Vector2],
       input: Input,
       delta: Float
   ): Unit = {
     val newGameState = _gameState.update(
-      creaturePositions,
-      abilityPositions,
       input,
       delta,
       game
@@ -113,11 +106,11 @@ case class Gameplay(game: CoreGame) {
     this._gameState = gameState
   }
 
-  def applyActions(actions: List[GameStateAction]): Unit = {
+  def applyBroadcastEvents(broadcastEvents: List[BroadcastEvent]): Unit = {
     if (_gameState != null) {
-      this._gameState = actions.foldLeft(_gameState) {
-        case (gameState, action) =>
-          action.applyToGameState(gameState)
+      this._gameState = broadcastEvents.foldLeft(_gameState) {
+        case (gameState, broadcastEvent) =>
+          broadcastEvent.applyToGameState(gameState)
       }
     }
   }

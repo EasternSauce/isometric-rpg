@@ -105,7 +105,7 @@ object CreatureFactory {
         secondaryWeaponType = secondaryWeaponType,
         renderBodyOnly = renderBodyOnly
       ),
-      creatureBehavior = if (player) PlayerBehavior() else EnemyBehavior()
+      behavior = if (player) PlayerBehavior() else EnemyBehavior()
     )
   }
 }

@@ -6,7 +6,7 @@ import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 
 trait CreatureBehavior {
-  def updateMovement(
+  def update(
       creature: Creature,
       input: Input,
       clientInformation: ClientInformation,

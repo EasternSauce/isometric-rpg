@@ -3,6 +3,8 @@ package com.mygdx.game.physics
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
+import com.mygdx.game.gamestate.event.collision.CollisionEvent
+import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
@@ -14,7 +16,7 @@ case class Physics() {
   private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
   private var staticBodies: List[PhysicsBody] = _
   private var clientInformation: ClientInformation = _
-  private var eventQueue: List[Event] = _
+  private var eventQueue: List[PhysicsEvent] = _
   private var collisionQueue: List[CollisionEvent] = _
 
   def init(
@@ -158,7 +160,7 @@ case class Physics() {
     collisionEvents
   }
 
-  def scheduleEvents(events: List[Event]): Unit = {
+  def scheduleEvents(events: List[PhysicsEvent]): Unit = {
     eventQueue = eventQueue.appendedAll(events)
   }
 
@@ -166,7 +168,7 @@ case class Physics() {
     collisionQueue = collisionQueue.appendedAll(collisions)
   }
 
-  def getCreaturePositions: Map[EntityId[Creature], Vector2] = {
+  def creatureBodyPositions: Map[EntityId[Creature], Vector2] = {
     creatureBodies.values
       .map(creatureBody => {
         val pos = creatureBody.pos
@@ -175,7 +177,7 @@ case class Physics() {
       .toMap
   }
 
-  def getAbilityPositions: Map[EntityId[Ability], Vector2] = {
+  def abilityBodyPositions: Map[EntityId[Ability], Vector2] = {
     abilityBodies.values
       .map(abilityBody => {
         val pos = abilityBody.pos
@@ -186,7 +188,7 @@ case class Physics() {
 
   def getWorld: World = world
 
-  def createCreatureBody(
+  private def createCreatureBody(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
@@ -199,7 +201,7 @@ case class Physics() {
     creatureBodies = creatureBodies.updated(creatureId, creatureBody)
   }
 
-  def destroyCreatureBody(
+  private def destroyCreatureBody(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
@@ -209,7 +211,7 @@ case class Physics() {
     }
   }
 
-  def createAbilityBody(
+  private def createAbilityBody(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
@@ -222,7 +224,7 @@ case class Physics() {
     abilityBodies = abilityBodies.updated(abilityId, abilityBody)
   }
 
-  def destroyAbilityBody(
+  private def destroyAbilityBody(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {

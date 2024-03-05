@@ -1,41 +1,28 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.action.GameStateAction
 import com.mygdx.game.gamestate.event.Event
 import com.softwaremill.quicklens.ModifyPimp
 
-case class Outcome[T](
-    obj: T,
-    events: List[Event] = Nil,
-    actions: List[GameStateAction] = Nil
-) {
+case class Outcome[T](obj: T, events: List[Event] = Nil) {
   @inline final def map[B](f: T => B): Outcome[B] =
-    Outcome(f(this.obj), events = events, actions = actions)
+    Outcome(f(this.obj), events = events)
 
   @inline final def flatMap[B](f: T => Outcome[B]): Outcome[B] = {
     val newOutcome = f(obj)
-    Outcome(
-      newOutcome.obj,
-      events ++ newOutcome.events,
-      actions ++ newOutcome.actions
-    )
-  }
-
-  def ++(f: T => Outcome[T]): Outcome[T] = {
-    val newOutcome = f(obj)
-    Outcome(
-      newOutcome.obj,
-      events ++ newOutcome.events,
-      actions ++ newOutcome.actions
-    )
+    Outcome(newOutcome.obj, events ++ newOutcome.events)
   }
 
   def withEvents(events: List[Event]): Outcome[T] = {
     this.modify(_.events).setTo(events)
   }
 
-  def withActions(actions: List[GameStateAction]): Outcome[T] = {
-    this.modify(_.actions).setTo(actions)
+  def withSideEffectsExtracted(
+      sideEffectsCollector: GameStateSideEffectsCollector
+  ): T = {
+    sideEffectsCollector.events =
+      sideEffectsCollector.events.appendedAll(events)
+
+    obj
   }
 
 }

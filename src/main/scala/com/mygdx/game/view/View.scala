@@ -133,7 +133,7 @@ case class View() {
     abilityRenderersToDestroy.foreach(destroyAbilityRenderer(_, gameState))
   }
 
-  def createCreatureRenderer(
+  private def createCreatureRenderer(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
@@ -142,14 +142,14 @@ case class View() {
     creatureRenderers = creatureRenderers.updated(creatureId, creatureRenderer)
   }
 
-  def destroyCreatureRenderer(
+  private def destroyCreatureRenderer(
       creatureId: EntityId[Creature],
       gameState: GameState
   ): Unit = {
     creatureRenderers = creatureRenderers.removed(creatureId)
   }
 
-  def createAbilityRenderer(
+  private def createAbilityRenderer(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
@@ -158,7 +158,7 @@ case class View() {
     abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
   }
 
-  def destroyAbilityRenderer(
+  private def destroyAbilityRenderer(
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
