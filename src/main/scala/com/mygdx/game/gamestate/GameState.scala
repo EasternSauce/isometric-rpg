@@ -5,6 +5,7 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
+import com.mygdx.game.gamestate.event.collision.CollisionEvent
 import com.mygdx.game.gamestate.event.gamestate.GameStateEvent
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
@@ -34,7 +35,8 @@ case class GameState(
       .modify(_.abilities.each)
       .using(updateAbility(delta, sideEffectsCollector, game))
       .pipe(updateEnemySpawns(sideEffectsCollector))
-      .pipe(handleEvents(sideEffectsCollector.gameStateEvents))
+      .pipe(handleGameStateEvents(sideEffectsCollector.gameStateEvents))
+      .pipe(handleCollisionEvents(sideEffectsCollector.collisionEvents))
 
     game.gameplay.physics.scheduleEvents(sideEffectsCollector.physicsEvents)
 
@@ -98,10 +100,21 @@ case class GameState(
     }
   }
 
-  def handleEvents(events: List[GameStateEvent]): GameState => GameState =
+  def handleGameStateEvents(
+      events: List[GameStateEvent]
+  ): GameState => GameState =
     gameState =>
       events.foldLeft(gameState) {
         case (gameState: GameState, event: GameStateEvent) =>
+          event.applyToGameState(gameState)
+      }
+
+  def handleCollisionEvents(
+      events: List[CollisionEvent]
+  ): GameState => GameState =
+    gameState =>
+      events.foldLeft(gameState) {
+        case (gameState: GameState, event: CollisionEvent) =>
           event.applyToGameState(gameState)
       }
 }

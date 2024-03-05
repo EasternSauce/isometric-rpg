@@ -4,7 +4,12 @@ import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.event.collision.CollisionEvent
-import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
+import com.mygdx.game.gamestate.event.physics.{
+  MakeBodyNonSensorEvent,
+  MakeBodySensorEvent,
+  PhysicsEvent,
+  TeleportEvent
+}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
@@ -96,12 +101,12 @@ case class Physics() {
 
     gameState.creatures.values.foreach(creature => {
       if (creature.alive) {
-        if (!creatureBodies(creature.id).sensor) {
-          creatureBodies(creature.id).setSensor()
-        }
-      } else {
         if (creatureBodies(creature.id).sensor) {
           creatureBodies(creature.id).setNonSensor()
+        }
+      } else {
+        if (!creatureBodies(creature.id).sensor) {
+          creatureBodies(creature.id).setSensor()
         }
       }
     })
