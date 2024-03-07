@@ -15,20 +15,26 @@ case class Gameplay(game: CoreGame) {
   private val _clientInformation: ClientInformation =
     ClientInformation(clientCreatureId = EntityId("player"))
 
-  private val _levelMap: LevelMap = LevelMap()
-  private val _physics: Physics = Physics()
-  private val _view: View = View()
-  private val spriteBatch: SpriteBatch = SpriteBatch()
+  private var _levelMap: LevelMap = _
+  private var _physics: Physics = _
+  private var _view: View = _
+  private var spriteBatch: SpriteBatch = _
 
   private var _gameState: GameState = _
 
   def init(): Unit = {
     _gameState = GameState.initialState(_clientInformation)
 
+    _levelMap = LevelMap()
     _levelMap.init()
+
+    _view = View()
     _view.init(_clientInformation, _levelMap, _gameState)
+
+    _physics = Physics()
     _physics.init(_clientInformation, _levelMap, _gameState)
 
+    spriteBatch = SpriteBatch()
     spriteBatch.init()
   }
 

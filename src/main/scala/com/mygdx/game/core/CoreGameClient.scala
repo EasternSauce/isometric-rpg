@@ -4,7 +4,7 @@ import com.badlogic.gdx.Screen
 import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.Constants
-import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
+import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
 import com.mygdx.game.screen.GameplayScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -34,14 +34,19 @@ object CoreGameClient extends CoreGame {
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")
     config.setWindowedMode(Constants.WindowWidth, Constants.WindowHeight)
-    config.useVsync(true)
-    config.setForegroundFPS(60)
+    config.setForegroundFPS(120)
+    config.setIdleFPS(120)
     new Lwjgl3Application(CoreGameClient, config)
   }
 
   override def onCreate(): Unit = {}
 
-  override def onGameStateUpdate(
-      broadcastEvents: List[BroadcastEvent]
-  ): Unit = {}
+  override def applySideEffectsToGameState(
+      gameState: GameState,
+      sideEffectsCollector: GameStateSideEffectsCollector
+  ): GameState = {
+    gameState
+      .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
+      .handleCollisionEvents(sideEffectsCollector.collisionEvents)
+  }
 }

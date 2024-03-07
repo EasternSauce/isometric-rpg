@@ -1,11 +1,7 @@
 package com.mygdx.game.gamestate.creature.behavior
 
-import com.mygdx.game.gamestate.creature.{
-  Creature,
-  CreaturesFinderUtils,
-  PrimaryWeaponType
-}
-import com.mygdx.game.gamestate.event.broadcast.CreatureMoveToDestinationEvent
+import com.mygdx.game.gamestate.creature.{Creature, CreaturesFinderUtils, PrimaryWeaponType}
+import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackAnimationRestartEvent, CreatureSetDestinationEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
@@ -47,7 +43,7 @@ case class PlayerBehavior() extends CreatureBehavior {
             mouseWorldPos
           ) > Constants.MinimumDistanceBetweenDestinations
         ) {
-          List(CreatureMoveToDestinationEvent(creature.id, mouseWorldPos))
+          List(CreatureSetDestinationEvent(creature.id, mouseWorldPos))
         } else {
           List()
         }
@@ -61,7 +57,12 @@ case class PlayerBehavior() extends CreatureBehavior {
             creature.pos
           ) > Constants.MinimumDistanceBetweenDestinations
         ) {
-          List(CreatureMoveToDestinationEvent(creature.id, creature.pos))
+          List(
+            CreatureSetDestinationEvent(
+              creature.id,
+              creature.params.destination
+            )
+          )
         } else {
           List()
         }
@@ -104,10 +105,8 @@ case class PlayerBehavior() extends CreatureBehavior {
             )
           }
       )
-      creature <- Outcome(
-        creature
-          .modify(_.params.attackAnimationTimer)
-          .using(_.restart())
+      creature <- Outcome(creature).withEvents(
+        List(CreatureAttackAnimationRestartEvent(creature.id))
       )
       creature <- creature.stopMoving()
     } yield creature

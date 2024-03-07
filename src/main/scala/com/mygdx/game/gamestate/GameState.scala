@@ -35,17 +35,10 @@ case class GameState(
       .modify(_.abilities.each)
       .using(updateAbility(delta, sideEffectsCollector, game))
       .pipe(updateEnemySpawns(sideEffectsCollector))
-      .pipe(handleGameStateEvents(sideEffectsCollector.gameStateEvents))
-      .pipe(handleCollisionEvents(sideEffectsCollector.collisionEvents))
 
     game.gameplay.physics.scheduleEvents(sideEffectsCollector.physicsEvents)
 
-    game.onGameStateUpdate(sideEffectsCollector.broadcastEvents)
-
-    applyBroadcastEventsToGameState(
-      sideEffectsCollector.broadcastEvents,
-      newGameState
-    )
+    game.applySideEffectsToGameState(newGameState, sideEffectsCollector)
   }
 
   private def updateEnemySpawns(
@@ -90,33 +83,29 @@ case class GameState(
     outcome.withSideEffectsExtracted(sideEffectsCollector)
   }
 
-  private def applyBroadcastEventsToGameState(
-      broadcastEvents: List[BroadcastEvent],
-      gameState: GameState
-  ) = {
-    broadcastEvents.foldLeft(gameState) {
-      case (gameState: GameState, broadcastEvent: BroadcastEvent) =>
-        broadcastEvent.applyToGameState(gameState)
-    }
-  }
-
   def handleGameStateEvents(
       events: List[GameStateEvent]
-  ): GameState => GameState =
-    gameState =>
-      events.foldLeft(gameState) {
-        case (gameState: GameState, event: GameStateEvent) =>
-          event.applyToGameState(gameState)
-      }
+  ): GameState =
+    events.foldLeft(this) {
+      case (gameState: GameState, event: GameStateEvent) =>
+        event.applyToGameState(gameState)
+    }
 
   def handleCollisionEvents(
       events: List[CollisionEvent]
-  ): GameState => GameState =
-    gameState =>
-      events.foldLeft(gameState) {
-        case (gameState: GameState, event: CollisionEvent) =>
-          event.applyToGameState(gameState)
-      }
+  ): GameState =
+    events.foldLeft(this) {
+      case (gameState: GameState, event: CollisionEvent) =>
+        event.applyToGameState(gameState)
+    }
+
+  def handleBroadcastEvents(
+      events: List[BroadcastEvent]
+  ): GameState =
+    events.foldLeft(this) {
+      case (gameState: GameState, event: BroadcastEvent) =>
+        event.applyToGameState(gameState)
+    }
 }
 
 object GameState {

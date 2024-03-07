@@ -1,4 +1,4 @@
-package com.mygdx.game.gamestate.event.gamestate
+package com.mygdx.game.gamestate.event.broadcast
 
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{DamageDealingUtils, EntityId, GameState}
@@ -10,7 +10,7 @@ case class MeleeAttackHitsCreatureEvent(
     sourceCreatureId: EntityId[Creature],
     destinationCreatureId: EntityId[Creature],
     damage: Float
-) extends GameStateEvent {
+) extends BroadcastEvent {
   override def applyToGameState(gameState: GameState): GameState = gameState
     .modify(_.creatures.at(destinationCreatureId))
     .using(creature =>

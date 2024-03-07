@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate.creature.behavior
 
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.broadcast.CreatureAttackAnimationRestartEvent
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.{ClientInformation, Constants}
@@ -102,9 +103,8 @@ case class EnemyBehavior() extends CreatureBehavior {
             gameState
           )
           creature <- creature
-            .modify(_.params.attackAnimationTimer)
-            .using(_.restart())
             .stopMoving()
+            .withEvents(List(CreatureAttackAnimationRestartEvent(creature.id)))
         } yield creature
       } else {
         Outcome(creature)

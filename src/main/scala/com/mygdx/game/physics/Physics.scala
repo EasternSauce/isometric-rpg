@@ -4,12 +4,7 @@ import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.event.collision.CollisionEvent
-import com.mygdx.game.gamestate.event.physics.{
-  MakeBodyNonSensorEvent,
-  MakeBodySensorEvent,
-  PhysicsEvent,
-  TeleportEvent
-}
+import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2

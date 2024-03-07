@@ -2,6 +2,7 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
+import com.mygdx.game.gamestate.event.broadcast.{CreatureSetDestinationEvent, CreatureSetFacingVectorEvent, CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
 import com.mygdx.game.gamestate.event.gamestate._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.input.Input
@@ -92,7 +93,6 @@ case class Creature(
             List(
               CreatureShootArrowEvent(
                 creature.id,
-                creature.params.facingVector,
                 creature.params.damage
               )
             )
@@ -167,11 +167,7 @@ case class Creature(
   }
 
   private[creature] def stopMoving(): Outcome[Creature] = {
-    Outcome(
-      this
-        .modify(_.params.destination)
-        .setTo(pos)
-    )
+    Outcome(this).withEvents(List(CreatureSetDestinationEvent(id, pos)))
   }
 
   private def setPos(pos: Vector2): Outcome[Creature] = {
@@ -238,15 +234,18 @@ case class Creature(
     )(creature =>
       Outcome(
         creature
-          .modify(_.params.facingVector)
-          .setTo(
-            creature.pos
-              .vectorTowards(otherCreature.pos)
-          )
           .modify(_.params.attackedCreatureId)
           .setTo(Some(otherCreature.id))
           .modify(_.params.attackPending)
           .setTo(true)
+      ).withEvents(
+        List(
+          CreatureSetFacingVectorEvent(
+            id,
+            creature.pos
+              .vectorTowards(otherCreature.pos)
+          )
+        )
       )
     )
   }
@@ -258,13 +257,11 @@ case class Creature(
   private[creature] def creatureRangedAttackStart(
       rangedAttackDir: Vector2
   ): Outcome[Creature] = {
-    Outcome(
+    Outcome[Creature](
       this
-        .modify(_.params.facingVector)
-        .setTo(rangedAttackDir)
         .modify(_.params.attackPending)
         .setTo(true)
-    )
+    ).withEvents(List(CreatureSetFacingVectorEvent(id, rangedAttackDir)))
   }
 
   private[creature] def attackAllowed: Boolean = {
