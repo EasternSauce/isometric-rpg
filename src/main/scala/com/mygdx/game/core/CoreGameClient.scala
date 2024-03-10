@@ -34,8 +34,8 @@ object CoreGameClient extends CoreGame {
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")
     config.setWindowedMode(Constants.WindowWidth, Constants.WindowHeight)
-    config.setForegroundFPS(120)
-    config.setIdleFPS(120)
+    config.setForegroundFPS(60)
+    config.setIdleFPS(60)
     new Lwjgl3Application(CoreGameClient, config)
   }
 

@@ -76,12 +76,12 @@ case class Creature(
       creature <- Outcome.when(creature)(_ => newPos.nonEmpty)(
         _.setPos(newPos.get)
       )
+      creature <- creature.updateVelocity()
       creature <- Outcome.when(creature)(_.alive)(
         behavior.update(_, input, clientInformation, gameState)
       )
       creature <- creature.updateAttacks()
       creature <- creature.handleWalkingIntoObstacle()
-      creature <- creature.updateVelocity()
     } yield creature
   }
 
@@ -130,13 +130,15 @@ case class Creature(
       vectorTowardsDest.withLength(0f)
     }
 
-    Outcome(
+    Outcome[Creature](
       this
         .modify(_.params.velocity)
         .setTo(velocity)
-        .modify(_.params.facingVector)
-        .setToIf(velocity.length > 0)(velocity)
-    )
+    ).withEvents(if (velocity.length > 0) {
+      List(CreatureSetFacingVectorEvent(id, velocity))
+    } else {
+      List()
+    })
   }
 
   def alive: Boolean = params.life > 0
