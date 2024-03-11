@@ -2,7 +2,7 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
-import com.mygdx.game.gamestate.event.broadcast.{CreatureSetDestinationEvent, CreatureSetFacingVectorEvent, CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
+import com.mygdx.game.gamestate.event.broadcast.{CreatureGoToEvent, CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
 import com.mygdx.game.gamestate.event.gamestate._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.input.Input
@@ -130,15 +130,11 @@ case class Creature(
       vectorTowardsDest.withLength(0f)
     }
 
-    Outcome[Creature](
+    Outcome(
       this
         .modify(_.params.velocity)
         .setTo(velocity)
-    ).withEvents(if (velocity.length > 0) {
-      List(CreatureSetFacingVectorEvent(id, velocity))
-    } else {
-      List()
-    })
+    )
   }
 
   def alive: Boolean = params.life > 0
@@ -158,7 +154,9 @@ case class Creature(
           val v2 = creature.pos
 
           v1.distance(v2) < Constants.LastPosMinimumDifference
-        }(_.stopMoving())
+        }(creature =>
+          Outcome(creature.modify(_.params.destination).setTo(creature.pos))
+        )
         creature <- Outcome(
           creature
             .modify(_.params.lastPos)
@@ -169,7 +167,7 @@ case class Creature(
   }
 
   private[creature] def stopMoving(): Outcome[Creature] = {
-    Outcome(this).withEvents(List(CreatureSetDestinationEvent(id, pos)))
+    Outcome(this).withEvents(List(CreatureGoToEvent(id, pos)))
   }
 
   private def setPos(pos: Vector2): Outcome[Creature] = {
@@ -240,14 +238,6 @@ case class Creature(
           .setTo(Some(otherCreature.id))
           .modify(_.params.attackPending)
           .setTo(true)
-      ).withEvents(
-        List(
-          CreatureSetFacingVectorEvent(
-            id,
-            creature.pos
-              .vectorTowards(otherCreature.pos)
-          )
-        )
       )
     )
   }
@@ -257,13 +247,12 @@ case class Creature(
   def pos: Vector2 = params.pos
 
   private[creature] def creatureRangedAttackStart(
-      rangedAttackDir: Vector2
   ): Outcome[Creature] = {
     Outcome[Creature](
       this
         .modify(_.params.attackPending)
         .setTo(true)
-    ).withEvents(List(CreatureSetFacingVectorEvent(id, rangedAttackDir)))
+    )
   }
 
   private[creature] def attackAllowed: Boolean = {

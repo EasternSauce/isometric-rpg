@@ -5,21 +5,18 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
-case class CreatureSetDestinationEvent(
+case class CreaturePlayAttackAnimationEvent(
     creatureId: EntityId[Creature],
-    destination: Vector2
+    attackVector: Vector2
 ) extends BroadcastEvent {
 
   override def applyToGameState(gameState: GameState): GameState = {
     if (gameState.creatures.contains(creatureId)) {
       gameState
-        .modify(_.creatures.at(creatureId))
-        .using(
-          _.modify(_.params.destination)
-            .setTo(destination)
-        )
-      //        .modify(_.params.facingVector)
-      //        .setToIf(velocity.length > 0)(velocity)
+        .modify(_.creatures.at(creatureId).params.attackAnimationTimer)
+        .using(_.restart())
+        .modify(_.creatures.at(creatureId).params.facingVector)
+        .setTo(attackVector)
     } else {
       gameState
     }

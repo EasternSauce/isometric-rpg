@@ -1,7 +1,7 @@
 package com.mygdx.game.gamestate.creature.behavior
 
 import com.mygdx.game.gamestate.creature.{Creature, CreaturesFinderUtils, PrimaryWeaponType}
-import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackAnimationRestartEvent, CreatureSetDestinationEvent}
+import com.mygdx.game.gamestate.event.broadcast.{CreatureGoToEvent, CreaturePlayAttackAnimationEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
@@ -43,7 +43,7 @@ case class PlayerBehavior() extends CreatureBehavior {
             mouseWorldPos
           ) > Constants.MinimumDistanceBetweenDestinations
         ) {
-          List(CreatureSetDestinationEvent(creature.id, mouseWorldPos))
+          List(CreatureGoToEvent(creature.id, mouseWorldPos))
         } else {
           List()
         }
@@ -58,7 +58,7 @@ case class PlayerBehavior() extends CreatureBehavior {
           ) > Constants.MinimumDistanceBetweenDestinations
         ) {
           List(
-            CreatureSetDestinationEvent(
+            CreatureGoToEvent(
               creature.id,
               creature.params.destination
             )
@@ -92,22 +92,48 @@ case class PlayerBehavior() extends CreatureBehavior {
       )
 
     for {
-      creature <- Outcome.when(creature)(_ => maybeClosestCreatureId.nonEmpty)(
-        creature =>
-          if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
-            creature.creatureRangedAttackStart(
-              creature.pos.vectorTowards(mouseWorldPos)
+      creature <-
+        if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow)
+          creature
+            .creatureRangedAttackStart()
+            .withEvents(
+              List(
+                CreaturePlayAttackAnimationEvent(
+                  creature.id,
+                  creature.pos.vectorTowards(mouseWorldPos)
+                )
+              )
             )
+        else {
+          if (maybeClosestCreatureId.nonEmpty) {
+            val closestCreaturePos =
+              gameState.creatures(maybeClosestCreatureId.get).pos
+
+            creature
+              .creatureMeleeAttackStart(
+                maybeClosestCreatureId.get,
+                gameState
+              )
+              .withEvents(
+                List(
+                  CreaturePlayAttackAnimationEvent(
+                    creature.id,
+                    creature.pos.vectorTowards(closestCreaturePos)
+                  )
+                )
+              )
           } else {
-            creature.creatureMeleeAttackStart(
-              maybeClosestCreatureId.get,
-              gameState
+            Outcome(creature).withEvents(
+              List(
+                CreaturePlayAttackAnimationEvent(
+                  creature.id,
+                  creature.pos.vectorTowards(mouseWorldPos)
+                )
+              )
             )
           }
-      )
-      creature <- Outcome(creature).withEvents(
-        List(CreatureAttackAnimationRestartEvent(creature.id))
-      )
+        }
+
       creature <- creature.stopMoving()
     } yield creature
   }

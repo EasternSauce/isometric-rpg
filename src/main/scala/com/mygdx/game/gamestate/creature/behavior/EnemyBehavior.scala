@@ -1,7 +1,6 @@
 package com.mygdx.game.gamestate.creature.behavior
 
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.broadcast.CreatureAttackAnimationRestartEvent
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.{ClientInformation, Constants}
@@ -50,7 +49,9 @@ case class EnemyBehavior() extends CreatureBehavior {
   private def loseAggro(creature: Creature): Outcome[Creature] = {
     for {
       creature <- Outcome(creature.modify(_.params.currentTargetId).setTo(None))
-      creature <- creature.stopMoving()
+      creature <- Outcome(
+        creature.modify(_.params.destination).setTo(creature.pos)
+      )
     } yield creature
   }
 
@@ -93,7 +94,11 @@ case class EnemyBehavior() extends CreatureBehavior {
       Outcome(
         creature
           .modify(_.params.destination)
-          .setTo(targetCreature.pos)
+          .setTo(
+            targetCreature.pos
+          ) // TODO: we can update this once every 1/x of a second
+          .modify(_.params.facingVector)
+          .setTo(creature.pos.vectorTowards(targetCreature.pos))
       )
     } else {
       if (targetCreature.alive && creature.attackAllowed) {
@@ -102,9 +107,15 @@ case class EnemyBehavior() extends CreatureBehavior {
             targetCreature.id,
             gameState
           )
-          creature <- creature
-            .stopMoving()
-            .withEvents(List(CreatureAttackAnimationRestartEvent(creature.id)))
+          creature <- Outcome(
+            creature
+              .modify(_.params.destination)
+              .setTo(creature.pos)
+              .modify(_.params.attackAnimationTimer)
+              .using(_.restart())
+              .modify(_.params.facingVector)
+              .setTo(creature.pos.vectorTowards(targetCreature.pos))
+          )
         } yield creature
       } else {
         Outcome(creature)
