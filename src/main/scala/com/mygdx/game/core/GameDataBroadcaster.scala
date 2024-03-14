@@ -3,7 +3,7 @@ package com.mygdx.game.core
 import com.esotericsoftware.kryonet.{Connection, Server}
 import com.mygdx.game.Constants
 
-object GameDataBroadcaster {
+case class GameDataBroadcaster(game: CoreGameServer) {
   private var broadcastThread: Thread = _
 
   def start(endPoint: Server): Unit = {
@@ -32,6 +32,6 @@ object GameDataBroadcaster {
   }
 
   def broadcastToConnection(connection: Connection): Unit = {
-    connection.sendTCP(GameStateHolder(CoreGameServer.gameplay.gameState))
+    connection.sendTCP(GameStateHolder(game.gameplay.gameState))
   }
 }

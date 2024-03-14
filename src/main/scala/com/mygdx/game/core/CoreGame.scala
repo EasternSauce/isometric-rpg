@@ -8,7 +8,7 @@ import com.mygdx.game.{Assets, Gameplay}
 abstract class CoreGame extends Game {
 
   val playScreen: Screen
-  val endPoint: EndPoint
+  protected val endPoint: EndPoint
 
   private val _gameplay: Gameplay = Gameplay(this)
 
@@ -28,5 +28,4 @@ abstract class CoreGame extends Game {
       newGameState: GameState,
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState
-
 }

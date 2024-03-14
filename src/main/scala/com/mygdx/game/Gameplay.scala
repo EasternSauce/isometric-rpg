@@ -22,8 +22,6 @@ case class Gameplay(game: CoreGame) {
 
   private var _gameState: GameState = _
 
-//  private var _scheduledOverrideGameState: Option[GameState] = None
-
   private var _scheduledBroadcastEvents: List[BroadcastEvent] = List()
 
   def init(): Unit = {
@@ -115,16 +113,6 @@ case class Gameplay(game: CoreGame) {
   def overrideGameState(gameState: GameState): Unit = {
     this._gameState = gameState
   }
-
-  //  def scheduleOverrideGameState(gameState: GameState): Unit = {
-//   _scheduledOverrideGameState = Some(gameState)
-//  }
-//
-//  def scheduledOverrideGameState: Option[GameState] = _scheduledOverrideGameState
-//
-//  def clearScheduledOverrideGameState(): Unit = {
-//    _scheduledOverrideGameState = None
-//  }
 
   def scheduleBroadcastEvents(gameStateEvents: List[BroadcastEvent]): Unit = {
     _scheduledBroadcastEvents =

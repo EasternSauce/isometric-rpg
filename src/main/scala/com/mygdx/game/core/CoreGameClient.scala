@@ -1,16 +1,16 @@
 package com.mygdx.game.core
 
 import com.badlogic.gdx.Screen
-import com.badlogic.gdx.backends.lwjgl3.{Lwjgl3Application, Lwjgl3ApplicationConfiguration}
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
-import com.mygdx.game.Constants
+import com.mygdx.game.core.message.RegisterClientRequest
 import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
 import com.mygdx.game.screen.GameplayScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
-object CoreGameClient extends CoreGame {
+case class CoreGameClient() extends CoreGame {
+  var clientId: Option[String] = _
 
-  override val endPoint: Client = {
+  override protected val endPoint: Client = {
     val kryo: Kryo = {
       val instantiator = new ScalaKryoInstantiator
       instantiator.setRegistrationRequired(false)
@@ -20,41 +20,19 @@ object CoreGameClient extends CoreGame {
     new Client(8192 * 100, 2048 * 100, new KryoSerialization(kryo))
   }
 
-  private def client: Client = endPoint
-  private val listener: ClientListener = ClientListener(this)
+  def client: Client = endPoint
+  val listener: ClientListener = ClientListener(this)
 
   override val playScreen: Screen = GameplayScreen(gameplay, client)
 
-  def main(arg: Array[String]): Unit = {
-    client.start()
-    client.connect(50000, "localhost", 54555, 54777)
-
-    client.addListener(listener)
-
-    val config = new Lwjgl3ApplicationConfiguration
-    config.setTitle("Drop")
-    config.setWindowedMode(Constants.WindowWidth, Constants.WindowHeight)
-    config.setForegroundFPS(120)
-    config.setIdleFPS(120)
-    new Lwjgl3Application(CoreGameClient, config)
+  override def onCreate(): Unit = {
+    endPoint.sendTCP(RegisterClientRequest())
   }
-
-  override def onCreate(): Unit = {}
 
   override def applySideEffectsToGameState(
       gameState: GameState,
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState = {
-//    if (gameplay.scheduledOverrideGameState.nonEmpty) {
-//      val gs = gameplay.scheduledOverrideGameState.get
-//
-//      gameplay.clearScheduledOverrideGameState()
-//
-//      gs
-//        .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
-//        .handleCollisionEvents(sideEffectsCollector.collisionEvents)
-////        .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
-//    } else {
     val gs = gameState
       .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
       .handleCollisionEvents(sideEffectsCollector.collisionEvents)
@@ -64,5 +42,8 @@ object CoreGameClient extends CoreGame {
 
     gs
   }
-//  }
+
+  def setClientId(clientId: String): Unit = {
+    this.clientId = Some(clientId)
+  }
 }
