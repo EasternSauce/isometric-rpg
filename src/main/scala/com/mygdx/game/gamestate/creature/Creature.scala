@@ -1,5 +1,6 @@
 package com.mygdx.game.gamestate.creature
 
+import com.mygdx.game.Constants
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
 import com.mygdx.game.gamestate.event.broadcast.{CreatureShootArrowEvent, CreatureStopMovingEvent, MeleeAttackHitsCreatureEvent}
@@ -8,7 +9,6 @@ import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodyS
 import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{Vector2, WorldDirection}
-import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class Creature(
@@ -19,7 +19,6 @@ case class Creature(
       delta: Float,
       newPos: Option[Vector2],
       input: Input,
-      clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
@@ -27,7 +26,6 @@ case class Creature(
       creature <- creature.updateMovement(
         newPos,
         input,
-        clientInformation,
         gameState
       )
       creature <- creature.updateTimers(delta)
@@ -68,7 +66,6 @@ case class Creature(
   private def updateMovement(
       newPos: Option[Vector2],
       input: Input,
-      clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
@@ -78,7 +75,7 @@ case class Creature(
       )
       creature <- creature.updateVelocity()
       creature <- Outcome.when(creature)(_.alive)(
-        behavior.update(_, input, clientInformation, gameState)
+        behavior.update(_, input, gameState)
       )
       creature <- creature.updateAttacks()
       creature <- creature.handleWalkingIntoObstacle()

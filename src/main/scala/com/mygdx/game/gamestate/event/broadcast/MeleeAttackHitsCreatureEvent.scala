@@ -11,14 +11,20 @@ case class MeleeAttackHitsCreatureEvent(
     destinationCreatureId: EntityId[Creature],
     damage: Float
 ) extends BroadcastEvent {
-  override def applyToGameState(gameState: GameState): GameState = gameState
-    .modify(_.creatures.at(destinationCreatureId))
-    .using(creature =>
-      creature
-        .pipe(
-          DamageDealingUtils.registerLastAttackedByCreature(sourceCreatureId)
+  override def applyToGameState(gameState: GameState): GameState = {
+    if (gameState.creatures.contains(destinationCreatureId)) {
+      gameState
+        .modify(_.creatures.at(destinationCreatureId))
+        .using(creature =>
+          creature
+            .pipe(
+              DamageDealingUtils
+                .registerLastAttackedByCreature(sourceCreatureId)
+            )
+            .pipe(DamageDealingUtils.dealDamageToCreature(damage))
         )
-        .pipe(DamageDealingUtils.dealDamageToCreature(damage))
-    )
-
+    } else {
+      gameState
+    }
+  }
 }

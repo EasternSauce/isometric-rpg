@@ -77,6 +77,9 @@ case class CoreGameServer() extends CoreGame {
 
   def registerClient(clientId: String, connectionId: Int): Unit = {
     clientConnectionIds = clientConnectionIds.updated(clientId, connectionId)
+
+    gameplay.schedulePlayerCreaturesToCreate(clientId)
   }
 
+  override def clientId: Option[String] = None
 }

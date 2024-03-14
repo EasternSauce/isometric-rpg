@@ -8,7 +8,7 @@ import com.mygdx.game.screen.GameplayScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
 case class CoreGameClient() extends CoreGame {
-  var clientId: Option[String] = _
+  var _clientId: Option[String] = _
 
   override protected val endPoint: Client = {
     val kryo: Kryo = {
@@ -44,6 +44,8 @@ case class CoreGameClient() extends CoreGame {
   }
 
   def setClientId(clientId: String): Unit = {
-    this.clientId = Some(clientId)
+    this._clientId = Some(clientId)
   }
+
+  override def clientId: Option[String] = _clientId
 }

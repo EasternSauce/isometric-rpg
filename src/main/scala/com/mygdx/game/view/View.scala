@@ -1,13 +1,14 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.utils.ScreenUtils
+import com.mygdx.game.Constants
+import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.{ClientInformation, Constants}
 
 case class View() {
   private val worldViewport: Viewport = Viewport()
@@ -18,17 +19,12 @@ case class View() {
   private var levelMap: LevelMap = _
 
   def init(
-      clientInformation: ClientInformation,
       levelMap: LevelMap,
       gameState: GameState
   ): Unit = {
     this.levelMap = levelMap
 
-    creatureRenderers = Map(
-      clientInformation.clientCreatureId -> CreatureRenderer(
-        clientInformation.clientCreatureId
-      )
-    )
+    creatureRenderers = Map()
 
     creatureRenderers.values.foreach(_.init(gameState))
 
@@ -105,14 +101,13 @@ case class View() {
 
   }
 
-  def update(
-      clientInformation: ClientInformation,
-      gameState: GameState
-  ): Unit = {
-    synchronizeWithGameState(gameState)
+  def update(game: CoreGame): Unit = {
+    synchronizeWithGameState(game.gameplay.gameState)
 
-    worldViewport.updateCamera(clientInformation.clientCreatureId, gameState)
-    b2DebugViewport.updateCamera(clientInformation.clientCreatureId, gameState)
+    val creatureId = game.clientId.map(EntityId[Creature])
+
+    worldViewport.updateCamera(creatureId, game.gameplay.gameState)
+    b2DebugViewport.updateCamera(creatureId, game.gameplay.gameState)
   }
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {

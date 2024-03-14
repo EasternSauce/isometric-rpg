@@ -1,5 +1,6 @@
 package com.mygdx.game.physics
 
+import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
@@ -8,33 +9,24 @@ import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodyS
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.{ClientInformation, Constants}
 
 case class Physics() {
   private var world: World = _
   private var creatureBodies: Map[EntityId[Creature], CreatureBody] = _
   private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
   private var staticBodies: List[PhysicsBody] = _
-  private var clientInformation: ClientInformation = _
   private var eventQueue: List[PhysicsEvent] = _
   private var collisionQueue: List[CollisionEvent] = _
 
   def init(
-      clientInformation: ClientInformation,
       levelMap: LevelMap,
       gameState: GameState
   ): Unit = {
     world = World()
     world.init(PhysicsContactListener(this))
 
-    val player = gameState.creatures(clientInformation.clientCreatureId)
-    val playerBody = CreatureBody(clientInformation.clientCreatureId)
-    playerBody.init(world, player.pos, gameState)
-
-    creatureBodies = Map(clientInformation.clientCreatureId -> playerBody)
+    creatureBodies = Map()
     abilityBodies = Map()
-
-    this.clientInformation = clientInformation
 
     val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
 

@@ -28,4 +28,6 @@ abstract class CoreGame extends Game {
       newGameState: GameState,
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState
+
+  def clientId: Option[String]
 }

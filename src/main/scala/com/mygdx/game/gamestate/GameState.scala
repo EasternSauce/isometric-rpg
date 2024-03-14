@@ -1,6 +1,5 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.ClientInformation
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
@@ -35,11 +34,43 @@ case class GameState(
       .modify(_.abilities.each)
       .using(updateAbility(delta, sideEffectsCollector, game))
       .pipe(updateEnemySpawns(sideEffectsCollector))
+      .pipe(
+        handleCreatePlayerCreatures(
+          game.gameplay.scheduledPlayerCreaturesToCreate
+        )
+      )
+
+    game.gameplay.clearScheduledPlayerCreaturesToCreate()
 
     game.gameplay.physics.scheduleEvents(sideEffectsCollector.physicsEvents)
 
     game.applySideEffectsToGameState(newGameState, sideEffectsCollector)
   }
+
+  def handleCreatePlayerCreatures(
+      scheduledPlayerCreaturesToCreate: List[String]
+  ): GameState => GameState = gameState =>
+    scheduledPlayerCreaturesToCreate.foldLeft(gameState) {
+      case (gameState, id) =>
+        val creatureId = EntityId[Creature](id)
+        gameState
+          .modify(_.creatures)
+          .using(
+            _.updated(
+              creatureId,
+              CreatureFactory
+                .male1(
+                  creatureId,
+                  Vector2(
+                    3f + 3f * Math.random().toFloat,
+                    3f + 3f * Math.random().toFloat
+                  ),
+                  player = true,
+                  4f
+                )
+            )
+          )
+    }
 
   private def updateEnemySpawns(
       sideEffectsCollector: GameStateSideEffectsCollector
@@ -76,7 +107,6 @@ case class GameState(
         delta = delta,
         newPos = game.gameplay.physics.creatureBodyPositions.get(creature.id),
         input = input,
-        clientInformation = game.gameplay.clientInformation,
         gameState = this
       )
 
@@ -109,19 +139,19 @@ case class GameState(
 }
 
 object GameState {
-  def initialState(clientInformation: ClientInformation): GameState = {
-    val player =
-      CreatureFactory.male1(
-        clientInformation.clientCreatureId,
-        Vector2(5f, 5f),
-        player = true,
-        baseSpeed = 4f
-      )
+  def initialState(): GameState = {
+//    val player =
+//      CreatureFactory.male1(
+//        clientInformation.clientCreatureId,
+//        Vector2(5f, 5f),
+//        player = true,
+//        baseSpeed = 4f
+//      )
 
     GameState(
       creatures = Map(
-        clientInformation.clientCreatureId ->
-          player
+//        clientInformation.clientCreatureId ->
+//          player
       ),
       abilities = Map()
     )

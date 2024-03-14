@@ -36,13 +36,17 @@ case class Viewport() {
   }
 
   def updateCamera(
-      playerCreatureId: EntityId[Creature],
+      creatureId: Option[EntityId[Creature]],
       gameState: GameState
   ): Unit = {
     val camPosition = camera.position
 
-    val player = gameState.creatures(playerCreatureId)
-    val pos = coordinateTransformation(player.pos)
+    val cameraPos = creatureId
+      .filter(gameState.creatures.contains)
+      .map(gameState.creatures(_).pos)
+      .getOrElse(Vector2(0, 0))
+
+    val pos = coordinateTransformation(cameraPos)
 
     camPosition.x = (math.floor(pos.x * 100) / 100).toFloat
     camPosition.y = (math.floor(pos.y * 100) / 100).toFloat

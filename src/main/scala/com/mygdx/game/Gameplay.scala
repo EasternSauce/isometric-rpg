@@ -2,18 +2,16 @@ package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.core.CoreGame
+import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
-import com.mygdx.game.util.Rectangle
+import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
 case class Gameplay(game: CoreGame) {
-
-  private val _clientInformation: ClientInformation =
-    ClientInformation(clientCreatureId = EntityId("player"))
 
   private var _levelMap: LevelMap = _
   private var _physics: Physics = _
@@ -24,17 +22,19 @@ case class Gameplay(game: CoreGame) {
 
   private var _scheduledBroadcastEvents: List[BroadcastEvent] = List()
 
+  private var _scheduledPlayerCreaturesToCreate: List[String] = List()
+
   def init(): Unit = {
-    _gameState = GameState.initialState(_clientInformation)
+    _gameState = GameState.initialState()
 
     _levelMap = LevelMap()
     _levelMap.init()
 
     _view = View()
-    _view.init(_clientInformation, _levelMap, _gameState)
+    _view.init(_levelMap, _gameState)
 
     _physics = Physics()
-    _physics.init(_clientInformation, _levelMap, _gameState)
+    _physics.init(_levelMap, _gameState)
 
     spriteBatch = SpriteBatch()
     spriteBatch.init()
@@ -50,7 +50,7 @@ case class Gameplay(game: CoreGame) {
   }
 
   def render(input: Input): Unit = {
-    _view.update(_clientInformation, _gameState)
+    _view.update(game)
 
     _view.draw(spriteBatch, _physics, _gameState)
 
@@ -63,10 +63,14 @@ case class Gameplay(game: CoreGame) {
     val isoMousePos =
       IsometricProjection.translatePosScreenToIso(mousePos)
 
-    val mouseWorldPos = _gameState
-      .creatures(_clientInformation.clientCreatureId)
-      .params
-      .pos
+    val creatureId = game.clientId.map(EntityId[Creature])
+
+    val cameraPos = creatureId
+      .filter(gameState.creatures.contains)
+      .map(gameState.creatures(_).pos)
+      .getOrElse(Vector2(0, 0))
+
+    val mouseWorldPos = cameraPos
       .add(isoMousePos)
 
     spriteBatch.begin()
@@ -127,8 +131,19 @@ case class Gameplay(game: CoreGame) {
     _scheduledBroadcastEvents = List()
   }
 
+  def schedulePlayerCreaturesToCreate(clientId: String): Unit = {
+    _scheduledPlayerCreaturesToCreate =
+      _scheduledPlayerCreaturesToCreate.appended(clientId)
+  }
+
+  def scheduledPlayerCreaturesToCreate: List[String] =
+    _scheduledPlayerCreaturesToCreate
+
+  def clearScheduledPlayerCreaturesToCreate(): Unit = {
+    _scheduledPlayerCreaturesToCreate = List()
+  }
+
   def gameState: GameState = _gameState
-  def clientInformation: ClientInformation = _clientInformation
   def levelMap: LevelMap = _levelMap
   def physics: Physics = _physics
   def view: View = _view

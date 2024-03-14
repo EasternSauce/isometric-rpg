@@ -1,16 +1,15 @@
 package com.mygdx.game.gamestate.creature.behavior
 
+import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
-import com.mygdx.game.{ClientInformation, Constants}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class EnemyBehavior() extends CreatureBehavior {
   override def update(
       creature: Creature,
       input: Input,
-      clientInformation: ClientInformation,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
