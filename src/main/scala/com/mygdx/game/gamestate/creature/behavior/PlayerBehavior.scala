@@ -51,22 +51,7 @@ case class PlayerBehavior() extends CreatureBehavior {
     } else {
       Outcome(
         creature
-      ).withEvents {
-        if (
-          creature.params.destination.distance(
-            creature.pos
-          ) > Constants.MinimumDistanceBetweenDestinations
-        ) {
-          List(
-            CreatureGoToEvent(
-              creature.id,
-              creature.params.destination
-            )
-          )
-        } else {
-          List()
-        }
-      }
+      )
     }
   }
 

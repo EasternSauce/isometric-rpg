@@ -2,7 +2,7 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
-import com.mygdx.game.gamestate.event.broadcast.{CreatureGoToEvent, CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
+import com.mygdx.game.gamestate.event.broadcast.{CreatureShootArrowEvent, CreatureStopMovingEvent, MeleeAttackHitsCreatureEvent}
 import com.mygdx.game.gamestate.event.gamestate._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.input.Input
@@ -167,7 +167,7 @@ case class Creature(
   }
 
   private[creature] def stopMoving(): Outcome[Creature] = {
-    Outcome(this).withEvents(List(CreatureGoToEvent(id, pos)))
+    Outcome(this).withEvents(List(CreatureStopMovingEvent(id)))
   }
 
   private def setPos(pos: Vector2): Outcome[Creature] = {

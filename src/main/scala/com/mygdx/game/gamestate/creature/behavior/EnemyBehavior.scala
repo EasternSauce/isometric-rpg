@@ -96,7 +96,7 @@ case class EnemyBehavior() extends CreatureBehavior {
           .modify(_.params.destination)
           .setTo(
             targetCreature.pos
-          ) // TODO: we can update this once every 1/x of a second
+          )
           .modify(_.params.facingVector)
           .setTo(creature.pos.vectorTowards(targetCreature.pos))
       )

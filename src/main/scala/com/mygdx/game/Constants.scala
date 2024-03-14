@@ -57,7 +57,7 @@ object Constants {
 
   val TimeBetweenGameStateBroadcasts = 0.5f
 
-  var PhysicalBodyCorrectionDistance = 0.5f
+  var PhysicalBodyCorrectionDistance = 1f
 
   val LastPosSetInterval = 0.5f
 

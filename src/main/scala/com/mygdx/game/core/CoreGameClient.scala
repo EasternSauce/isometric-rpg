@@ -34,8 +34,8 @@ object CoreGameClient extends CoreGame {
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")
     config.setWindowedMode(Constants.WindowWidth, Constants.WindowHeight)
-    config.setForegroundFPS(60)
-    config.setIdleFPS(60)
+    config.setForegroundFPS(120)
+    config.setIdleFPS(120)
     new Lwjgl3Application(CoreGameClient, config)
   }
 
@@ -45,8 +45,24 @@ object CoreGameClient extends CoreGame {
       gameState: GameState,
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState = {
-    gameState
+//    if (gameplay.scheduledOverrideGameState.nonEmpty) {
+//      val gs = gameplay.scheduledOverrideGameState.get
+//
+//      gameplay.clearScheduledOverrideGameState()
+//
+//      gs
+//        .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
+//        .handleCollisionEvents(sideEffectsCollector.collisionEvents)
+////        .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
+//    } else {
+    val gs = gameState
       .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
       .handleCollisionEvents(sideEffectsCollector.collisionEvents)
+      .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
+
+    gameplay.clearScheduledBroadcastEvents()
+
+    gs
   }
+//  }
 }

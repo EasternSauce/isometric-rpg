@@ -13,7 +13,7 @@ case class ClientListener(game: CoreGame) extends Listener {
       case GameStateHolder(gameState) =>
         game.gameplay.overrideGameState(gameState)
       case BroadcastEventsHolder(broadcastEvents) =>
-        game.gameplay.applyBroadcastEvents(broadcastEvents)
+        game.gameplay.scheduleBroadcastEvents(broadcastEvents)
     }
   }
 }
