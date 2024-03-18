@@ -2,9 +2,8 @@ package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
-import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
@@ -41,7 +40,9 @@ case class Gameplay(game: CoreGame) {
   }
 
   def update(input: Input, delta: Float): Unit = {
-    _physics.update(_gameState)
+    game.handleInput(input)
+
+    physics.update(gameState)
 
     updateGameState(
       input,
@@ -50,9 +51,9 @@ case class Gameplay(game: CoreGame) {
   }
 
   def render(input: Input): Unit = {
-    _view.update(game)
+    view.update(game)
 
-    _view.draw(spriteBatch, _physics, _gameState)
+    view.draw(spriteBatch, physics, gameState)
 
     if (Constants.EnableDebug) drawMouseAimDebug(input)
   }
@@ -63,11 +64,10 @@ case class Gameplay(game: CoreGame) {
     val isoMousePos =
       IsometricProjection.translatePosScreenToIso(mousePos)
 
-    val creatureId = game.clientId.map(EntityId[Creature])
+    val creature = game.clientCreature(gameState)
 
-    val cameraPos = creatureId
-      .filter(gameState.creatures.contains)
-      .map(gameState.creatures(_).pos)
+    val cameraPos = creature
+      .map(_.pos)
       .getOrElse(Vector2(0, 0))
 
     val mouseWorldPos = cameraPos
@@ -75,7 +75,7 @@ case class Gameplay(game: CoreGame) {
 
     spriteBatch.begin()
 
-    _gameState.creatures.values
+    gameState.creatures.values
       .map(_.pos)
       .foreach(pos => {
         val worldPos = IsometricProjection.translatePosIsoToScreen(pos)
@@ -99,7 +99,7 @@ case class Gameplay(game: CoreGame) {
       input: Input,
       delta: Float
   ): Unit = {
-    val newGameState = _gameState.update(
+    val newGameState = gameState.update(
       input,
       delta,
       game

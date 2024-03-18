@@ -28,6 +28,19 @@ case class GameState(
       events = game.gameplay.physics.pollCollisionEvents()
     )
 
+//    val res: Outcome[GameState] = creatures.keys.foldLeft(Outcome(this)) {
+//      case (outcome, creatureId) =>
+//        for {
+//          gameState <- outcome
+//          gameState <-
+//            Outcome(gameState).map(gameState
+//                .modify(_.creatures.at(creatureId)).using(updateCreature(input, delta, sideEffectsCollector, game)))
+//
+//
+//
+//        } yield gameState
+//    }
+
     val newGameState = this
       .modify(_.creatures.each)
       .using(updateCreature(input, delta, sideEffectsCollector, game))

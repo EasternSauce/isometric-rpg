@@ -2,7 +2,7 @@ package com.mygdx.game.core
 
 import com.esotericsoftware.kryonet.FrameworkMessage.KeepAlive
 import com.esotericsoftware.kryonet.{Connection, Listener}
-import com.mygdx.game.core.message.RegisterClientResponse
+import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientResponseCommand}
 
 case class ClientListener(game: CoreGameClient) extends Listener {
   override def disconnected(connection: Connection): Unit = {
@@ -14,9 +14,9 @@ case class ClientListener(game: CoreGameClient) extends Listener {
     obj match {
       case GameStateHolder(gameState) =>
         game.gameplay.overrideGameState(gameState)
-      case BroadcastEventsHolder(broadcastEvents) =>
-        game.gameplay.scheduleBroadcastEvents(broadcastEvents)
-      case RegisterClientResponse(clientId) =>
+      case ActionsPerformCommand(actions) =>
+        game.gameplay.scheduleBroadcastEvents(actions)
+      case RegisterClientResponseCommand(clientId) =>
         game.setClientId(clientId)
       case _: KeepAlive =>
     }

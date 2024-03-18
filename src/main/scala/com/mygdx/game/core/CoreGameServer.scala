@@ -2,8 +2,10 @@ package com.mygdx.game.core
 
 import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{KryoSerialization, Server}
+import com.mygdx.game.command.ActionsPerformCommand
 import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
+import com.mygdx.game.input.Input
 import com.mygdx.game.screen.ServerCamScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -48,21 +50,29 @@ case class CoreGameServer() extends CoreGame {
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState = {
     sendBroadcastEventsToAllConnectedClients(
-      sideEffectsCollector.broadcastEvents
+      sideEffectsCollector.broadcastEvents ++ gameplay.scheduledBroadcastEvents
     )
 
-    gameState
+    val newGameState = gameState
       .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
       .handleCollisionEvents(sideEffectsCollector.collisionEvents)
       .handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
+      .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
+
+    gameplay.clearScheduledBroadcastEvents()
+
+    newGameState
   }
 
   private def sendBroadcastEventsToAllConnectedClients(
       broadcastEvents: List[BroadcastEvent]
   ): Unit = {
     server.getConnections.foreach(connection => {
-      if (clientConnectionIds.values.toSet.contains(connection.getID)) {
-        connection.sendTCP(BroadcastEventsHolder(broadcastEvents))
+      if (
+        broadcastEvents.nonEmpty && clientConnectionIds.values.toSet
+          .contains(connection.getID)
+      ) {
+        connection.sendTCP(ActionsPerformCommand(broadcastEvents))
       }
     })
   }
@@ -81,5 +91,7 @@ case class CoreGameServer() extends CoreGame {
     gameplay.schedulePlayerCreaturesToCreate(clientId)
   }
 
-  override def clientId: Option[String] = None
+  override protected def clientId: Option[String] = None
+
+  override def handleInput(input: Input): Unit = {}
 }

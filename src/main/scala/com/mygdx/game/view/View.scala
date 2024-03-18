@@ -104,7 +104,7 @@ case class View() {
   def update(game: CoreGame): Unit = {
     synchronizeWithGameState(game.gameplay.gameState)
 
-    val creatureId = game.clientId.map(EntityId[Creature])
+    val creatureId = game.clientCreatureId
 
     worldViewport.updateCamera(creatureId, game.gameplay.gameState)
     b2DebugViewport.updateCamera(creatureId, game.gameplay.gameState)
