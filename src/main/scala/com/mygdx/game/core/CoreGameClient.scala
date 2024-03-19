@@ -3,7 +3,7 @@ package com.mygdx.game.core
 import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestCommand}
-import com.mygdx.game.gamestate.event.broadcast.CreatureGoToEvent
+import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
 import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.GameplayScreen
@@ -55,14 +55,25 @@ case class CoreGameClient() extends CoreGame {
   override def handleInput(input: Input): Unit = {
     val creature = clientCreature(gameplay.gameState)
 
-    if (creature.isDefined && input.moveButtonPressed) {
-      val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
+    if (creature.isDefined) {
+      if (input.moveButtonPressed) {
+        val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-      client.sendTCP(
-        ActionsPerformCommand(
-          List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
+        client.sendTCP(
+          ActionsPerformCommand(
+            List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
+          )
         )
-      )
+      }
+      if (input.attackButtonJustPressed) {
+        val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
+
+        client.sendTCP(
+          ActionsPerformCommand(
+            List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
+          )
+        )
+      }
     }
   }
 }

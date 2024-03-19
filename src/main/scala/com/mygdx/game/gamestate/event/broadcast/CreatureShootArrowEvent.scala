@@ -14,7 +14,7 @@ case class CreatureShootArrowEvent(
     val abilityId: EntityId[Ability] =
       EntityId("ability" + gameState.abilityCounter)
 
-    val sourceCreature = gameState.creatures(sourceCreatureId)
+    val creature = gameState.creatures(sourceCreatureId)
 
     gameState
       .modify(_.abilities)
@@ -25,8 +25,8 @@ case class CreatureShootArrowEvent(
             AbilityParams(
               abilityId,
               sourceCreatureId,
-              sourceCreature.params.pos,
-              sourceCreature.params.facingVector,
+              creature.params.pos,
+              creature.params.facingVector,
               damage
             )
           )

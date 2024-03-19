@@ -215,40 +215,11 @@ case class Creature(
 
   def invisible: Boolean = !params.respawnDelayInProgress
 
-  private[creature] def creatureMeleeAttackStart(
-      otherCreatureId: EntityId[Creature],
-      gameState: GameState
-  ): Outcome[Creature] = {
-    val otherCreature = gameState.creatures(otherCreatureId)
-
-    Outcome.when(this)(_ =>
-      otherCreature.pos
-        .distance(pos) < params.attackRange
-    )(creature =>
-      Outcome(
-        creature
-          .modify(_.params.attackedCreatureId)
-          .setTo(Some(otherCreature.id))
-          .modify(_.params.attackPending)
-          .setTo(true)
-      )
-    )
-  }
-
   def id: EntityId[Creature] = params.id
 
   def pos: Vector2 = params.pos
 
-  private[creature] def creatureRangedAttackStart(
-  ): Outcome[Creature] = {
-    Outcome[Creature](
-      this
-        .modify(_.params.attackPending)
-        .setTo(true)
-    )
-  }
-
-  private[creature] def attackAllowed: Boolean = {
+  def attackingAllowed: Boolean = {
     !this.params.attackAnimationTimer.running || this.params.attackAnimationTimer.time >= this.params.animationDefinition.attackFrames.totalDuration + Constants.AttackCooldown
   }
 }

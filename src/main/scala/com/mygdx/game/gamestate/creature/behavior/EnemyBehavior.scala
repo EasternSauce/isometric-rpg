@@ -4,6 +4,7 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
+import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.softwaremill.quicklens.ModifyPimp
 
 case class EnemyBehavior() extends CreatureBehavior {
@@ -12,52 +13,48 @@ case class EnemyBehavior() extends CreatureBehavior {
       input: Input,
       gameState: GameState
   ): Outcome[Creature] = {
-    for {
-      creature <- Outcome.when(creature)(_.params.currentTargetId.isEmpty)(
-        lookForNewTarget(_, gameState)
-      )
-      creature <- Outcome.when(creature)(_.params.currentTargetId.nonEmpty) {
-        creature =>
-          val targetCreature =
-            gameState.creatures(creature.params.currentTargetId.get)
+    val res = if (creature.params.currentTargetId.isEmpty) {
+      lookForNewTarget(creature, gameState)
+    } else {
+      val targetCreature =
+        gameState.creatures(creature.params.currentTargetId.get)
 
-          for {
-            creature <- pursueTarget(
-              creature,
-              targetCreature.id,
-              gameState
-            )
-            creature <- Outcome.when(creature)(
-              _.pos.distance(targetCreature.pos) < Constants.EnemyLoseAggroRange
-            )(creature =>
-              Outcome(
-                creature.modify(_.params.loseAggroTimer).using(_.restart())
-              )
-            )
-            creature <- Outcome.when(creature)(creature =>
-              !targetCreature.alive ||
-                (!creature.params.loseAggroTimer.running || creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime) &&
-                (!creature.params.lastAttackedTimer.running || creature.params.lastAttackedTimer.time > Constants.AttackedByCreatureLoseAggroTime)
-            )(loseAggro)
-          } yield creature
-      }
-    } yield creature
+      pursueTarget(
+        creature,
+        targetCreature.id,
+        gameState
+      ).pipeIf(
+        _.pos.distance(targetCreature.pos) < Constants.EnemyLoseAggroRange
+      )(_.modify(_.params.loseAggroTimer).using(_.restart()))
+        .pipeIf(creature => canLoseAggro(creature, targetCreature))(loseAggro)
+    }
 
+    Outcome(res)
   }
 
-  private def loseAggro(creature: Creature): Outcome[Creature] = {
-    for {
-      creature <- Outcome(creature.modify(_.params.currentTargetId).setTo(None))
-      creature <- Outcome(
-        creature.modify(_.params.destination).setTo(creature.pos)
-      )
-    } yield creature
+  private def canLoseAggro(
+      creature: Creature,
+      targetCreature: Creature
+  ): Boolean = {
+    !targetCreature.alive ||
+    (!creature.params.loseAggroTimer.running ||
+      creature.params.loseAggroTimer.time > Constants.EnemyLoseAggroTime) &&
+    (!creature.params.lastAttackedTimer.running ||
+      creature.params.lastAttackedTimer.time > Constants.AttackedByCreatureLoseAggroTime)
+  }
+
+  private def loseAggro(creature: Creature): Creature = {
+    creature
+      .modify(_.params.currentTargetId)
+      .setTo(None)
+      .modify(_.params.destination)
+      .setTo(creature.pos)
   }
 
   private def lookForNewTarget(
       creature: Creature,
       gameState: GameState
-  ): Outcome[Creature] = {
+  ): Creature = {
     val maybeClosestCreature: Option[Creature] =
       gameState.creatures.values.toList.filter(otherCreature =>
         otherCreature.params.player && otherCreature.alive && otherCreature.pos
@@ -70,12 +67,10 @@ case class EnemyBehavior() extends CreatureBehavior {
 
     maybeClosestCreature match {
       case Some(closestCreature) =>
-        Outcome(
-          creature
-            .modify(_.params.currentTargetId)
-            .setTo(Some(closestCreature.id))
-        )
-      case _ => Outcome(creature)
+        creature
+          .modify(_.params.currentTargetId)
+          .setTo(Some(closestCreature.id))
+      case _ => creature
     }
   }
 
@@ -83,44 +78,59 @@ case class EnemyBehavior() extends CreatureBehavior {
       creature: Creature,
       targetCreatureId: EntityId[Creature],
       gameState: GameState
-  ): Outcome[Creature] = {
+  ): Creature = {
     val targetCreature = gameState.creatures(targetCreatureId)
 
     val distanceToPlayer =
       creature.pos.distance(targetCreature.pos)
 
     if (distanceToPlayer > creature.params.attackRange) {
-      Outcome(
-        creature
+      creature
+        .modify(_.params.destination)
+        .setTo(targetCreature.pos)
+        .modify(_.params.facingVector)
+        .setTo(creature.pos.vectorTowards(targetCreature.pos))
+
+    } else {
+      if (targetCreature.alive && creature.attackingAllowed) {
+        meleeAttackStart(
+          creature.id,
+          targetCreature.id,
+          gameState
+        )
           .modify(_.params.destination)
-          .setTo(
-            targetCreature.pos
-          )
+          .setTo(creature.pos)
+          .modify(_.params.attackAnimationTimer)
+          .using(_.restart())
           .modify(_.params.facingVector)
           .setTo(creature.pos.vectorTowards(targetCreature.pos))
-      )
-    } else {
-      if (targetCreature.alive && creature.attackAllowed) {
-        for {
-          creature <- creature.creatureMeleeAttackStart(
-            targetCreature.id,
-            gameState
-          )
-          creature <- Outcome(
-            creature
-              .modify(_.params.destination)
-              .setTo(creature.pos)
-              .modify(_.params.attackAnimationTimer)
-              .using(_.restart())
-              .modify(_.params.facingVector)
-              .setTo(creature.pos.vectorTowards(targetCreature.pos))
-          )
-        } yield creature
       } else {
-        Outcome(creature)
+        creature
       }
 
     }
 
+  }
+
+  private def meleeAttackStart(
+      creatureId: EntityId[Creature],
+      otherCreatureId: EntityId[Creature],
+      gameState: GameState
+  ): Creature = {
+    val creature = gameState.creatures(creatureId)
+    val otherCreature = gameState.creatures(otherCreatureId)
+
+    if (
+      otherCreature.pos
+        .distance(creature.pos) < creature.params.attackRange
+    ) {
+      creature
+        .modify(_.params.attackedCreatureId)
+        .setTo(Some(otherCreature.id))
+        .modify(_.params.attackPending)
+        .setTo(true)
+    } else {
+      creature
+    }
   }
 }
