@@ -7,10 +7,12 @@ object GameClientLauncher {
   val game: CoreGameClient = CoreGameClient()
 
   def main(arg: Array[String]): Unit = {
-    game.client.start()
-    game.client.connect(50000, "localhost", 54555, 54777)
+    if (!Constants.OfflineMode) {
+      game.client.start()
+      game.client.connect(50000, "localhost", 54555, 54777)
 
-    game.client.addListener(game.listener)
+      game.client.addListener(game.listener)
+    }
 
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")

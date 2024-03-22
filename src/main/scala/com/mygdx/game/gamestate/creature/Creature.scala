@@ -2,30 +2,28 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate._
-import com.mygdx.game.gamestate.creature.behavior.CreatureBehavior
+import com.mygdx.game.gamestate.creature.behavior.EnemyBehavior
 import com.mygdx.game.gamestate.event.broadcast.{CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
 import com.mygdx.game.gamestate.event.gamestate._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
-import com.mygdx.game.input.Input
 import com.mygdx.game.util.WorldDirection.WorldDirection
 import com.mygdx.game.util.{Vector2, WorldDirection}
 import com.softwaremill.quicklens.ModifyPimp
 
 case class Creature(
-    params: CreatureParams,
-    behavior: CreatureBehavior
+    params: CreatureParams
 ) extends Entity {
+  private val enemyBehavior = EnemyBehavior()
+
   def update(
       delta: Float,
       newPos: Option[Vector2],
-      input: Input,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
       creature <- Outcome(this)
       creature <- creature.updateMovement(
         newPos,
-        input,
         gameState
       )
       creature <- creature.updateTimers(delta)
@@ -61,11 +59,10 @@ case class Creature(
   }
 
   private def deathToBeHandled: Boolean =
-    !this.alive && !this.params.deathAcknowledged
+    !alive && !params.deathAcknowledged
 
   private def updateMovement(
       newPos: Option[Vector2],
-      input: Input,
       gameState: GameState
   ): Outcome[Creature] = {
     for {
@@ -74,8 +71,10 @@ case class Creature(
         _.setPos(newPos.get)
       )
       creature <- creature.updateVelocity()
-      creature <- Outcome.when(creature)(_.alive)(
-        behavior.update(_, input, gameState)
+      creature <- Outcome.when(creature)(creature =>
+        !creature.params.player && creature.alive
+      )(
+        enemyBehavior.update(_, gameState)
       )
       creature <- creature.updateAttacks()
       creature <- creature.handleWalkingIntoObstacle()
@@ -112,8 +111,9 @@ case class Creature(
   }
 
   private[creature] def creatureAttackCompleted: Boolean = {
-    this.params.attackAnimationTimer.running &&
-    this.params.attackAnimationTimer.time > this.params.animationDefinition.attackFrames.totalDuration * 0.8f && this.params.attackPending
+    params.attackAnimationTimer.running &&
+    params.attackAnimationTimer.time > params.animationDefinition.attackFrames.totalDuration * 0.8f &&
+    params.attackPending
   }
 
   private def updateVelocity(): Outcome[Creature] = {
@@ -194,21 +194,7 @@ case class Creature(
   }
 
   def facingDirection: WorldDirection = {
-    val angleDeg = params.facingVector.angleDeg
-
-    angleDeg match {
-      case angle if angle >= 67.5 && angle < 112.5  => WorldDirection.East
-      case angle if angle >= 112.5 && angle < 157.5 => WorldDirection.NorthEast
-      case angle if angle >= 157.5 && angle < 202.5 => WorldDirection.North
-      case angle if angle >= 202.5 && angle < 247.5 => WorldDirection.NorthWest
-      case angle if angle >= 247.5 && angle < 292.5 => WorldDirection.West
-      case angle if angle >= 292.5 && angle < 337.5 => WorldDirection.SouthWest
-      case angle
-          if (angle >= 337.5 && angle < 360) || (angle >= 0 && angle < 22.5) =>
-        WorldDirection.South
-      case angle if angle >= 22.5 && angle < 67.5 => WorldDirection.SouthEast
-      case _                                      => throw new RuntimeException("unreachable")
-    }
+    WorldDirection.fromVector(params.facingVector)
   }
 
   def moving: Boolean = params.velocity.length > 0

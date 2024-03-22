@@ -64,4 +64,6 @@ object Constants {
   val LastPosMinimumDifference = 0.2f
 
   val MinimumDistanceBetweenDestinations = 0.001f
+
+  val OfflineMode = true
 }

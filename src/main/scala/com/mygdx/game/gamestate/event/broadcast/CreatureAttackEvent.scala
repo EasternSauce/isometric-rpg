@@ -79,7 +79,7 @@ case class CreatureAttackEvent(
       creature: Creature,
       gameState: GameState,
       maybeClosestCreatureId: Option[EntityId[Creature]]
-  ) = {
+  ): Creature = {
     val closestCreature =
       gameState.creatures(maybeClosestCreatureId.get)
 

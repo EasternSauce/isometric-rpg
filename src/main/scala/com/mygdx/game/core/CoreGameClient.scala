@@ -2,11 +2,13 @@ package com.mygdx.game.core
 
 import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
+import com.mygdx.game.Constants
 import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestCommand}
 import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
 import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.GameplayScreen
+import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.Vector2
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
@@ -14,13 +16,17 @@ case class CoreGameClient() extends CoreGame {
   var _clientId: Option[String] = None
 
   override protected val endPoint: Client = {
-    val kryo: Kryo = {
-      val instantiator = new ScalaKryoInstantiator
-      instantiator.setRegistrationRequired(false)
-      instantiator.newKryo()
+    if (!Constants.OfflineMode) {
+      val kryo: Kryo = {
+        val instantiator = new ScalaKryoInstantiator
+        instantiator.setRegistrationRequired(false)
+        instantiator.newKryo()
 
+      }
+      new Client(8192 * 100, 2048 * 100, new KryoSerialization(kryo))
+    } else {
+      null
     }
-    new Client(8192 * 100, 2048 * 100, new KryoSerialization(kryo))
   }
 
   def client: Client = endPoint
@@ -29,7 +35,15 @@ case class CoreGameClient() extends CoreGame {
   override val playScreen: Screen = GameplayScreen(gameplay, client)
 
   override def onCreate(): Unit = {
-    endPoint.sendTCP(RegisterClientRequestCommand())
+    if (!Constants.OfflineMode) {
+      endPoint.sendTCP(RegisterClientRequestCommand())
+    } else {
+      val clientId = "offline_client"
+
+      setClientId(clientId)
+
+      gameplay.schedulePlayerCreaturesToCreate(clientId)
+    }
   }
 
   override def applySideEffectsToGameState(
@@ -39,6 +53,9 @@ case class CoreGameClient() extends CoreGame {
     val newGameState = gameState
       .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
       .handleCollisionEvents(sideEffectsCollector.collisionEvents)
+      .pipeIf(_ => Constants.OfflineMode)(
+        _.handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
+      )
       .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
 
     gameplay.clearScheduledBroadcastEvents()
@@ -59,20 +76,32 @@ case class CoreGameClient() extends CoreGame {
       if (input.moveButtonPressed) {
         val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        client.sendTCP(
-          ActionsPerformCommand(
+        if (!Constants.OfflineMode) {
+          client.sendTCP(
+            ActionsPerformCommand(
+              List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
+            )
+          )
+        } else {
+          gameplay.scheduleBroadcastEvents(
             List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
           )
-        )
+        }
       }
       if (input.attackButtonJustPressed) {
         val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        client.sendTCP(
-          ActionsPerformCommand(
+        if (!Constants.OfflineMode) {
+          client.sendTCP(
+            ActionsPerformCommand(
+              List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
+            )
+          )
+        } else {
+          gameplay.scheduleBroadcastEvents(
             List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
           )
-        )
+        }
       }
     }
   }

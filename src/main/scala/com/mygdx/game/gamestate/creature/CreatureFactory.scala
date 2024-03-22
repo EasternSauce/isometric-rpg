@@ -3,7 +3,6 @@ package com.mygdx.game.gamestate.creature
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.gamestate.creature.PrimaryWeaponType.PrimaryWeaponType
 import com.mygdx.game.gamestate.creature.SecondaryWeaponType.SecondaryWeaponType
-import com.mygdx.game.gamestate.creature.behavior.{EnemyBehavior, PlayerBehavior}
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.CreatureAnimationType
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
@@ -104,8 +103,7 @@ object CreatureFactory {
         primaryWeaponType = primaryWeaponType,
         secondaryWeaponType = secondaryWeaponType,
         renderBodyOnly = renderBodyOnly
-      ),
-      behavior = if (player) PlayerBehavior() else EnemyBehavior()
+      )
     )
   }
 }

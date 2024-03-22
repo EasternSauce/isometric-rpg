@@ -43,7 +43,7 @@ case class GameState(
 
     val newGameState = this
       .modify(_.creatures.each)
-      .using(updateCreature(input, delta, sideEffectsCollector, game))
+      .using(updateCreature(delta, sideEffectsCollector, game))
       .modify(_.abilities.each)
       .using(updateAbility(delta, sideEffectsCollector, game))
       .pipe(updateEnemySpawns(sideEffectsCollector))
@@ -110,7 +110,6 @@ case class GameState(
   }
 
   private def updateCreature(
-      input: Input,
       delta: Float,
       sideEffectsCollector: GameStateSideEffectsCollector,
       game: CoreGame
@@ -119,7 +118,6 @@ case class GameState(
       .update(
         delta = delta,
         newPos = game.gameplay.physics.creatureBodyPositions.get(creature.id),
-        input = input,
         gameState = this
       )
 
