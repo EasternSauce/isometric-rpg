@@ -22,7 +22,7 @@ object EnemySpawnUtils {
         baseSpeed = 2f
       )
 
-      Outcome(gameState).withEvents(List(CreatureSpawnEvent(newEnemy)))
+      Outcome(gameState).withBroadcastEvents(List(CreatureSpawnEvent(newEnemy)))
     } else {
       Outcome(gameState)
     }

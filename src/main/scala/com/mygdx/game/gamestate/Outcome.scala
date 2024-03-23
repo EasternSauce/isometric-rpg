@@ -1,28 +1,43 @@
 package com.mygdx.game.gamestate
 
-import com.mygdx.game.gamestate.event.Event
+import com.mygdx.game.gamestate.event.GameStateEvent
+import com.mygdx.game.gamestate.event.physics.PhysicsEvent
 import com.softwaremill.quicklens.ModifyPimp
 
-case class Outcome[T](obj: T, events: List[Event] = Nil) {
+case class Outcome[T](
+    obj: T,
+    gameStateEvents: List[GameStateEvent] = Nil,
+    broadcastEvents: List[GameStateEvent] = Nil,
+    physicsEvents: List[PhysicsEvent] = Nil
+) {
   @inline final def map[B](f: T => B): Outcome[B] =
-    Outcome(f(this.obj), events = events)
+    Outcome(
+      f(this.obj),
+      broadcastEvents = broadcastEvents,
+      gameStateEvents = gameStateEvents,
+      physicsEvents = physicsEvents
+    )
 
   @inline final def flatMap[B](f: T => Outcome[B]): Outcome[B] = {
     val newOutcome = f(obj)
-    Outcome(newOutcome.obj, events ++ newOutcome.events)
+    Outcome(
+      newOutcome.obj,
+      gameStateEvents ++ newOutcome.gameStateEvents,
+      broadcastEvents ++ newOutcome.broadcastEvents,
+      physicsEvents ++ newOutcome.physicsEvents
+    )
   }
 
-  def withEvents(events: List[Event]): Outcome[T] = {
-    this.modify(_.events).setTo(events)
+  def withGameStateEvents(gameEvents: List[GameStateEvent]): Outcome[T] = {
+    this.modify(_.gameStateEvents).setTo(gameEvents)
   }
 
-  def withSideEffectsExtracted(
-      sideEffectsCollector: GameStateSideEffectsCollector
-  ): T = {
-    sideEffectsCollector.events =
-      sideEffectsCollector.events.appendedAll(events)
+  def withBroadcastEvents(broadcastEvents: List[GameStateEvent]): Outcome[T] = {
+    this.modify(_.broadcastEvents).setTo(broadcastEvents)
+  }
 
-    obj
+  def withPhysicsEvents(physicsEvents: List[PhysicsEvent]): Outcome[T] = {
+    this.modify(_.physicsEvents).setTo(physicsEvents)
   }
 
 }

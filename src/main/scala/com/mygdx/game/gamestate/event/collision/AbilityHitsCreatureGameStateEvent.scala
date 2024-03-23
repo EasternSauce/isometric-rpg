@@ -2,15 +2,16 @@ package com.mygdx.game.gamestate.event.collision
 
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.{DamageDealingUtils, EntityId, GameState}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.chaining.scalaUtilChainingOps
 
-case class AbilityHitsCreatureEvent(
+case class AbilityHitsCreatureGameStateEvent(
     abilityId: EntityId[Ability],
     creatureId: EntityId[Creature]
-) extends CollisionEvent {
+) extends GameStateEvent {
   override def applyToGameState(gameState: GameState): GameState = {
     if (
       gameState.abilities

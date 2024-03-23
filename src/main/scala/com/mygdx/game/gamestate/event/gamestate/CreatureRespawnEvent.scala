@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate.event.gamestate
 
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 

@@ -2,9 +2,10 @@ package com.mygdx.game.gamestate.event.broadcast
 
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.GameStateEvent
 import com.softwaremill.quicklens.ModifyPimp
 
-case class CreatureSpawnEvent(creature: Creature) extends BroadcastEvent {
+case class CreatureSpawnEvent(creature: Creature) extends GameStateEvent {
   override def applyToGameState(gameState: GameState): GameState = {
     gameState
       .modify(_.creatures)

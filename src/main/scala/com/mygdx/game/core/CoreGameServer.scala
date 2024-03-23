@@ -3,8 +3,8 @@ package com.mygdx.game.core
 import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{KryoSerialization, Server}
 import com.mygdx.game.command.ActionsPerformCommand
-import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
-import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
+import com.mygdx.game.gamestate.event.GameStateEvent
+import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.ServerCamScreen
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
@@ -45,19 +45,22 @@ case class CoreGameServer() extends CoreGame {
     gameDataBroadcaster.start(server)
   }
 
-  override def applySideEffectsToGameState(
-      gameState: GameState,
-      sideEffectsCollector: GameStateSideEffectsCollector
+  override def applyOutcomeEvents(
+      gameStateOutcome: Outcome[GameState]
   ): GameState = {
+    gameplay.physics.scheduleEvents(gameStateOutcome.physicsEvents)
+
     sendBroadcastEventsToAllConnectedClients(
-      sideEffectsCollector.broadcastEvents ++ gameplay.externalEvents
+      gameStateOutcome.broadcastEvents ++ gameplay.externalEvents
     )
 
-    val newGameState = gameState
-      .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
-      .handleCollisionEvents(sideEffectsCollector.collisionEvents)
-      .handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
-      .handleBroadcastEvents(gameplay.externalEvents)
+    val newGameState = gameStateOutcome.obj
+      .handleGameStateEvents(
+        gameplay.physics.pollCollisionEvents() ++
+          gameStateOutcome.gameStateEvents ++
+          gameStateOutcome.broadcastEvents ++
+          gameplay.externalEvents
+      )
 
     gameplay.clearExternalEventsQueue()
 
@@ -65,7 +68,7 @@ case class CoreGameServer() extends CoreGame {
   }
 
   private def sendBroadcastEventsToAllConnectedClients(
-      broadcastEvents: List[BroadcastEvent]
+      broadcastEvents: List[GameStateEvent]
   ): Unit = {
     server.getConnections.foreach(connection => {
       if (

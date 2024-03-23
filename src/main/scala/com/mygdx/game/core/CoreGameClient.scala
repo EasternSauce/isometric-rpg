@@ -5,7 +5,7 @@ import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.Constants
 import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestCommand}
 import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
-import com.mygdx.game.gamestate.{GameState, GameStateSideEffectsCollector}
+import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.GameplayScreen
 import com.mygdx.game.util.Chaining.customUtilChainingOps
@@ -46,17 +46,20 @@ case class CoreGameClient() extends CoreGame {
     }
   }
 
-  override def applySideEffectsToGameState(
-      gameState: GameState,
-      sideEffectsCollector: GameStateSideEffectsCollector
+  override def applyOutcomeEvents(
+      gameStateOutcome: Outcome[GameState]
   ): GameState = {
-    val newGameState = gameState
-      .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
-      .handleCollisionEvents(sideEffectsCollector.collisionEvents)
-      .pipeIf(_ => Constants.OfflineMode)(
-        _.handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
+    gameplay.physics.scheduleEvents(gameStateOutcome.physicsEvents)
+
+    val newGameState = gameStateOutcome.obj
+      .handleGameStateEvents(
+        gameplay.physics.pollCollisionEvents()
+          ++ gameStateOutcome.gameStateEvents
+          ++ gameplay.externalEvents
       )
-      .handleBroadcastEvents(gameplay.externalEvents)
+      .pipeIf(_ => Constants.OfflineMode)(
+        _.handleGameStateEvents(gameStateOutcome.broadcastEvents)
+      )
 
     gameplay.clearExternalEventsQueue()
 

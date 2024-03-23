@@ -3,7 +3,7 @@ package com.mygdx.game
 import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
-import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
+import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.input.Input
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
@@ -19,7 +19,7 @@ case class Gameplay(game: CoreGame) {
 
   private var _gameState: GameState = _
 
-  private var _scheduledExternalEvents: List[BroadcastEvent] = List()
+  private var _scheduledExternalEvents: List[GameStateEvent] = List()
 
   private var _scheduledPlayerCreaturesToCreate: List[String] = List()
 
@@ -115,12 +115,12 @@ case class Gameplay(game: CoreGame) {
     this._gameState = gameState
   }
 
-  def scheduleExternalEvent(gameStateEvents: List[BroadcastEvent]): Unit = {
+  def scheduleExternalEvent(gameStateEvents: List[GameStateEvent]): Unit = {
     _scheduledExternalEvents =
       _scheduledExternalEvents.appendedAll(gameStateEvents)
   }
 
-  def externalEvents: List[BroadcastEvent] = {
+  def externalEvents: List[GameStateEvent] = {
     _scheduledExternalEvents
   }
 

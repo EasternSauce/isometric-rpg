@@ -3,7 +3,7 @@ package com.mygdx.game.core
 import com.badlogic.gdx.{Game, Screen}
 import com.esotericsoftware.kryonet.EndPoint
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.{EntityId, GameState, GameStateSideEffectsCollector}
+import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.{Assets, Gameplay}
 
@@ -26,10 +26,7 @@ abstract class CoreGame extends Game {
 
   def gameplay: Gameplay = _gameplay
 
-  def applySideEffectsToGameState(
-      newGameState: GameState,
-      sideEffectsCollector: GameStateSideEffectsCollector
-  ): GameState
+  def applyOutcomeEvents(gameStateOutcome: Outcome[GameState]): GameState
 
   protected def clientId: Option[String]
 

@@ -4,7 +4,6 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
-import com.mygdx.game.gamestate.event.collision.CollisionEvent
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
@@ -16,7 +15,7 @@ case class Physics() {
   private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
   private var staticBodies: List[PhysicsBody] = _
   private var eventQueue: List[PhysicsEvent] = _
-  private var collisionQueue: List[CollisionEvent] = _
+  private var collisionQueue: List[GameStateEvent] = _
 
   def init(
       levelMap: LevelMap,
@@ -119,7 +118,7 @@ case class Physics() {
   }
 
   private def handleEvents(
-      eventsToBeProcessed: List[Event],
+      eventsToBeProcessed: List[PhysicsEvent],
       gameState: GameState
   ): Unit = {
     eventsToBeProcessed.foreach {
@@ -144,7 +143,7 @@ case class Physics() {
     eventQueue = eventQueue.filter(!eventsToBeProcessed.contains(_))
   }
 
-  def pollCollisionEvents(): List[CollisionEvent] = {
+  def pollCollisionEvents(): List[GameStateEvent] = {
     val collisionEvents = collisionQueue
 
     collisionQueue = List()
@@ -156,7 +155,7 @@ case class Physics() {
     eventQueue = eventQueue.appendedAll(events)
   }
 
-  def scheduleCollisions(collisions: List[CollisionEvent]): Unit = {
+  def scheduleCollisions(collisions: List[GameStateEvent]): Unit = {
     collisionQueue = collisionQueue.appendedAll(collisions)
   }
 

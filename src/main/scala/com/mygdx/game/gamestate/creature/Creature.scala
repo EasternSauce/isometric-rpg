@@ -28,23 +28,26 @@ case class Creature(
       )
       creature <- creature.updateTimers(delta)
       creature <- Outcome.when(creature)(_.deathToBeHandled)(creature =>
-        Outcome(creature).withEvents(
-          List(
-            CreatureDeathEvent(creature.id),
-            MakeBodySensorEvent(creature.id)
+        Outcome(creature)
+          .withBroadcastEvents(
+            List(
+              CreatureDeathGameStateEvent(creature.id)
+            )
           )
-        )
+          .withPhysicsEvents(List(MakeBodySensorEvent(creature.id)))
       )
       creature <- Outcome.when(creature)(creature =>
         creature.params.deathAcknowledged && creature.params.respawnTimer.time > Constants.RespawnTime && !creature.params.respawnDelayInProgress
       )(creature =>
-        Outcome(creature).withEvents(
-          List(
-            CreatureRespawnDelayStartEvent(creature.id),
-            TeleportEvent(id, Vector2(5, 5)),
-            MakeBodyNonSensorEvent(id)
+        Outcome(creature)
+          .withGameStateEvents(
+            List(
+              CreatureRespawnDelayStartEvent(creature.id)
+            )
           )
-        )
+          .withPhysicsEvents(
+            List(TeleportEvent(id, Vector2(5, 5)), MakeBodyNonSensorEvent(id))
+          )
       )
       creature <- Outcome.when(creature)(creature =>
         creature.params.respawnDelayInProgress && creature.params.respawnDelayTimer.time > Constants.RespawnDelayTime
@@ -53,7 +56,7 @@ case class Creature(
           creature
             .modify(_.params.respawnDelayInProgress)
             .setTo(false)
-        ).withEvents(List(CreatureRespawnEvent(creature.id)))
+        ).withGameStateEvents(List(CreatureRespawnEvent(creature.id)))
       )
     } yield creature
   }
@@ -85,7 +88,7 @@ case class Creature(
     Outcome.when(this)(_.creatureAttackCompleted) { creature =>
       if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
         Outcome(creature.modify(_.params.attackPending).setTo(false))
-          .withEvents(
+          .withBroadcastEvents(
             List(
               CreatureShootArrowEvent(
                 creature.id,
@@ -96,7 +99,7 @@ case class Creature(
       } else {
         Outcome.when(creature)(_.params.attackedCreatureId.nonEmpty)(creature =>
           Outcome(creature.modify(_.params.attackPending).setTo(false))
-            .withEvents(
+            .withBroadcastEvents(
               List(
                 MeleeAttackHitsCreatureEvent(
                   creature.id,
