@@ -19,7 +19,7 @@ case class Gameplay(game: CoreGame) {
 
   private var _gameState: GameState = _
 
-  private var _scheduledBroadcastEvents: List[BroadcastEvent] = List()
+  private var _scheduledExternalEvents: List[BroadcastEvent] = List()
 
   private var _scheduledPlayerCreaturesToCreate: List[String] = List()
 
@@ -45,7 +45,6 @@ case class Gameplay(game: CoreGame) {
     physics.update(gameState)
 
     updateGameState(
-      input,
       delta
     )
   }
@@ -96,11 +95,9 @@ case class Gameplay(game: CoreGame) {
   }
 
   private def updateGameState(
-      input: Input,
       delta: Float
   ): Unit = {
     val newGameState = gameState.update(
-      input,
       delta,
       game
     )
@@ -118,17 +115,17 @@ case class Gameplay(game: CoreGame) {
     this._gameState = gameState
   }
 
-  def scheduleBroadcastEvents(gameStateEvents: List[BroadcastEvent]): Unit = {
-    _scheduledBroadcastEvents =
-      _scheduledBroadcastEvents.appendedAll(gameStateEvents)
+  def scheduleExternalEvent(gameStateEvents: List[BroadcastEvent]): Unit = {
+    _scheduledExternalEvents =
+      _scheduledExternalEvents.appendedAll(gameStateEvents)
   }
 
-  def scheduledBroadcastEvents: List[BroadcastEvent] = {
-    _scheduledBroadcastEvents
+  def externalEvents: List[BroadcastEvent] = {
+    _scheduledExternalEvents
   }
 
-  def clearScheduledBroadcastEvents(): Unit = {
-    _scheduledBroadcastEvents = List()
+  def clearExternalEventsQueue(): Unit = {
+    _scheduledExternalEvents = List()
   }
 
   def schedulePlayerCreaturesToCreate(clientId: String): Unit = {

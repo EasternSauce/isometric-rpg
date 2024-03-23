@@ -8,13 +8,13 @@ import scala.util.chaining.scalaUtilChainingOps
 
 case class MeleeAttackHitsCreatureEvent(
     sourceCreatureId: EntityId[Creature],
-    destinationCreatureId: EntityId[Creature],
+    targetCreatureId: EntityId[Creature],
     damage: Float
 ) extends BroadcastEvent {
   override def applyToGameState(gameState: GameState): GameState = {
-    if (gameState.creatures.contains(destinationCreatureId)) {
+    if (gameState.creatures.contains(targetCreatureId)) {
       gameState
-        .modify(_.creatures.at(destinationCreatureId))
+        .modify(_.creatures.at(targetCreatureId))
         .using(creature =>
           creature
             .pipe(

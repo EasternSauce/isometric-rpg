@@ -6,11 +6,8 @@ import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event.broadcast.BroadcastEvent
 import com.mygdx.game.gamestate.event.collision.CollisionEvent
 import com.mygdx.game.gamestate.event.gamestate.GameStateEvent
-import com.mygdx.game.input.Input
 import com.mygdx.game.util.Vector2
-import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
-
-import scala.util.chaining.scalaUtilChainingOps
+import com.softwaremill.quicklens.ModifyPimp
 
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
@@ -20,7 +17,6 @@ case class GameState(
 ) {
 
   def update(
-      input: Input,
       delta: Float,
       game: CoreGame
   ): GameState = {
@@ -28,30 +24,24 @@ case class GameState(
       events = game.gameplay.physics.pollCollisionEvents()
     )
 
-//    val res: Outcome[GameState] = creatures.keys.foldLeft(Outcome(this)) {
-//      case (outcome, creatureId) =>
-//        for {
-//          gameState <- outcome
-//          gameState <-
-//            Outcome(gameState).map(gameState
-//                .modify(_.creatures.at(creatureId)).using(updateCreature(input, delta, sideEffectsCollector, game)))
-//
-//
-//
-//        } yield gameState
-//    }
-
-    val newGameState = this
-      .modify(_.creatures.each)
-      .using(updateCreature(delta, sideEffectsCollector, game))
-      .modify(_.abilities.each)
-      .using(updateAbility(delta, sideEffectsCollector, game))
-      .pipe(updateEnemySpawns(sideEffectsCollector))
-      .pipe(
-        handleCreatePlayerCreatures(
-          game.gameplay.scheduledPlayerCreaturesToCreate
-        )
+    val gameStateOutcome = for {
+      gameState <- Outcome(this)
+      gameState <- gameState.creatures.keySet.foldLeft(Outcome(gameState)) {
+        case (gameStateOutcome, creatureId) =>
+          gameStateOutcome.flatMap(_.updateCreature(creatureId, delta, game))
+      }
+      gameState <- gameState.abilities.keySet.foldLeft(Outcome(gameState)) {
+        case (gameStateOutcome, abilityId) =>
+          gameStateOutcome.flatMap(_.updateAbility(abilityId, delta, game))
+      }
+      gameState <- gameState.updateEnemySpawns()
+      gameState <- gameState.handleCreatePlayerCreatures(
+        game.gameplay.scheduledPlayerCreaturesToCreate
       )
+    } yield gameState
+
+    val newGameState =
+      gameStateOutcome.withSideEffectsExtracted(sideEffectsCollector)
 
     game.gameplay.clearScheduledPlayerCreaturesToCreate()
 
@@ -62,9 +52,9 @@ case class GameState(
 
   def handleCreatePlayerCreatures(
       scheduledPlayerCreaturesToCreate: List[String]
-  ): GameState => GameState = gameState =>
-    scheduledPlayerCreaturesToCreate.foldLeft(gameState) {
-      case (gameState, id) =>
+  ): Outcome[GameState] =
+    Outcome(
+      scheduledPlayerCreaturesToCreate.foldLeft(this) { case (gameState, id) =>
         val creatureId = EntityId[Creature](id)
         gameState
           .modify(_.creatures)
@@ -83,45 +73,47 @@ case class GameState(
                 )
             )
           )
-    }
-
-  private def updateEnemySpawns(
-      sideEffectsCollector: GameStateSideEffectsCollector
-  ): GameState => GameState = { gameState =>
-    {
-      val outcome = EnemySpawnUtils.handleEnemySpawns(gameState)
-
-      outcome.withSideEffectsExtracted(sideEffectsCollector)
-    }
-  }
-
-  private def updateAbility(
-      delta: Float,
-      sideEffectsCollector: GameStateSideEffectsCollector,
-      game: CoreGame
-  ): Ability => Ability = { ability =>
-    val outcome = ability.update(
-      delta = delta,
-      newPos = game.gameplay.physics.abilityBodyPositions.get(ability.id),
-      gameState = this
+      }
     )
 
-    outcome.withSideEffectsExtracted(sideEffectsCollector)
-  }
+  private def updateEnemySpawns(): Outcome[GameState] =
+    EnemySpawnUtils.handleEnemySpawns(this)
 
   private def updateCreature(
+      creatureId: EntityId[Creature],
       delta: Float,
-      sideEffectsCollector: GameStateSideEffectsCollector,
       game: CoreGame
-  ): Creature => Creature = { creature =>
-    val outcome = creature
+  ): Outcome[GameState] = {
+    val creature: Creature = creatures(creatureId)
+
+    val creatureOutcome = creature
       .update(
         delta = delta,
         newPos = game.gameplay.physics.creatureBodyPositions.get(creature.id),
         gameState = this
       )
 
-    outcome.withSideEffectsExtracted(sideEffectsCollector)
+    creatureOutcome.map(updatedCreature =>
+      this.modify(_.creatures).using(_.updated(creatureId, updatedCreature))
+    )
+  }
+
+  private def updateAbility(
+      abilityId: EntityId[Ability],
+      delta: Float,
+      game: CoreGame
+  ): Outcome[GameState] = {
+    val ability: Ability = abilities(abilityId)
+
+    val abilityOutcome = ability.update(
+      delta = delta,
+      newPos = game.gameplay.physics.abilityBodyPositions.get(ability.id),
+      gameState = this
+    )
+
+    abilityOutcome.map(updatedAbility =>
+      this.modify(_.abilities).using(_.updated(abilityId, updatedAbility))
+    )
   }
 
   def handleGameStateEvents(

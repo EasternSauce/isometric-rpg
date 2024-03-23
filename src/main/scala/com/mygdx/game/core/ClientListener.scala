@@ -15,7 +15,7 @@ case class ClientListener(game: CoreGameClient) extends Listener {
       case GameStateHolder(gameState) =>
         game.gameplay.overrideGameState(gameState)
       case ActionsPerformCommand(actions) =>
-        game.gameplay.scheduleBroadcastEvents(actions)
+        game.gameplay.scheduleExternalEvent(actions)
       case RegisterClientResponseCommand(clientId) =>
         game.setClientId(clientId)
       case _: KeepAlive =>

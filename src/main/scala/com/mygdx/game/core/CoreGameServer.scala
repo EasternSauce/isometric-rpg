@@ -50,16 +50,16 @@ case class CoreGameServer() extends CoreGame {
       sideEffectsCollector: GameStateSideEffectsCollector
   ): GameState = {
     sendBroadcastEventsToAllConnectedClients(
-      sideEffectsCollector.broadcastEvents ++ gameplay.scheduledBroadcastEvents
+      sideEffectsCollector.broadcastEvents ++ gameplay.externalEvents
     )
 
     val newGameState = gameState
       .handleGameStateEvents(sideEffectsCollector.gameStateEvents)
       .handleCollisionEvents(sideEffectsCollector.collisionEvents)
       .handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
-      .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
+      .handleBroadcastEvents(gameplay.externalEvents)
 
-    gameplay.clearScheduledBroadcastEvents()
+    gameplay.clearExternalEventsQueue()
 
     newGameState
   }

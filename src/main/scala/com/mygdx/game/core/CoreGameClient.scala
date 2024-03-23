@@ -56,9 +56,9 @@ case class CoreGameClient() extends CoreGame {
       .pipeIf(_ => Constants.OfflineMode)(
         _.handleBroadcastEvents(sideEffectsCollector.broadcastEvents)
       )
-      .handleBroadcastEvents(gameplay.scheduledBroadcastEvents)
+      .handleBroadcastEvents(gameplay.externalEvents)
 
-    gameplay.clearScheduledBroadcastEvents()
+    gameplay.clearExternalEventsQueue()
 
     newGameState
   }
@@ -83,7 +83,7 @@ case class CoreGameClient() extends CoreGame {
             )
           )
         } else {
-          gameplay.scheduleBroadcastEvents(
+          gameplay.scheduleExternalEvent(
             List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
           )
         }
@@ -98,7 +98,7 @@ case class CoreGameClient() extends CoreGame {
             )
           )
         } else {
-          gameplay.scheduleBroadcastEvents(
+          gameplay.scheduleExternalEvent(
             List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
           )
         }
