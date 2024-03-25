@@ -66,7 +66,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
 
         val barPos = Vector2(
           creatureScreenPos.x - lifeBarWidth / 2f,
-          creatureScreenPos.y + 64f
+          creatureScreenPos.y + 48f
         )
 
         renderBar(spriteBatch, barPos, lifeBarWidth, Color.ORANGE)

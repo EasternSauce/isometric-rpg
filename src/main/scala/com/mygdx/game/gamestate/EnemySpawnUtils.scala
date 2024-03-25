@@ -15,12 +15,30 @@ object EnemySpawnUtils {
       val nextCreatureId =
         EntityId[Creature]("creature_" + gameState.creatureCounter)
 
-      val newEnemy = CreatureFactory.wyvern(
-        nextCreatureId,
-        Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
-        player = false,
-        baseSpeed = 4f
-      )
+      val rand = Math.random()
+
+      val newEnemy = if (rand > 0.5f) {
+        CreatureFactory.rat(
+          nextCreatureId,
+          Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
+          player = false,
+          baseSpeed = 4f
+        )
+      } else if (rand > 0.2f) {
+        CreatureFactory.zombie(
+          nextCreatureId,
+          Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
+          player = false,
+          baseSpeed = 4f
+        )
+      } else {
+        CreatureFactory.wyvern(
+          nextCreatureId,
+          Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
+          player = false,
+          baseSpeed = 4f
+        )
+      }
 
       Outcome(gameState).withBroadcastEvents(List(CreatureSpawnEvent(newEnemy)))
     } else {
