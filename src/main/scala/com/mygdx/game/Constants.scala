@@ -10,7 +10,7 @@ object Constants {
 
   val TileSize = 64
 
-  val EnableDebug = false
+  val EnableDebug = true
 
   val MapTextureScale = 1f
 
@@ -34,6 +34,14 @@ object Constants {
       FramesDefinition(start = 12, count = 7, frameDuration = 0.08f),
     deathFrames =
       FramesDefinition(start = 17, count = 11, frameDuration = 0.045f)
+  )
+
+  val ZombieAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.4f),
+    walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.08f),
+    attackFrames =
+      FramesDefinition(start = 12, count = 4, frameDuration = 0.1f),
+    deathFrames = FramesDefinition(start = 22, count = 6, frameDuration = 0.1f)
   )
 
   val AttackCooldown = 0.3f

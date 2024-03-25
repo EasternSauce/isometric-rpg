@@ -66,6 +66,33 @@ object CreatureFactory {
     )
   }
 
+  def zombie( // TODO: add random chances for alternate attack/death animation
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float
+  ): Creature = {
+    CreatureFactory.produce(
+      creatureId = creatureId,
+      pos = pos,
+      player = player,
+      baseSpeed = baseSpeed,
+      maxLife = 65f,
+      damage = 20f,
+      attackRange = 1.6f,
+      textureNames = Map(
+        CreatureAnimationType.Body -> "zombie"
+      ),
+      size = 128,
+      spriteVerticalShift = 10f,
+      bodyRadius = 0.3f,
+      animationDefinition = Constants.ZombieAnimationDefinition,
+      primaryWeaponType = PrimaryWeaponType.None,
+      secondaryWeaponType = SecondaryWeaponType.None,
+      renderBodyOnly = true
+    )
+  }
+
   private def produce(
       creatureId: EntityId[Creature],
       pos: Vector2,
