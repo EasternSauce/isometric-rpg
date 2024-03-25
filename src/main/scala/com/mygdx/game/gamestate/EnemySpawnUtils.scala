@@ -15,7 +15,7 @@ object EnemySpawnUtils {
       val nextCreatureId =
         EntityId[Creature]("creature_" + gameState.creatureCounter)
 
-      val newEnemy = CreatureFactory.zombie(
+      val newEnemy = CreatureFactory.wyvern(
         nextCreatureId,
         Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
         player = false,

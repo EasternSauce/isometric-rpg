@@ -12,7 +12,10 @@ case class CreatureGoToEvent(
 ) extends GameStateEvent {
 
   override def applyToGameState(gameState: GameState): GameState = {
-    if (gameState.creatures.contains(creatureId)) {
+    if (
+      gameState.creatures
+        .contains(creatureId) && gameState.creatures(creatureId).alive
+    ) {
       val creature = gameState.creatures(creatureId)
 
       val vectorTowardsDestination =

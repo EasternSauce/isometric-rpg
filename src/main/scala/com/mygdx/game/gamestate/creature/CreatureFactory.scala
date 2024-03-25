@@ -23,11 +23,11 @@ object CreatureFactory {
       maxLife = 100f,
       damage = 20f,
       attackRange = 2f,
-      textureNames = Map(
-        CreatureAnimationType.Body -> "clothes",
-        CreatureAnimationType.Head -> "male_head1",
-        CreatureAnimationType.Weapon -> "shortbow",
-        CreatureAnimationType.Shield -> "shield"
+      texturePaths = Map(
+        CreatureAnimationType.Body -> "isometric_hero/clothes",
+        CreatureAnimationType.Head -> "isometric_hero/male_head1",
+        CreatureAnimationType.Weapon -> "isometric_hero/shortbow",
+        CreatureAnimationType.Shield -> "isometric_hero/shield"
       ),
       size = 128,
       spriteVerticalShift = 10f,
@@ -53,8 +53,8 @@ object CreatureFactory {
       maxLife = 40f,
       damage = 10f,
       attackRange = 1.6f,
-      textureNames = Map(
-        CreatureAnimationType.Body -> "rat"
+      texturePaths = Map(
+        CreatureAnimationType.Body -> "rat/rat"
       ),
       size = 192,
       spriteVerticalShift = 35f,
@@ -80,13 +80,40 @@ object CreatureFactory {
       maxLife = 65f,
       damage = 20f,
       attackRange = 1.6f,
-      textureNames = Map(
-        CreatureAnimationType.Body -> "zombie"
+      texturePaths = Map(
+        CreatureAnimationType.Body -> "zombie/zombie"
       ),
       size = 128,
       spriteVerticalShift = 10f,
       bodyRadius = 0.3f,
       animationDefinition = Constants.ZombieAnimationDefinition,
+      primaryWeaponType = PrimaryWeaponType.None,
+      secondaryWeaponType = SecondaryWeaponType.None,
+      renderBodyOnly = true
+    )
+  }
+
+  def wyvern( // TODO: add random chances for alternate attack/death animation
+      creatureId: EntityId[Creature],
+      pos: Vector2,
+      player: Boolean,
+      baseSpeed: Float
+  ): Creature = {
+    CreatureFactory.produce(
+      creatureId = creatureId,
+      pos = pos,
+      player = player,
+      baseSpeed = baseSpeed,
+      maxLife = 200f,
+      damage = 40f,
+      attackRange = 2.2f,
+      texturePaths = Map(
+        CreatureAnimationType.Body -> "wyvern/wyvern"
+      ),
+      size = 256,
+      spriteVerticalShift = 10f,
+      bodyRadius = 0.8f,
+      animationDefinition = Constants.WyvernAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.None,
       secondaryWeaponType = SecondaryWeaponType.None,
       renderBodyOnly = true
@@ -101,7 +128,7 @@ object CreatureFactory {
       maxLife: Float,
       damage: Float,
       attackRange: Float,
-      textureNames: Map[CreatureAnimationType, String],
+      texturePaths: Map[CreatureAnimationType, String],
       size: Int,
       spriteVerticalShift: Float,
       bodyRadius: Float,
@@ -116,7 +143,7 @@ object CreatureFactory {
         pos = pos,
         destination = pos,
         lastPos = pos,
-        textureNames = textureNames,
+        texturePaths = texturePaths,
         size = size,
         spriteVerticalShift = spriteVerticalShift,
         bodyRadius = bodyRadius,

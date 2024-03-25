@@ -14,7 +14,7 @@ case class CreatureParams(
     destination: Vector2,
     facingVector: Vector2 = Vector2(1, 0),
     lastPos: Vector2,
-    textureNames: Map[CreatureAnimationType, String],
+    texturePaths: Map[CreatureAnimationType, String],
     size: Int,
     spriteVerticalShift: Float,
     bodyRadius: Float,

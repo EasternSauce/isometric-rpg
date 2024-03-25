@@ -23,7 +23,7 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
         )
       }
 
-      creature.params.textureNames.keys.map(entry(_, creatureId)).toMap
+      creature.params.texturePaths.keys.map(entry(_, creatureId)).toMap
     }
 
     animations.values.foreach(_.init(gameState))

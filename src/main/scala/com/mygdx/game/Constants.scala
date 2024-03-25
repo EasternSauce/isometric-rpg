@@ -10,11 +10,13 @@ object Constants {
 
   val TileSize = 64
 
-  val EnableDebug = true
+  val EnableDebug = false
 
   val MapTextureScale = 1f
 
   val HumanAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    frameWidth = 128,
+    frameHeight = 128,
     stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.3f),
     walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.075f),
     attackFrames =
@@ -28,6 +30,8 @@ object Constants {
   )
 
   val RatAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    frameWidth = 128,
+    frameHeight = 128,
     stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.4f),
     walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.04f),
     attackFrames =
@@ -37,6 +41,8 @@ object Constants {
   )
 
   val ZombieAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    frameWidth = 128,
+    frameHeight = 128,
     stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.4f),
     walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.08f),
     attackFrames =
@@ -44,10 +50,17 @@ object Constants {
     deathFrames = FramesDefinition(start = 22, count = 6, frameDuration = 0.1f)
   )
 
-  val AttackCooldown = 0.3f
+  val WyvernAnimationDefinition: AnimationDefinition = AnimationDefinition(
+    frameWidth = 256,
+    frameHeight = 256,
+    stanceFrames = FramesDefinition(start = 0, count = 8, frameDuration = 0.1f),
+    walkFrames = FramesDefinition(start = 8, count = 8, frameDuration = 0.08f),
+    attackFrames =
+      FramesDefinition(start = 16, count = 8, frameDuration = 0.1f),
+    deathFrames = FramesDefinition(start = 48, count = 8, frameDuration = 0.1f)
+  )
 
-  val SpriteTextureWidth = 128
-  val SpriteTextureHeight = 128
+  val AttackCooldown = 0.3f
 
   val TileCenterX = 0
   val TileCenterY = 0
