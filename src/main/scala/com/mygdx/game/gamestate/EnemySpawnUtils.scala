@@ -19,7 +19,7 @@ object EnemySpawnUtils {
         nextCreatureId,
         Vector2(Random.between(2f, 28f), Random.between(2f, 18f)),
         player = false,
-        baseSpeed = 2f
+        baseSpeed = 4f
       )
 
       Outcome(gameState).withBroadcastEvents(List(CreatureSpawnEvent(newEnemy)))

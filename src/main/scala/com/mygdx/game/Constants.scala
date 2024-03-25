@@ -12,7 +12,7 @@ object Constants {
 
   val EnableDebug = false
 
-  val MapTextureScale = 2f
+  val MapTextureScale = 1f
 
   val HumanAnimationDefinition: AnimationDefinition = AnimationDefinition(
     stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.3f),
@@ -28,12 +28,12 @@ object Constants {
   )
 
   val RatAnimationDefinition: AnimationDefinition = AnimationDefinition(
-    stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.2f),
-    walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.08f),
+    stanceFrames = FramesDefinition(start = 0, count = 4, frameDuration = 0.4f),
+    walkFrames = FramesDefinition(start = 4, count = 8, frameDuration = 0.04f),
     attackFrames =
-      FramesDefinition(start = 12, count = 7, frameDuration = 0.16f),
+      FramesDefinition(start = 12, count = 7, frameDuration = 0.08f),
     deathFrames =
-      FramesDefinition(start = 17, count = 11, frameDuration = 0.09f)
+      FramesDefinition(start = 17, count = 11, frameDuration = 0.045f)
   )
 
   val AttackCooldown = 0.3f
@@ -44,7 +44,7 @@ object Constants {
   val TileCenterX = 0
   val TileCenterY = 0
 
-  val EnemyAggroDistance = 5f
+  val EnemyAggroDistance = 10f
 
   val RespawnTime = 5f
 
@@ -57,13 +57,11 @@ object Constants {
 
   val TimeBetweenGameStateBroadcasts = 0.5f
 
-  var PhysicalBodyCorrectionDistance = 1f
+  var PhysicalBodyCorrectionDistance = 0.5f
 
   val LastPosSetInterval = 0.5f
 
-  val LastPosMinimumDifference = 0.2f
-
-  val MinimumDistanceBetweenDestinations = 0.001f
+  val LastPosMinimumDifference = 0.4f
 
   val OfflineMode = false
 }

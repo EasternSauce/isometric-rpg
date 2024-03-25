@@ -124,7 +124,7 @@ case class Creature(
 
     val velocity = if (!alive) {
       Vector2(0, 0)
-    } else if (vectorTowardsDest.length > 0.2f) {
+    } else if (vectorTowardsDest.length > 0.4f) {
       vectorTowardsDest.withLength(params.baseSpeed)
     } else {
       vectorTowardsDest.withLength(0f)

@@ -22,7 +22,7 @@ object CreatureFactory {
       baseSpeed = baseSpeed,
       maxLife = 100f,
       damage = 20f,
-      attackRange = 1f,
+      attackRange = 2f,
       textureNames = Map(
         CreatureAnimationType.Body -> "clothes",
         CreatureAnimationType.Head -> "male_head1",
@@ -52,13 +52,13 @@ object CreatureFactory {
       baseSpeed = baseSpeed,
       maxLife = 40f,
       damage = 10f,
-      attackRange = 0.8f,
+      attackRange = 1.6f,
       textureNames = Map(
         CreatureAnimationType.Body -> "rat"
       ),
       size = 192,
       spriteVerticalShift = 35f,
-      bodyRadius = 0.3f,
+      bodyRadius = 0.6f,
       animationDefinition = Constants.RatAnimationDefinition,
       primaryWeaponType = PrimaryWeaponType.None,
       secondaryWeaponType = SecondaryWeaponType.None,

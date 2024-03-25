@@ -58,7 +58,7 @@ case class GameState(
                     3f + 3f * Math.random().toFloat
                   ),
                   player = true,
-                  4f
+                  8f
                 )
             )
           )

@@ -30,11 +30,11 @@ case class CreatureAttackEvent(
       destination: Vector2,
       gameState: GameState
   ): Creature => Creature = { creature =>
-    if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
-      performRangedAttack(creature, destination)
-    } else {
-      performMeleeAttack(creature, destination, gameState)
-    }
+    (if (creature.params.primaryWeaponType == PrimaryWeaponType.Bow) {
+       performRangedAttack(creature, destination)
+     } else {
+       performMeleeAttack(creature, destination, gameState)
+     })
       .modify(_.params.destination)
       .setTo(creature.params.pos)
   }

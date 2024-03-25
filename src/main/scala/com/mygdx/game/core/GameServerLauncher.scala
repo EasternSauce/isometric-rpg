@@ -16,8 +16,8 @@ object GameServerLauncher {
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")
     config.setWindowedMode(Constants.WindowWidth, Constants.WindowHeight)
-    config.setForegroundFPS(60)
-    config.setIdleFPS(60)
+    config.setForegroundFPS(120)
+    config.setIdleFPS(120)
     new Lwjgl3Application(game, config)
   }
 }

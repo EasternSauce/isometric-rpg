@@ -10,7 +10,7 @@ case class Arrow(params: AbilityParams) extends Ability {
   override val atlasRegionWidth: Int = 64
   override val atlasRegionHeight: Int = 64
 
-  override val speed: Float = 6f
+  override val speed: Float = 12f
 
   override def destroyedOnContact: Boolean = true
 
