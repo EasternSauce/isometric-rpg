@@ -7,7 +7,7 @@ import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestComma
 import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
-import com.mygdx.game.screen.GameplayScreen
+import com.mygdx.game.screen.{ClientGameplayScreen, ClientMenuScreen}
 import com.mygdx.game.util.Chaining.customUtilChainingOps
 import com.mygdx.game.util.Vector2
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
@@ -32,7 +32,8 @@ case class CoreGameClient() extends CoreGame {
   def client: Client = endPoint
   val listener: ClientListener = ClientListener(this)
 
-  override val playScreen: Screen = GameplayScreen(gameplay, client)
+  override val menuScreen: Screen = ClientMenuScreen(this)
+  override val gameplayScreen: Screen = ClientGameplayScreen(gameplay, client)
 
   override def onCreate(): Unit = {
     if (!Constants.OfflineMode) {
@@ -108,4 +109,5 @@ case class CoreGameClient() extends CoreGame {
       }
     }
   }
+
 }

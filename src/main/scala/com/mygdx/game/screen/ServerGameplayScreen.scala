@@ -1,11 +1,10 @@
 package com.mygdx.game.screen
 
 import com.badlogic.gdx.Screen
-import com.esotericsoftware.kryonet.Client
 import com.mygdx.game.Gameplay
 import com.mygdx.game.input.Input
 
-case class GameplayScreen(gameplay: Gameplay, client: Client) extends Screen {
+case class ServerGameplayScreen(gameplay: Gameplay) extends Screen {
 
   override def show(): Unit = {
     gameplay.init()

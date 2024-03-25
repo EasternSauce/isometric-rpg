@@ -6,7 +6,7 @@ import com.mygdx.game.command.ActionsPerformCommand
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
-import com.mygdx.game.screen.ServerCamScreen
+import com.mygdx.game.screen.{ServerGameplayScreen, ServerMenuScreen}
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
 case class CoreGameServer() extends CoreGame {
@@ -24,7 +24,8 @@ case class CoreGameServer() extends CoreGame {
   private def server: Server = endPoint
   private val listener: ServerListener = ServerListener(this)
 
-  override val playScreen: Screen = ServerCamScreen(gameplay)
+  override val menuScreen: Screen = ServerMenuScreen(this)
+  override val gameplayScreen: Screen = ServerGameplayScreen(gameplay)
 
   private val gameDataBroadcaster: GameDataBroadcaster = GameDataBroadcaster(
     this

@@ -9,7 +9,8 @@ import com.mygdx.game.{Assets, Gameplay}
 
 abstract class CoreGame extends Game {
 
-  val playScreen: Screen
+  val menuScreen: Screen
+  val gameplayScreen: Screen
   protected val endPoint: EndPoint
 
   private val _gameplay: Gameplay = Gameplay(this)
@@ -17,7 +18,7 @@ abstract class CoreGame extends Game {
   override def create(): Unit = {
     Assets.load()
 
-    setScreen(playScreen)
+    setScreen(menuScreen)
 
     onCreate()
   }
@@ -41,4 +42,8 @@ abstract class CoreGame extends Game {
   }
 
   def handleInput(input: Input): Unit
+
+  def setGameplayScreen(): Unit = {
+    setScreen(gameplayScreen)
+  }
 }
