@@ -16,7 +16,8 @@ case class Gameplay(game: CoreGame) {
   private var _levelMap: LevelMap = _
   private var _physics: Physics = _
   private var _view: View = _
-  private var spriteBatch: SpriteBatch = _
+  private var worldSpriteBatch: SpriteBatch = _
+  private var worldTextSpriteBatch: SpriteBatch = _
 
   private var _gameState: GameState = _
 
@@ -38,8 +39,11 @@ case class Gameplay(game: CoreGame) {
     _physics = Physics()
     _physics.init(_levelMap, _gameState)
 
-    spriteBatch = SpriteBatch()
-    spriteBatch.init()
+    worldSpriteBatch = SpriteBatch()
+    worldSpriteBatch.init()
+
+    worldTextSpriteBatch = SpriteBatch()
+    worldTextSpriteBatch.init()
   }
 
   def update(input: Input, delta: Float): Unit = {
@@ -55,7 +59,13 @@ case class Gameplay(game: CoreGame) {
   def render(input: Input): Unit = {
     view.update(game)
 
-    view.draw(spriteBatch, physics, gameState)
+    view.draw(
+      worldSpriteBatch,
+      worldTextSpriteBatch,
+      game.skin.getFont("default-font"),
+      physics,
+      gameState
+    )
 
     if (Constants.EnableDebug) drawMouseAimDebug(input)
   }
@@ -75,13 +85,13 @@ case class Gameplay(game: CoreGame) {
     val mouseWorldPos = cameraPos
       .add(isoMousePos)
 
-    spriteBatch.begin()
+    worldSpriteBatch.begin()
 
     gameState.creatures.values
       .map(_.pos)
       .foreach(pos => {
         val worldPos = IsometricProjection.translatePosIsoToScreen(pos)
-        spriteBatch.filledRectangle(
+        worldSpriteBatch.filledRectangle(
           Rectangle(worldPos.x - 5, worldPos.y - 5, 10, 10),
           Color.CYAN
         )
@@ -90,11 +100,11 @@ case class Gameplay(game: CoreGame) {
     val mouseScreenPos =
       IsometricProjection.translatePosIsoToScreen(mouseWorldPos)
 
-    spriteBatch.filledRectangle(
+    worldSpriteBatch.filledRectangle(
       Rectangle(mouseScreenPos.x - 5, mouseScreenPos.y - 5, 10, 10),
       Color.CYAN
     )
-    spriteBatch.end()
+    worldSpriteBatch.end()
   }
 
   private def updateGameState(
@@ -109,7 +119,8 @@ case class Gameplay(game: CoreGame) {
   }
 
   def dispose(): Unit = {
-    spriteBatch.dispose()
+    worldSpriteBatch.dispose()
+    worldTextSpriteBatch.dispose()
   }
 
   def resize(width: Int, height: Int): Unit = _view.resize(width, height)

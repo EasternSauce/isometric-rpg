@@ -1,6 +1,6 @@
 package com.mygdx.game.screen
 
-import com.badlogic.gdx.scenes.scene2d.ui.{Skin, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
 import com.badlogic.gdx.utils.ScreenUtils
@@ -9,15 +9,14 @@ import com.badlogic.gdx.{Gdx, Screen}
 import com.mygdx.game.core.CoreGameServer
 
 case class ServerMenuScreen(game: CoreGameServer) extends Screen {
-  var skin: Skin = _
+
   var stage: Stage = _
 
   override def show(): Unit = {
-    skin = new Skin(Gdx.files.internal("assets/ui/uiskin.json"))
     stage = new Stage(new ScreenViewport())
 
     val startButton: TextButton =
-      new TextButton("Start server", skin, "default")
+      new TextButton("Start server", game.skin, "default")
     startButton.setX(Gdx.graphics.getWidth / 2 - 100)
     startButton.setY(400)
     startButton.setWidth(200)
@@ -31,7 +30,7 @@ case class ServerMenuScreen(game: CoreGameServer) extends Screen {
 
     stage.addActor(startButton)
 
-    val exitButton: TextButton = new TextButton("Exit", skin, "default")
+    val exitButton: TextButton = new TextButton("Exit", game.skin, "default")
     exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
     exitButton.setY(320)
     exitButton.setWidth(200)

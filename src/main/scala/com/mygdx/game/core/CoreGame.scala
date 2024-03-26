@@ -1,6 +1,7 @@
 package com.mygdx.game.core
 
-import com.badlogic.gdx.{Game, Screen}
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.{Game, Gdx, Screen}
 import com.esotericsoftware.kryonet.EndPoint
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
@@ -15,8 +16,12 @@ abstract class CoreGame extends Game {
 
   private val _gameplay: Gameplay = Gameplay(this)
 
+  var _skin: Skin = _
+
   override def create(): Unit = {
     Assets.load()
+
+    _skin = new Skin(Gdx.files.internal("assets/ui/uiskin.json"))
 
     setScreen(menuScreen)
 
@@ -47,4 +52,5 @@ abstract class CoreGame extends Game {
     setScreen(gameplayScreen)
   }
 
+  def skin: Skin = _skin
 }

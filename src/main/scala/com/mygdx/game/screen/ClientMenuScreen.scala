@@ -1,6 +1,6 @@
 package com.mygdx.game.screen
 
-import com.badlogic.gdx.scenes.scene2d.ui.{Skin, TextButton, TextField}
+import com.badlogic.gdx.scenes.scene2d.ui.{TextButton, TextField}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
 import com.badlogic.gdx.utils.ScreenUtils
@@ -9,14 +9,13 @@ import com.badlogic.gdx.{Gdx, Screen}
 import com.mygdx.game.core.CoreGameClient
 
 case class ClientMenuScreen(game: CoreGameClient) extends Screen {
-  var skin: Skin = _
+
   var stage: Stage = _
 
   override def show(): Unit = {
-    skin = new Skin(Gdx.files.internal("assets/ui/uiskin.json"))
     stage = new Stage(new ScreenViewport())
 
-    val nameField = new TextField("", skin)
+    val nameField = new TextField("", game.skin)
     nameField.setMessageText("name")
     nameField.setX(Gdx.graphics.getWidth / 2 - 100)
     nameField.setY(400)
@@ -24,7 +23,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     nameField.setHeight(50)
     stage.addActor(nameField)
 
-    val hostField = new TextField("", skin)
+    val hostField = new TextField("", game.skin)
     hostField.setMessageText("host")
     hostField.setX(Gdx.graphics.getWidth / 2 - 100)
     hostField.setY(320)
@@ -32,7 +31,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     hostField.setHeight(50)
     stage.addActor(hostField)
 
-    val portField = new TextField("", skin)
+    val portField = new TextField("", game.skin)
     portField.setMessageText("port")
     portField.setX(Gdx.graphics.getWidth / 2 + 25)
     portField.setY(320)
@@ -40,7 +39,8 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     portField.setHeight(50)
     stage.addActor(portField)
 
-    val joinButton: TextButton = new TextButton("Join game", skin, "default")
+    val joinButton: TextButton =
+      new TextButton("Join game", game.skin, "default")
     joinButton.setX(Gdx.graphics.getWidth / 2 - 100)
     joinButton.setY(240)
     joinButton.setWidth(200)
@@ -66,7 +66,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
 
     stage.addActor(joinButton)
 
-    val exitButton: TextButton = new TextButton("Exit", skin, "default")
+    val exitButton: TextButton = new TextButton("Exit", game.skin, "default")
     exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
     exitButton.setY(160)
     exitButton.setWidth(200)

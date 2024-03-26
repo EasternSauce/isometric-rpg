@@ -1,12 +1,13 @@
 package com.mygdx.game.view
 
-import com.badlogic.gdx.graphics.g2d.{TextureRegion, SpriteBatch => GdxSpriteBatch}
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion, SpriteBatch => GdxSpriteBatch}
 import com.badlogic.gdx.graphics.{Color, Pixmap, Texture}
 import com.badlogic.gdx.math.{Matrix4, Rectangle => GdxRectangle}
-import com.mygdx.game.util.Rectangle
+import com.mygdx.game.util.{Rectangle, Vector2}
 import space.earlygrey.shapedrawer.ShapeDrawer
 
 case class SpriteBatch() {
+
   private var spriteBatch: GdxSpriteBatch = _
   private var shapeDrawer: ShapeDrawer = _
 
@@ -66,6 +67,11 @@ case class SpriteBatch() {
       new GdxRectangle(rect.x, rect.y, rect.width, rect.height),
       color
     )
+  }
+
+  def drawFont(font: BitmapFont, str: String, pos: Vector2): Unit = {
+    font.draw(spriteBatch, str, pos.x, pos.y)
+
   }
 
   def dispose(): Unit = {

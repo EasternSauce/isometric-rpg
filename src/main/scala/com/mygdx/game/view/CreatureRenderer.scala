@@ -1,12 +1,14 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType, SecondaryWeaponType}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
+
   private var animations: Map[CreatureAnimationType, CreatureAnimation] = _
 
   def init(gameState: GameState): Unit = {
@@ -71,6 +73,31 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
 
         renderBar(spriteBatch, barPos, lifeBarWidth, Color.ORANGE)
         renderBar(spriteBatch, barPos, currentLifeBarWidth, Color.RED)
+      }
+    }
+  }
+
+  def renderPlayerName(
+      spriteBatch: SpriteBatch,
+      font: BitmapFont,
+      gameState: GameState
+  ): Unit = {
+    if (
+      gameState.creatures
+        .contains(creatureId) && gameState.creatures(creatureId).params.player
+    ) {
+      val creature = gameState.creatures(creatureId)
+
+      if (!creature.params.deathAcknowledged) {
+        val creatureScreenPos =
+          IsometricProjection.translatePosIsoToScreen(creature.pos)
+
+        val namePos = Vector2(
+          creatureScreenPos.x - 25f,
+          creatureScreenPos.y + 70
+        )
+
+        spriteBatch.drawFont(font, creature.id.value, namePos)
       }
     }
   }

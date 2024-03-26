@@ -1,5 +1,6 @@
 package com.mygdx.game.view
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
@@ -13,6 +14,7 @@ import com.mygdx.game.util.Vector2
 case class View() {
   private val worldViewport: Viewport = Viewport()
   private val b2DebugViewport: Viewport = Viewport()
+  private val worldTextViewport: Viewport = Viewport()
 
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
@@ -35,23 +37,32 @@ case class View() {
       pos => IsometricProjection.translatePosIsoToScreen(pos)
     )
     b2DebugViewport.init(0.02f, Predef.identity)
+
+    worldTextViewport.init(
+      1,
+      pos => IsometricProjection.translatePosIsoToScreen(pos)
+    )
   }
 
   def draw(
-      batch: SpriteBatch,
+      worldSpriteBatch: SpriteBatch,
+      worldTextSpriteBatch: SpriteBatch,
+      font: BitmapFont,
       physics: Physics,
       gameState: GameState
   ): Unit = {
     ScreenUtils.clear(0.7f, 0.7f, 0.7f, 1)
 
-    worldViewport.setProjectionMatrix(batch)
+    worldViewport.setProjectionMatrix(worldSpriteBatch)
 
-    batch.begin()
+    worldTextViewport.setProjectionMatrix(worldTextSpriteBatch)
+
+    worldSpriteBatch.begin()
 
     val layer0Cells = levelMap.getLayerCells(0)
     val layer1Cells = levelMap.getLayerCells(1)
 
-    layer0Cells.foreach(_.render(batch, gameState))
+    layer0Cells.foreach(_.render(worldSpriteBatch, gameState))
 
     val aliveCreatureRenderables =
       gameState.creatures
@@ -85,17 +96,27 @@ case class View() {
 
     deadCreatureRenderables
       .sorted(sortFunction)
-      .foreach(_.render(batch, gameState))
+      .foreach(_.render(worldSpriteBatch, gameState))
 
     (layer1Cells ++ aliveCreatureRenderables)
       .sorted(sortFunction)
-      .foreach(_.render(batch, gameState))
+      .foreach(_.render(worldSpriteBatch, gameState))
 
-    abilityRenderers.values.foreach(_.render(batch, gameState))
+    abilityRenderers.values.foreach(_.render(worldSpriteBatch, gameState))
 
-    creatureRenderers.values.foreach(_.renderLifeBar(batch, gameState))
+    creatureRenderers.values.foreach(
+      _.renderLifeBar(worldSpriteBatch, gameState)
+    )
 
-    batch.end()
+    worldSpriteBatch.end()
+
+    worldTextSpriteBatch.begin()
+
+    creatureRenderers.values.foreach(
+      _.renderPlayerName(worldTextSpriteBatch, font, gameState)
+    )
+
+    worldTextSpriteBatch.end()
 
     if (Constants.EnableDebug) physics.getWorld.renderDebug(b2DebugViewport)
 
@@ -108,6 +129,7 @@ case class View() {
 
     worldViewport.updateCamera(creatureId, game.gameplay.gameState)
     b2DebugViewport.updateCamera(creatureId, game.gameplay.gameState)
+    worldTextViewport.updateCamera(creatureId, game.gameplay.gameState)
   }
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
@@ -161,7 +183,8 @@ case class View() {
   }
 
   def resize(width: Int, height: Int): Unit = {
-    worldViewport.update(width, height)
-    b2DebugViewport.update(width, height)
+    worldViewport.updateSize(width, height)
+    b2DebugViewport.updateSize(width, height)
+    worldTextViewport.updateSize(width, height)
   }
 }

@@ -54,7 +54,7 @@ case class Viewport() {
     camera.update()
   }
 
-  def update(width: Int, height: Int): Unit = {
+  def updateSize(width: Int, height: Int): Unit = {
     viewport.update(width, height)
   }
 
