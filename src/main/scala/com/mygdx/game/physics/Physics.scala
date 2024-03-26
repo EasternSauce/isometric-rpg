@@ -70,9 +70,9 @@ case class Physics() {
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
     val creatureBodiesToCreate =
-      gameState.creatures.keys.toSet -- creatureBodies.keys.toSet
+      gameState.activeCreatureIds -- creatureBodies.keys.toSet
     val creatureBodiesToDestroy =
-      creatureBodies.keys.toSet -- gameState.creatures.keys.toSet
+      creatureBodies.keys.toSet -- gameState.activeCreatureIds
 
     creatureBodiesToCreate.foreach(createCreatureBody(_, gameState))
     creatureBodiesToDestroy.foreach(destroyCreatureBody(_, gameState))
@@ -85,7 +85,9 @@ case class Physics() {
     abilityBodiesToCreate.foreach(createAbilityBody(_, gameState))
     abilityBodiesToDestroy.foreach(destroyAbilityBody(_, gameState))
 
-    gameState.creatures.values.foreach(creature => {
+    gameState.activeCreatureIds.foreach(creatureId => {
+      val creature = gameState.creatures(creatureId)
+
       if (creature.alive) {
         if (creatureBodies(creature.id).sensor) {
           creatureBodies(creature.id).setNonSensor()

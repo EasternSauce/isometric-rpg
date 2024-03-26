@@ -6,9 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.{Gdx, Screen}
-import com.mygdx.game.core.CoreGame
+import com.mygdx.game.core.CoreGameServer
 
-case class ServerMenuScreen(game: CoreGame) extends Screen {
+case class ServerMenuScreen(game: CoreGameServer) extends Screen {
   var skin: Skin = _
   var stage: Stage = _
 
@@ -16,30 +16,31 @@ case class ServerMenuScreen(game: CoreGame) extends Screen {
     skin = new Skin(Gdx.files.internal("assets/ui/uiskin.json"))
     stage = new Stage(new ScreenViewport())
 
-    val button1: TextButton = new TextButton("Start server", skin, "default")
-    button1.setX(Gdx.graphics.getWidth / 2 - 100)
-    button1.setY(400)
-    button1.setWidth(200)
-    button1.setHeight(50)
+    val startButton: TextButton =
+      new TextButton("Start server", skin, "default")
+    startButton.setX(Gdx.graphics.getWidth / 2 - 100)
+    startButton.setY(400)
+    startButton.setWidth(200)
+    startButton.setHeight(50)
 
-    button1.addListener(new ClickListener() {
+    startButton.addListener(new ClickListener() {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         game.setGameplayScreen()
       }
     })
 
-    stage.addActor(button1)
+    stage.addActor(startButton)
 
-    val button2: TextButton = new TextButton("Exit", skin, "default")
-    button2.setX(Gdx.graphics.getWidth / 2 - 100)
-    button2.setY(320)
-    button2.setWidth(200)
-    button2.setHeight(50)
-    stage.addActor(button2)
+    val exitButton: TextButton = new TextButton("Exit", skin, "default")
+    exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
+    exitButton.setY(320)
+    exitButton.setWidth(200)
+    exitButton.setHeight(50)
+    stage.addActor(exitButton)
 
-    button2.addListener(new ClickListener() {
+    exitButton.addListener(new ClickListener() {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        System.exit(0)
+        Gdx.app.exit()
       }
     })
 

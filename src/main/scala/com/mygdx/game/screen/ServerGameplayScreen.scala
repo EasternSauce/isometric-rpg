@@ -1,28 +1,34 @@
 package com.mygdx.game.screen
 
 import com.badlogic.gdx.Screen
-import com.mygdx.game.Gameplay
+import com.mygdx.game.core.CoreGameServer
 import com.mygdx.game.input.Input
 
-case class ServerGameplayScreen(gameplay: Gameplay) extends Screen {
+case class ServerGameplayScreen(game: CoreGameServer) extends Screen {
 
   override def show(): Unit = {
-    gameplay.init()
+    new Thread(new Runnable() {
+      override def run(): Unit = {
+        game.runServer()
+      }
+    }).start()
+
+    game.gameplay.init()
   }
 
   override def render(delta: Float): Unit = {
     val input = Input.poll()
 
-    gameplay.update(input, delta)
-    gameplay.render(input)
+    game.gameplay.update(input, delta)
+    game.gameplay.render(input)
   }
 
   override def dispose(): Unit = {
-    gameplay.dispose()
+    game.gameplay.dispose()
   }
 
   override def resize(width: Int, height: Int): Unit = {
-    gameplay.resize(width, height)
+    game.gameplay.resize(width, height)
   }
 
   override def pause(): Unit = {}

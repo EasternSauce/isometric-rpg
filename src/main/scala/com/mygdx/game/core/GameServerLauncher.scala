@@ -7,11 +7,6 @@ object GameServerLauncher {
   val game: CoreGameServer = CoreGameServer()
 
   def main(arg: Array[String]): Unit = {
-    new Thread(new Runnable() {
-      override def run(): Unit = {
-        game.runServer()
-      }
-    }).start()
 
     val config = new Lwjgl3ApplicationConfiguration
     config.setTitle("Drop")

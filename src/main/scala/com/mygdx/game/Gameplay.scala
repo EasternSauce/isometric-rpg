@@ -1,6 +1,7 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.event.GameStateEvent
@@ -24,6 +25,8 @@ case class Gameplay(game: CoreGame) {
   private var _scheduledPlayerCreaturesToCreate: List[String] = List()
 
   def init(): Unit = {
+    Gdx.input.setInputProcessor(new InputAdapter()) // TODO: make a custom class
+
     _gameState = GameState.initialState()
 
     _levelMap = LevelMap()

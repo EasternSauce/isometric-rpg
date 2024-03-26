@@ -25,7 +25,7 @@ case class CoreGameServer() extends CoreGame {
   private val listener: ServerListener = ServerListener(this)
 
   override val menuScreen: Screen = ServerMenuScreen(this)
-  override val gameplayScreen: Screen = ServerGameplayScreen(gameplay)
+  override val gameplayScreen: Screen = ServerGameplayScreen(this)
 
   private val gameDataBroadcaster: GameDataBroadcaster = GameDataBroadcaster(
     this
@@ -33,7 +33,7 @@ case class CoreGameServer() extends CoreGame {
 
   private var clientCounter = 0
 
-  private var clientConnectionIds: Map[String, Int] = Map()
+  private var _clientConnectionIds: Map[String, Int] = Map()
 
   def runServer(): Unit = {
     server.start()
@@ -73,7 +73,7 @@ case class CoreGameServer() extends CoreGame {
   ): Unit = {
     server.getConnections.foreach(connection => {
       if (
-        broadcastEvents.nonEmpty && clientConnectionIds.values.toSet
+        broadcastEvents.nonEmpty && _clientConnectionIds.values.toSet
           .contains(connection.getID)
       ) {
         connection.sendTCP(ActionsPerformCommand(broadcastEvents))
@@ -89,13 +89,29 @@ case class CoreGameServer() extends CoreGame {
     id
   }
 
+  def clientConnectionIds: Map[String, Int] = {
+    Map.from(_clientConnectionIds)
+  }
+
   def registerClient(clientId: String, connectionId: Int): Unit = {
-    clientConnectionIds = clientConnectionIds.updated(clientId, connectionId)
+    _clientConnectionIds = _clientConnectionIds.updated(clientId, connectionId)
 
     gameplay.schedulePlayerCreaturesToCreate(clientId)
+  }
+
+  def unregisterClient(clientId: String, connectionId: Int): Unit = {
+    _clientConnectionIds = _clientConnectionIds.removed(clientId)
+
+    // TODO: schedule to remove?
   }
 
   override protected def clientId: Option[String] = None
 
   override def handleInput(input: Input): Unit = {}
+
+  override def dispose(): Unit = {
+    super.dispose()
+    server.close()
+  }
+
 }

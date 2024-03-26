@@ -3,7 +3,7 @@ package com.mygdx.game.core
 import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.Constants
-import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestCommand}
+import com.mygdx.game.command.ActionsPerformCommand
 import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
@@ -13,7 +13,11 @@ import com.mygdx.game.util.Vector2
 import com.twitter.chill.{Kryo, ScalaKryoInstantiator}
 
 case class CoreGameClient() extends CoreGame {
-  var _clientId: Option[String] = None
+  var host: Option[String] = None
+  var port: Option[String] = None
+
+  var clientId: Option[String] = None
+  var clientRegistered = false
 
   override protected val endPoint: Client = {
     if (!Constants.OfflineMode) {
@@ -33,19 +37,9 @@ case class CoreGameClient() extends CoreGame {
   val listener: ClientListener = ClientListener(this)
 
   override val menuScreen: Screen = ClientMenuScreen(this)
-  override val gameplayScreen: Screen = ClientGameplayScreen(gameplay, client)
+  override val gameplayScreen: Screen = ClientGameplayScreen(this)
 
-  override def onCreate(): Unit = {
-    if (!Constants.OfflineMode) {
-      endPoint.sendTCP(RegisterClientRequestCommand())
-    } else {
-      val clientId = "offline_client"
-
-      setClientId(clientId)
-
-      gameplay.schedulePlayerCreaturesToCreate(clientId)
-    }
-  }
+  override def onCreate(): Unit = {}
 
   override def applyOutcomeEvents(
       gameStateOutcome: Outcome[GameState]
@@ -66,12 +60,6 @@ case class CoreGameClient() extends CoreGame {
 
     newGameState
   }
-
-  def setClientId(clientId: String): Unit = {
-    this._clientId = Some(clientId)
-  }
-
-  override protected def clientId: Option[String] = _clientId
 
   override def handleInput(input: Input): Unit = {
     val creature = clientCreature(gameplay.gameState)
@@ -110,4 +98,8 @@ case class CoreGameClient() extends CoreGame {
     }
   }
 
+  override def dispose(): Unit = {
+    super.dispose()
+    client.close()
+  }
 }

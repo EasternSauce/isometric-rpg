@@ -46,4 +46,5 @@ abstract class CoreGame extends Game {
   def setGameplayScreen(): Unit = {
     setScreen(gameplayScreen)
   }
+
 }

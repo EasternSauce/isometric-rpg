@@ -112,9 +112,9 @@ case class View() {
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
     val creatureRenderersToCreate =
-      gameState.creatures.keys.toSet -- creatureRenderers.keys.toSet
+      gameState.activeCreatureIds -- creatureRenderers.keys.toSet
     val creatureRenderersToDestroy =
-      creatureRenderers.keys.toSet -- gameState.creatures.keys.toSet
+      creatureRenderers.keys.toSet -- gameState.activeCreatureIds
 
     creatureRenderersToCreate.foreach(createCreatureRenderer(_, gameState))
     creatureRenderersToDestroy.foreach(destroyCreatureRenderer(_, gameState))

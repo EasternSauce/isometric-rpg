@@ -1,3 +1,4 @@
 package com.mygdx.game.command
 
-case class RegisterClientRequestCommand() extends GameCommand
+case class RegisterClientRequestCommand(clientId: Option[String])
+    extends GameCommand

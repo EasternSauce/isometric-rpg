@@ -9,6 +9,7 @@ import com.softwaremill.quicklens.ModifyPimp
 
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
+    activeCreatureIds: Set[EntityId[Creature]],
     abilities: Map[EntityId[Ability], Ability],
     creatureCounter: Int = 0,
     abilityCounter: Int = 0
@@ -20,7 +21,7 @@ case class GameState(
   ): GameState = {
     val gameStateOutcome = for {
       gameState <- Outcome(this)
-      gameState <- gameState.creatures.keySet.foldLeft(Outcome(gameState)) {
+      gameState <- gameState.activeCreatureIds.foldLeft(Outcome(gameState)) {
         case (gameStateOutcome, creatureId) =>
           gameStateOutcome.flatMap(_.updateCreature(creatureId, delta, game))
       }
@@ -45,23 +46,32 @@ case class GameState(
     Outcome(
       scheduledPlayerCreaturesToCreate.foldLeft(this) { case (gameState, id) =>
         val creatureId = EntityId[Creature](id)
-        gameState
-          .modify(_.creatures)
-          .using(
-            _.updated(
-              creatureId,
-              CreatureFactory
-                .male1(
-                  creatureId,
-                  Vector2(
-                    3f + 3f * Math.random().toFloat,
-                    3f + 3f * Math.random().toFloat
-                  ),
-                  player = true,
-                  8f
-                )
+
+        if (gameState.creatures.contains(creatureId)) {
+          gameState
+            .modify(_.activeCreatureIds)
+            .using(_ + creatureId)
+        } else {
+          gameState
+            .modify(_.creatures)
+            .using(
+              _.updated(
+                creatureId,
+                CreatureFactory
+                  .male1(
+                    creatureId,
+                    Vector2(
+                      3f + 3f * Math.random().toFloat,
+                      3f + 3f * Math.random().toFloat
+                    ),
+                    player = true,
+                    8f
+                  )
+              )
             )
-          )
+            .modify(_.activeCreatureIds)
+            .using(_ + creatureId)
+        }
       }
     )
 
@@ -129,7 +139,8 @@ object GameState {
 //        clientInformation.clientCreatureId ->
 //          player
       ),
-      abilities = Map()
+      abilities = Map(),
+      activeCreatureIds = Set()
     )
   }
 }
