@@ -19,8 +19,8 @@ case class ServerGameplayScreen(game: CoreGameServer) extends Screen {
   override def render(delta: Float): Unit = {
     val input = Input.poll()
 
-    game.gameplay.update(input, delta)
-    game.gameplay.render(input)
+    game.gameplay.update(delta, input)
+    game.gameplay.render(delta, input)
   }
 
   override def dispose(): Unit = {

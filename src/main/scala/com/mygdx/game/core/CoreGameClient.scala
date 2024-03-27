@@ -4,7 +4,8 @@ import com.badlogic.gdx.Screen
 import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.Constants
 import com.mygdx.game.command.ActionsPerformCommand
-import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent}
+import com.mygdx.game.gamestate.event.GameStateEvent
+import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent, PlayerToggleInventoryEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.{ClientGameplayScreen, ClientMenuScreen}
@@ -61,6 +62,19 @@ case class CoreGameClient() extends CoreGame {
     newGameState
   }
 
+  private def sendEvent(event: GameStateEvent): Unit = {
+    if (!Constants.OfflineMode) {
+      client.sendTCP(
+        ActionsPerformCommand(
+          List(event)
+        )
+      )
+    } else {
+      gameplay.scheduleExternalEvent(
+        List(event)
+      )
+    }
+  }
   override def handleInput(input: Input): Unit = {
     val creature = clientCreature(gameplay.gameState)
 
@@ -68,38 +82,23 @@ case class CoreGameClient() extends CoreGame {
       if (input.moveButtonPressed) {
         val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        if (!Constants.OfflineMode) {
-          client.sendTCP(
-            ActionsPerformCommand(
-              List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
-            )
-          )
-        } else {
-          gameplay.scheduleExternalEvent(
-            List(CreatureGoToEvent(creature.get.id, mouseWorldPos))
-          )
-        }
+        sendEvent(CreatureGoToEvent(creature.get.id, mouseWorldPos))
       }
       if (input.attackButtonJustPressed) {
         val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        if (!Constants.OfflineMode) {
-          client.sendTCP(
-            ActionsPerformCommand(
-              List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
-            )
-          )
-        } else {
-          gameplay.scheduleExternalEvent(
-            List(CreatureAttackEvent(creature.get.id, mouseWorldPos))
-          )
-        }
+        sendEvent(CreatureAttackEvent(creature.get.id, mouseWorldPos))
+      }
+      if (input.inventoryToggleKeyJustPressed) {
+        sendEvent(PlayerToggleInventoryEvent(creature.get.id))
       }
     }
   }
 
   override def dispose(): Unit = {
     super.dispose()
-    client.close()
+    if (client != null) {
+      client.close()
+    }
   }
 }

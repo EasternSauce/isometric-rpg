@@ -4,12 +4,14 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event.GameStateEvent
+import com.mygdx.game.gamestate.playerstate.PlayerState
 import com.mygdx.game.util.Vector2
 import com.softwaremill.quicklens.ModifyPimp
 
 case class GameState(
     creatures: Map[EntityId[Creature], Creature],
     activeCreatureIds: Set[EntityId[Creature]],
+    playerStates: Map[EntityId[Creature], PlayerState],
     abilities: Map[EntityId[Ability], Ability],
     creatureCounter: Int = 0,
     abilityCounter: Int = 0
@@ -30,17 +32,17 @@ case class GameState(
           gameStateOutcome.flatMap(_.updateAbility(abilityId, delta, game))
       }
       gameState <- gameState.updateEnemySpawns()
-      gameState <- gameState.handleCreatePlayerCreatures(
-        game.gameplay.scheduledPlayerCreaturesToCreate
+      gameState <- gameState.handleCreatePlayers(
+        game.gameplay.scheduledPlayersToCreate
       )
     } yield gameState
 
-    game.gameplay.clearScheduledPlayerCreaturesToCreate()
+    game.gameplay.clearScheduledPlayersToCreate()
 
     game.applyOutcomeEvents(gameStateOutcome)
   }
 
-  def handleCreatePlayerCreatures(
+  private def handleCreatePlayers(
       scheduledPlayerCreaturesToCreate: List[String]
   ): Outcome[GameState] =
     Outcome(
@@ -71,6 +73,8 @@ case class GameState(
             )
             .modify(_.activeCreatureIds)
             .using(_ + creatureId)
+            .modify(_.playerStates)
+            .using(_.updated(creatureId, PlayerState()))
         }
       }
     )
@@ -140,7 +144,8 @@ object GameState {
 //          player
       ),
       abilities = Map(),
-      activeCreatureIds = Set()
+      activeCreatureIds = Set(),
+      playerStates = Map()
     )
   }
 }

@@ -1,5 +1,7 @@
 my_atlas.png
 size:1024,256
 repeat:none
+inventory_slot
+bounds:516,54,140,140
 projectiles
 bounds:2,2,512,192

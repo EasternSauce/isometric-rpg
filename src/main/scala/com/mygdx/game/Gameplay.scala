@@ -1,7 +1,6 @@
 package com.mygdx.game
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.event.GameStateEvent
@@ -18,35 +17,38 @@ case class Gameplay(game: CoreGame) {
   private var _view: View = _
   private var worldSpriteBatch: SpriteBatch = _
   private var worldTextSpriteBatch: SpriteBatch = _
+  private var hudBatch: SpriteBatch = _
 
   private var _gameState: GameState = _
 
   private var _scheduledExternalEvents: List[GameStateEvent] = List()
 
-  private var _scheduledPlayerCreaturesToCreate: List[String] = List()
+  private var _scheduledPlayersToCreate: List[String] = List()
 
   def init(): Unit = {
-    Gdx.input.setInputProcessor(new InputAdapter()) // TODO: make a custom class
-
     _gameState = GameState.initialState()
 
     _levelMap = LevelMap()
     _levelMap.init()
-
-    _view = View()
-    _view.init(_levelMap, _gameState)
-
-    _physics = Physics()
-    _physics.init(_levelMap, _gameState)
 
     worldSpriteBatch = SpriteBatch()
     worldSpriteBatch.init()
 
     worldTextSpriteBatch = SpriteBatch()
     worldTextSpriteBatch.init()
+
+    hudBatch = SpriteBatch()
+    hudBatch.init()
+
+    _view = View()
+    _view.init(worldSpriteBatch, worldTextSpriteBatch, hudBatch, game)
+
+    _physics = Physics()
+    _physics.init(_levelMap, _gameState)
+
   }
 
-  def update(input: Input, delta: Float): Unit = {
+  def update(delta: Float, input: Input): Unit = {
     game.handleInput(input)
 
     physics.update(gameState)
@@ -56,15 +58,14 @@ case class Gameplay(game: CoreGame) {
     )
   }
 
-  def render(input: Input): Unit = {
-    view.update(game)
+  def render(delta: Float, input: Input): Unit = {
+    view.update(delta, game)
 
     view.draw(
       worldSpriteBatch,
       worldTextSpriteBatch,
-      game.skin.getFont("default-font"),
-      physics,
-      gameState
+      hudBatch,
+      game
     )
 
     if (Constants.EnableDebug) drawMouseAimDebug(input)
@@ -142,16 +143,15 @@ case class Gameplay(game: CoreGame) {
     _scheduledExternalEvents = List()
   }
 
-  def schedulePlayerCreaturesToCreate(clientId: String): Unit = {
-    _scheduledPlayerCreaturesToCreate =
-      _scheduledPlayerCreaturesToCreate.appended(clientId)
+  def schedulePlayerToCreate(clientId: String): Unit = {
+    _scheduledPlayersToCreate = _scheduledPlayersToCreate.appended(clientId)
   }
 
-  def scheduledPlayerCreaturesToCreate: List[String] =
-    _scheduledPlayerCreaturesToCreate
+  def scheduledPlayersToCreate: List[String] =
+    _scheduledPlayersToCreate
 
-  def clearScheduledPlayerCreaturesToCreate(): Unit = {
-    _scheduledPlayerCreaturesToCreate = List()
+  def clearScheduledPlayersToCreate(): Unit = {
+    _scheduledPlayersToCreate = List()
   }
 
   def gameState: GameState = _gameState

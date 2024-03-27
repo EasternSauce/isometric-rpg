@@ -8,14 +8,14 @@ import space.earlygrey.shapedrawer.ShapeDrawer
 
 case class SpriteBatch() {
 
-  private var spriteBatch: GdxSpriteBatch = _
+  private var _spriteBatch: GdxSpriteBatch = _
   private var shapeDrawer: ShapeDrawer = _
 
   private var texture: Texture = _
 
   def init(): Unit = {
-    spriteBatch = new GdxSpriteBatch()
-    shapeDrawer = new ShapeDrawer(spriteBatch, createTextureAndRegion())
+    _spriteBatch = new GdxSpriteBatch()
+    shapeDrawer = new ShapeDrawer(_spriteBatch, createTextureAndRegion())
   }
 
   private def createTextureAndRegion(): TextureRegion = {
@@ -28,12 +28,12 @@ case class SpriteBatch() {
     new TextureRegion(texture, 0, 0, 1, 1)
   }
 
-  def begin(): Unit = spriteBatch.begin()
+  def begin(): Unit = _spriteBatch.begin()
 
-  def end(): Unit = spriteBatch.end()
+  def end(): Unit = _spriteBatch.end()
 
   def draw(region: TextureRegion, x: Float, y: Float): Unit = {
-    spriteBatch.draw(region, x, y)
+    _spriteBatch.draw(region, x, y)
   }
 
   def draw(
@@ -44,7 +44,7 @@ case class SpriteBatch() {
       height: Int,
       rotation: Float = 0f
   ): Unit = {
-    spriteBatch.draw(
+    _spriteBatch.draw(
       region,
       x,
       y,
@@ -59,7 +59,7 @@ case class SpriteBatch() {
   }
 
   def setProjectionMatrix(projection: Matrix4): Unit = {
-    spriteBatch.setProjectionMatrix(projection)
+    _spriteBatch.setProjectionMatrix(projection)
   }
 
   def filledRectangle(rect: Rectangle, color: Color): Unit = {
@@ -70,12 +70,14 @@ case class SpriteBatch() {
   }
 
   def drawFont(font: BitmapFont, str: String, pos: Vector2): Unit = {
-    font.draw(spriteBatch, str, pos.x, pos.y)
+    font.draw(_spriteBatch, str, pos.x, pos.y)
 
   }
 
+  def spriteBatch: GdxSpriteBatch = _spriteBatch
+
   def dispose(): Unit = {
-    spriteBatch.dispose()
+    _spriteBatch.dispose()
     texture.dispose()
   }
 

@@ -5,8 +5,8 @@ object Constants {
   val WindowWidth = 1360
   val WindowHeight = 720
 
-  val ViewpointWorldWidth = 1650f
-  val ViewpointWorldHeight = 864f
+  val ViewportWorldWidth = 1650f
+  val ViewportWorldHeight = 864f
 
   val TileSize = 64
 

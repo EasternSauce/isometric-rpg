@@ -8,7 +8,8 @@ import com.mygdx.game.view.IsometricProjection
 case class Input(
     mousePos: Vector2,
     attackButtonJustPressed: Boolean,
-    moveButtonPressed: Boolean
+    moveButtonPressed: Boolean,
+    inventoryToggleKeyJustPressed: Boolean
 ) {
   def mouseWorldPos(playerPos: Vector2): Vector2 = {
     val mouseScreenPos =
@@ -25,18 +26,20 @@ object Input {
       attackButtonJustPressed =
         Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.RIGHT),
       moveButtonPressed =
-        Gdx.input.isButtonPressed(com.badlogic.gdx.Input.Buttons.LEFT)
+        Gdx.input.isButtonPressed(com.badlogic.gdx.Input.Buttons.LEFT),
+      inventoryToggleKeyJustPressed =
+        Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)
     )
   }
 
   private def getMousePos: Vector2 = {
     val mouseX =
-      Gdx.input.getX * Constants.ViewpointWorldWidth / Gdx.graphics.getWidth
+      Gdx.input.getX * Constants.ViewportWorldWidth / Gdx.graphics.getWidth
     val mouseY =
-      Constants.ViewpointWorldHeight - (Gdx.input.getY * Constants.ViewpointWorldHeight / Gdx.graphics.getHeight)
+      Constants.ViewportWorldHeight - (Gdx.input.getY * Constants.ViewportWorldHeight / Gdx.graphics.getHeight)
 
-    val mouseCenterX = mouseX - Constants.ViewpointWorldWidth / 2f
-    val mouseCenterY = mouseY - Constants.ViewpointWorldHeight / 2f
+    val mouseCenterX = mouseX - Constants.ViewportWorldWidth / 2f
+    val mouseCenterY = mouseY - Constants.ViewportWorldHeight / 2f
 
     Vector2(mouseCenterX, mouseCenterY)
   }

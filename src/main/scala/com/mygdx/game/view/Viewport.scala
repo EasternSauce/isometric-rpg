@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.creature.Creature
@@ -9,6 +10,7 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class Viewport() {
+
   private var camera: OrthographicCamera = _
   private var viewport: FitViewport = _
   private var coordinateTransformation: Vector2 => Vector2 = _
@@ -25,8 +27,8 @@ case class Viewport() {
     this.coordinateTransformation = coordinateTransformation
 
     viewport = new FitViewport(
-      Constants.ViewpointWorldWidth,
-      Constants.ViewpointWorldHeight,
+      Constants.ViewportWorldWidth,
+      Constants.ViewportWorldHeight,
       camera
     )
   }
@@ -65,5 +67,8 @@ case class Viewport() {
   def getCameraPos: (Float, Float) = {
     (camera.position.x, camera.position.y)
   }
+
+  def createStage(batch: SpriteBatch): Stage =
+    new Stage(viewport, batch.spriteBatch)
 
 }

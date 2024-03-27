@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.{Game, Gdx, Screen}
 import com.esotericsoftware.kryonet.EndPoint
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.playerstate.PlayerState
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.{Assets, Gameplay}
@@ -44,6 +45,13 @@ abstract class CoreGame extends Game {
 
   def clientCreatureId: Option[EntityId[Creature]] = {
     clientId.map(EntityId[Creature])
+  }
+
+  def clientPlayerState(gameState: GameState): Option[PlayerState] = {
+    for {
+      clientCreatureId <- clientCreatureId
+      playerState <- gameState.playerStates.get(clientCreatureId)
+    } yield playerState
   }
 
   def handleInput(input: Input): Unit

@@ -96,13 +96,11 @@ case class CoreGameServer() extends CoreGame {
   def registerClient(clientId: String, connectionId: Int): Unit = {
     _clientConnectionIds = _clientConnectionIds.updated(clientId, connectionId)
 
-    gameplay.schedulePlayerCreaturesToCreate(clientId)
+    gameplay.schedulePlayerToCreate(clientId)
   }
 
   def unregisterClient(clientId: String, connectionId: Int): Unit = {
     _clientConnectionIds = _clientConnectionIds.removed(clientId)
-
-    // TODO: schedule to remove?
   }
 
   override protected def clientId: Option[String] = None
