@@ -78,16 +78,23 @@ case class CoreGameClient() extends CoreGame {
   override def handleInput(input: Input): Unit = {
     val creature = clientCreature(gameplay.gameState)
 
+    val inventoryOpen =
+      clientCreatureId.isDefined &&
+        gameplay.gameState.playerStates.contains(clientCreatureId.get) &&
+        gameplay.gameState.playerStates(clientCreatureId.get).inventoryOpen
+
     if (creature.isDefined) {
-      if (input.moveButtonPressed) {
-        val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
+      if (!inventoryOpen) {
+        if (input.moveButtonPressed) {
+          val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        sendEvent(CreatureGoToEvent(creature.get.id, mouseWorldPos))
-      }
-      if (input.attackButtonJustPressed) {
-        val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
+          sendEvent(CreatureGoToEvent(creature.get.id, mouseWorldPos))
+        }
+        if (input.attackButtonJustPressed) {
+          val mouseWorldPos: Vector2 = input.mouseWorldPos(creature.get.pos)
 
-        sendEvent(CreatureAttackEvent(creature.get.id, mouseWorldPos))
+          sendEvent(CreatureAttackEvent(creature.get.id, mouseWorldPos))
+        }
       }
       if (input.inventoryToggleKeyJustPressed) {
         sendEvent(PlayerToggleInventoryEvent(creature.get.id))

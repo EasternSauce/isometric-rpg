@@ -1,19 +1,16 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.scenes.scene2d.ui.{Image, TextButton}
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.{Gdx, InputAdapter}
+import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.{Rectangle, Vector2}
-import com.mygdx.game.{Assets, Constants}
 
 case class View() {
   private val worldViewport: Viewport = Viewport()
@@ -26,13 +23,6 @@ case class View() {
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
   private var levelMap: LevelMap = _
-
-  private val inventoryX = Gdx.graphics.getWidth / 2 - 150
-  private val inventoryY = Gdx.graphics.getHeight / 2 - 150
-  private val margin = 15
-  private val slotSize = 45
-  private val inventoryWidth = 10
-  private val inventoryHeight = 5
 
   def init(
       worldSpriteBatch: SpriteBatch,
@@ -66,46 +56,7 @@ case class View() {
 
     inventoryStage = hudViewport.createStage(hudBatch)
 
-    val exitButton: TextButton = new TextButton("Exit", game.skin, "default")
-    exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
-    exitButton.setY(160)
-    exitButton.setWidth(200)
-    exitButton.setHeight(50)
-    inventoryStage.addActor(exitButton)
-
-    case class InventorySlotImage(
-        atlasRegion: TextureAtlas.AtlasRegion,
-        slotX: Int,
-        slotY: Int
-    ) extends Image(atlasRegion)
-
-    for {
-      x <- 0 until inventoryWidth
-      y <- 0 until inventoryHeight
-    } {
-      val image: InventorySlotImage =
-        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), x, y)
-
-      image.setX(margin + inventoryX + (slotSize + 5) * x)
-      image.setY(margin + inventoryY + (slotSize + 5) * y)
-      image.setWidth(slotSize)
-      image.setHeight(slotSize)
-
-      image.addListener(new ClickListener() {
-        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-          val image = event.getTarget.asInstanceOf[InventorySlotImage]
-          println("clicked slot " + image.slotX + " " + image.slotY)
-        }
-      })
-
-      inventoryStage.addActor(image)
-    }
-
-    exitButton.addListener(new ClickListener() {
-      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        System.exit(0)
-      }
-    })
+    inventoryStage.addActor(InventoryBuilder().build())
   }
 
   def draw(
@@ -199,10 +150,10 @@ case class View() {
         if (playerState.inventoryOpen) {
           hudBatch.filledRectangle(
             Rectangle(
-              inventoryX,
-              inventoryY,
-              2 * margin + (slotSize + 5) * inventoryWidth - 5,
-              2 * margin + (slotSize + 5) * inventoryHeight - 5
+              Constants.InventoryX,
+              Constants.InventoryY,
+              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.InventoryWidth - 5,
+              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.InventoryHeight - 5
             ),
             new Color(0.2745f, 0.2314f, 0.2235f, 1f)
           )

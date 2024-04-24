@@ -85,4 +85,11 @@ object Constants {
   val LastPosMinimumDifference = 0.4f
 
   val OfflineMode = false
+
+  val InventoryX: Int = WindowWidth / 2 + 200
+  val InventoryY: Int = WindowHeight / 2 - 150
+  val InventoryMargin: Int = 15
+  val InventorySlotSize: Int = 45
+  val InventoryWidth: Int = 10
+  val InventoryHeight: Int = 5
 }
