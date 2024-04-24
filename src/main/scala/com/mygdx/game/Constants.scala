@@ -92,4 +92,8 @@ object Constants {
   val InventorySlotSize: Int = 45
   val InventoryWidth: Int = 10
   val InventoryHeight: Int = 5
+
+  val EquipmentX: Int = WindowWidth / 2 + 800
+  val EquipmentY: Int = WindowHeight / 2 - 150
+  val EquipmentSlotCount = 6
 }

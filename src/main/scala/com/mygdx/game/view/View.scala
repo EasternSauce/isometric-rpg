@@ -157,6 +157,15 @@ case class View() {
             ),
             new Color(0.2745f, 0.2314f, 0.2235f, 1f)
           )
+          hudBatch.filledRectangle(
+            Rectangle(
+              Constants.EquipmentX,
+              Constants.EquipmentY,
+              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) - 5,
+              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.EquipmentSlotCount - 5
+            ),
+            new Color(0.2745f, 0.2314f, 0.2235f, 1f)
+          )
         }
       case None =>
     }
