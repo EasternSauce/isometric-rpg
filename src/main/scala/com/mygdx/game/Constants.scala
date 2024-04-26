@@ -84,7 +84,7 @@ object Constants {
 
   val LastPosMinimumDifference = 0.4f
 
-  val OfflineMode = false
+  val OfflineMode = true
 
   val InventoryX: Int = WindowWidth / 2 + 200
   val InventoryY: Int = WindowHeight / 2 - 150
@@ -92,6 +92,12 @@ object Constants {
   val InventorySlotSize: Int = 45
   val InventoryWidth: Int = 10
   val InventoryHeight: Int = 5
+
+  def inventorySlotPositionX(x: Int): Int = Constants.InventoryMargin + Constants.InventoryX + (Constants.InventorySlotSize + 5) * x
+  def inventorySlotPositionY(y: Int): Int = Constants.InventoryMargin + Constants.InventoryY + (Constants.InventorySlotSize + 5) * (Constants.InventoryHeight - y - 1)
+
+  def equipmentSlotPositionX(x: Int): Int = Constants.InventoryMargin + Constants.EquipmentX
+  def equipmentSlotPositionY(y: Int): Int = Constants.InventoryMargin + Constants.EquipmentY + (Constants.InventorySlotSize + 5) * (Constants.EquipmentSlotCount - y - 1)
 
   val EquipmentX: Int = WindowWidth / 2 + 800
   val EquipmentY: Int = WindowHeight / 2 - 150

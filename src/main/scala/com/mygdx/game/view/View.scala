@@ -1,16 +1,18 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.utils.{Drawable, TextureRegionDrawable}
+import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.{Gdx, InputAdapter}
-import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
-import com.mygdx.game.util.{Rectangle, Vector2}
+import com.mygdx.game.util.{Rectangle, Vector2, Vector2Int}
+import com.mygdx.game.view.inventory.{EquipmentItemsActor, EquipmentSlotsActor, InventoryItemsActor, InventorySlotsActor}
+import com.mygdx.game.{Assets, Constants}
 
 case class View() {
   private val worldViewport: Viewport = Viewport()
@@ -19,6 +21,10 @@ case class View() {
   private val hudViewport: Viewport = Viewport()
 
   private var inventoryStage: Stage = _
+  private var inventorySlotsActor: InventorySlotsActor = _
+  private var equipmentSlotsActor: EquipmentSlotsActor = _
+  private var inventoryItemsActor: InventoryItemsActor = _
+  private var equipmentItemsActor: EquipmentItemsActor = _
 
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
@@ -56,7 +62,20 @@ case class View() {
 
     inventoryStage = hudViewport.createStage(hudBatch)
 
-    inventoryStage.addActor(InventoryBuilder().build())
+    inventorySlotsActor = InventorySlotsActor()
+    equipmentSlotsActor = EquipmentSlotsActor()
+    inventoryItemsActor = InventoryItemsActor()
+    equipmentItemsActor = EquipmentItemsActor()
+
+    inventorySlotsActor.init()
+    equipmentSlotsActor.init()
+    inventoryItemsActor.init()
+    equipmentItemsActor.init()
+
+    inventoryStage.addActor(inventorySlotsActor.scene2dActor)
+    inventoryStage.addActor(equipmentSlotsActor.scene2dActor)
+    inventoryStage.addActor(inventoryItemsActor.scene2dActor)
+    inventoryStage.addActor(equipmentItemsActor.scene2dActor)
   }
 
   def draw(
@@ -200,6 +219,34 @@ case class View() {
           Gdx.input.setInputProcessor(new InputAdapter())
         }
       case None =>
+    }
+
+    val inventoryItems = game
+      .clientCreature(game.gameplay.gameState)
+      .get
+      .params
+      .inventoryItems
+
+    val equipmentItems = game
+      .clientCreature(game.gameplay.gameState)
+      .get
+      .params
+      .inventoryItems
+
+    inventoryItemsActor.items.foreach{case (pos, actor) =>
+      if (inventoryItems.contains(pos)) {
+        actor.setDrawable( new TextureRegionDrawable(Assets.getTexture("tile/water")))
+      } else {
+        actor.setDrawable(new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot")))
+      }
+    }
+
+    equipmentItemsActor.items.foreach { case (pos, actor) =>
+      if (equipmentItems.contains(pos)) {
+        actor.setDrawable(new TextureRegionDrawable(Assets.getTexture("tile/water")))
+      } else {
+        actor.setDrawable(new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot")))
+      }
     }
   }
 
