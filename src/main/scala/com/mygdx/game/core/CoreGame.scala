@@ -1,5 +1,6 @@
 package com.mygdx.game.core
 
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.{Game, Gdx, Screen}
 import com.esotericsoftware.kryonet.EndPoint
@@ -8,6 +9,7 @@ import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.playerstate.PlayerState
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.{Assets, Gameplay}
 
 abstract class CoreGame extends Game {
@@ -64,4 +66,10 @@ abstract class CoreGame extends Game {
   def sendEvent(event: GameStateEvent): Unit
 
   def scene2dSkin: Skin = _skin
+
+  def mousePos(): Vector2 = {
+    val screenCoords = new Vector3(Gdx.input.getX.toFloat, Gdx.input.getY.toFloat, 0f)
+    gameplay.view.unprojectHudCamera(screenCoords)
+    Vector2(screenCoords.x, screenCoords.y)
+  }
 }

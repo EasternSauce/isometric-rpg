@@ -1,6 +1,7 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.box2d.{Box2DDebugRenderer, World}
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
@@ -71,4 +72,7 @@ case class Viewport() {
   def createStage(batch: SpriteBatch): Stage =
     new Stage(viewport, batch.spriteBatch)
 
+  def unprojectCamera(screenCoords: Vector3): Unit = {
+    camera.unproject(screenCoords)
+  }
 }

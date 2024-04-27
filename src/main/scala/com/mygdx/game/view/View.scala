@@ -1,19 +1,35 @@
 package com.mygdx.game.view
 
-import com.badlogic.gdx.scenes.scene2d.ui.{TextArea, TextButton, TextField, Window}
-import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.ui.{
+  TextArea,
+  TextButton,
+  TextField,
+  Window
+}
+import com.badlogic.gdx.scenes.scene2d.utils.{
+  ClickListener,
+  TextureRegionDrawable
+}
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
 import com.badlogic.gdx.utils.{Align, ScreenUtils}
 import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.gamestate.{CreatureItemMoveEvent, PlayerToggleInventoryEvent}
+import com.mygdx.game.gamestate.event.gamestate.{
+  CreatureItemMoveEvent,
+  PlayerToggleInventoryEvent
+}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
-import com.mygdx.game.view.inventory.{EquipmentItemsActor, EquipmentSlotsActor, InventoryItemsActor, InventorySlotsActor, ItemMove}
+import com.mygdx.game.view.inventory.ItemMoveLocation.{
+  Equipment,
+  Inventory,
+  ItemMoveLocation
+}
+import com.mygdx.game.view.inventory._
 import com.mygdx.game.{Assets, Constants}
 
 case class View() {
@@ -206,7 +222,7 @@ case class View() {
 
     hudBatch.begin()
 
-    // ...
+    //...
 
     hudBatch.end()
 
@@ -214,6 +230,36 @@ case class View() {
       case Some(playerState) =>
         if (playerState.inventoryOpen) {
           inventoryStage.draw()
+
+          inventoryStage.getBatch.begin()
+          if (itemMove.nonEmpty) {
+            val mousePos = game.mousePos()
+            val iconPos = if (itemMove.get.itemMoveLocation == Inventory) {
+              game
+                .clientCreature(game.gameplay.gameState)
+                .get
+                .params
+                .inventoryItems(itemMove.get.pos)
+                .template
+                .iconPos
+            } else {
+              game
+                .clientCreature(game.gameplay.gameState)
+                .get
+                .params
+                .equipmentItems(itemMove.get.pos)
+                .template
+                .iconPos
+            }
+            inventoryStage.getBatch.draw(
+              Assets.getIcon(iconPos.x, iconPos.y),
+              mousePos.x - Constants.InventorySlotSize / 2,
+              mousePos.y - Constants.InventorySlotSize / 2,
+              Constants.InventorySlotSize,
+              Constants.InventorySlotSize
+            )
+          }
+          inventoryStage.getBatch.end()
         }
       case None =>
     }
@@ -253,7 +299,9 @@ case class View() {
       .equipmentItems
 
     inventoryItemsActor.items.foreach { case (pos, actor) =>
-      if (inventoryItems.contains(pos)) {
+      val itemIsBeingMoved =
+        itemMove.nonEmpty && itemMove.get.itemMoveLocation == Inventory && itemMove.get.pos == pos
+      if (inventoryItems.contains(pos) && !itemIsBeingMoved) {
         val iconPos = inventoryItems(pos).template.iconPos
         actor.setDrawable(
           new TextureRegionDrawable(
@@ -261,14 +309,14 @@ case class View() {
           )
         )
       } else {
-        actor.setDrawable(
-          new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot"))
-        )
+        actor.setDrawable(null)
       }
     }
 
     equipmentItemsActor.items.foreach { case (pos, actor) =>
-      if (equipmentItems.contains(pos)) {
+      val itemIsBeingMoved =
+        itemMove.nonEmpty && itemMove.get.itemMoveLocation == Equipment && itemMove.get.pos == pos
+      if (equipmentItems.contains(pos) && !itemIsBeingMoved) {
         val iconPos = equipmentItems(pos).template.iconPos
         actor.setDrawable(
           new TextureRegionDrawable(
@@ -276,9 +324,7 @@ case class View() {
           )
         )
       } else {
-        actor.setDrawable(
-          new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot"))
-        )
+        actor.setDrawable(null)
       }
     }
   }
@@ -344,14 +390,36 @@ case class View() {
     hoverItemInfo.setText(hoverText)
   }
 
-  def performItemMove(pos: Int, itemMoveLocation: ItemMoveLocation, game: CoreGame): Unit = {
+  def performItemMove(
+      pos: Int,
+      itemMoveLocation: ItemMoveLocation,
+      game: CoreGame
+  ): Unit = {
     if (itemMove.isDefined) {
-      game.sendEvent(CreatureItemMoveEvent(game.clientCreatureId.get, itemMove.get.itemMoveLocation, itemMove.get.pos, itemMoveLocation, pos))
+      game.sendEvent(
+        CreatureItemMoveEvent(
+          game.clientCreatureId.get,
+          itemMove.get.itemMoveLocation,
+          itemMove.get.pos,
+          itemMoveLocation,
+          pos
+        )
+      )
       itemMove = None
     } else {
-      if (game.gameplay.gameState.creatures(game.clientCreatureId.get).params.inventoryItems.contains(pos)) {
+      if (
+        game.gameplay.gameState
+          .creatures(game.clientCreatureId.get)
+          .params
+          .inventoryItems
+          .contains(pos)
+      ) {
         itemMove = Some(ItemMove(itemMoveLocation, pos))
       }
     }
+  }
+
+  def unprojectHudCamera(screenCoords: Vector3): Unit = {
+    hudViewport.unprojectCamera(screenCoords)
   }
 }
