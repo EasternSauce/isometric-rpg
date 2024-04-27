@@ -5,5 +5,5 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image
 
 case class InventorySlotImage(
     atlasRegion: TextureAtlas.AtlasRegion,
-    id: Int
+    pos: Int
 ) extends Image(atlasRegion)

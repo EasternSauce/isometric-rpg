@@ -30,6 +30,8 @@ case class EquipmentItemsActor() extends StageActor {
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
           val image = event.getTarget.asInstanceOf[InventorySlotImage]
           println("clicked item")
+
+
         }
 
         override def enter(
@@ -43,10 +45,10 @@ case class EquipmentItemsActor() extends StageActor {
           val clientCreature = game.clientCreature(game.gameplay.gameState)
           if (
             clientCreature.nonEmpty && clientCreature.get.params.equipmentItems
-              .contains(image.id)
+              .contains(image.pos)
           ) {
             val itemInfo =
-              clientCreature.get.params.equipmentItems(image.id).info
+              clientCreature.get.params.equipmentItems(image.pos).info
             game.gameplay.view.setHoverItemInfoText(itemInfo)
           }
         }

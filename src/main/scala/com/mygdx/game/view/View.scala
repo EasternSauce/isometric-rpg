@@ -8,14 +8,16 @@ import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.gamestate.PlayerToggleInventoryEvent
+import com.mygdx.game.gamestate.event.gamestate.{CreatureItemMoveEvent, PlayerToggleInventoryEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.view.inventory.{EquipmentItemsActor, EquipmentSlotsActor, InventoryItemsActor, InventorySlotsActor}
+import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
+import com.mygdx.game.view.inventory.{EquipmentItemsActor, EquipmentSlotsActor, InventoryItemsActor, InventorySlotsActor, ItemMove}
 import com.mygdx.game.{Assets, Constants}
 
 case class View() {
+
   private val worldViewport: Viewport = Viewport()
   private val b2DebugViewport: Viewport = Viewport()
   private val worldTextViewport: Viewport = Viewport()
@@ -32,6 +34,8 @@ case class View() {
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
   private var levelMap: LevelMap = _
+
+  private var itemMove: Option[ItemMove] = None
 
   def init(
       worldSpriteBatch: SpriteBatch,
@@ -338,5 +342,16 @@ case class View() {
 
   def setHoverItemInfoText(hoverText: String): Unit = {
     hoverItemInfo.setText(hoverText)
+  }
+
+  def performItemMove(pos: Int, itemMoveLocation: ItemMoveLocation, game: CoreGame): Unit = {
+    if (itemMove.isDefined) {
+      game.sendEvent(CreatureItemMoveEvent(game.clientCreatureId.get, itemMove.get.itemMoveLocation, itemMove.get.pos, itemMoveLocation, pos))
+      itemMove = None
+    } else {
+      if (game.gameplay.gameState.creatures(game.clientCreatureId.get).params.inventoryItems.contains(pos)) {
+        itemMove = Some(ItemMove(itemMoveLocation, pos))
+      }
+    }
   }
 }
