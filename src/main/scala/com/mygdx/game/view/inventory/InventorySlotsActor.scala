@@ -1,15 +1,15 @@
 package com.mygdx.game.view.inventory
 
+import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent}
+import com.mygdx.game.core.CoreGame
 import com.mygdx.game.view.StageActor
 import com.mygdx.game.{Assets, Constants}
 
 case class InventorySlotsActor() extends StageActor {
   private var _slots: Map[Int, Image] = Map()
 
-  def init(): Unit = {
+  def init(game: CoreGame): Unit = {
     val inventorySlotsGroup: Group = new Group()
 
     var count: Int = 0
@@ -19,19 +19,12 @@ case class InventorySlotsActor() extends StageActor {
       x <- 0 until Constants.InventoryWidth
     } {
       val image: InventorySlotImage =
-        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), x, y)
+        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), count)
 
       image.setX(Constants.inventorySlotPositionX(x))
       image.setY(Constants.inventorySlotPositionY(y))
       image.setWidth(Constants.InventorySlotSize)
       image.setHeight(Constants.InventorySlotSize)
-
-      image.addListener(new ClickListener() {
-        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-          val image = event.getTarget.asInstanceOf[InventorySlotImage]
-          println("clicked slot " + image.slotX + " " + image.slotY)
-        }
-      })
 
       _slots = _slots.updated(count, image)
 

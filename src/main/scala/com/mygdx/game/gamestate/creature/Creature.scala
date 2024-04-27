@@ -3,7 +3,6 @@ package com.mygdx.game.gamestate.creature
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate._
 import com.mygdx.game.gamestate.creature.behavior.EnemyBehavior
-import com.mygdx.game.gamestate.event.broadcast.{CreatureShootArrowEvent, MeleeAttackHitsCreatureEvent}
 import com.mygdx.game.gamestate.event.gamestate._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, TeleportEvent}
 import com.mygdx.game.util.WorldDirection.WorldDirection

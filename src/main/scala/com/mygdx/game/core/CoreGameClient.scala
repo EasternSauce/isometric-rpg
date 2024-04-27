@@ -5,7 +5,7 @@ import com.esotericsoftware.kryonet.{Client, KryoSerialization}
 import com.mygdx.game.Constants
 import com.mygdx.game.command.ActionsPerformCommand
 import com.mygdx.game.gamestate.event.GameStateEvent
-import com.mygdx.game.gamestate.event.broadcast.{CreatureAttackEvent, CreatureGoToEvent, PlayerToggleInventoryEvent}
+import com.mygdx.game.gamestate.event.gamestate.{CreatureAttackEvent, CreatureGoToEvent, PlayerToggleInventoryEvent}
 import com.mygdx.game.gamestate.{GameState, Outcome}
 import com.mygdx.game.input.Input
 import com.mygdx.game.screen.{ClientGameplayScreen, ClientMenuScreen}
@@ -62,7 +62,7 @@ case class CoreGameClient() extends CoreGame {
     newGameState
   }
 
-  private def sendEvent(event: GameStateEvent): Unit = {
+  override def sendEvent(event: GameStateEvent): Unit = {
     if (!Constants.OfflineMode) {
       client.sendTCP(
         ActionsPerformCommand(
@@ -75,6 +75,7 @@ case class CoreGameClient() extends CoreGame {
       )
     }
   }
+
   override def handleInput(input: Input): Unit = {
     val creature = clientCreature(gameplay.gameState)
 

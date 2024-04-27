@@ -1,7 +1,7 @@
 package com.mygdx.game.physics
 
 import com.badlogic.gdx.physics.box2d.{Contact, ContactImpulse, ContactListener, Manifold}
-import com.mygdx.game.gamestate.event.collision.{AbilityHitsCreatureGameStateEvent, AbilityHitsTerrainGameStateEvent}
+import com.mygdx.game.gamestate.event.gamestate.{AbilityHitsCreatureEvent, AbilityHitsTerrainEvent}
 
 case class PhysicsContactListener(physics: Physics) extends ContactListener {
   override def beginContact(contact: Contact): Unit = {
@@ -17,7 +17,7 @@ case class PhysicsContactListener(physics: Physics) extends ContactListener {
       case (abilityBody: AbilityBody, creatureBody: CreatureBody) =>
         physics.scheduleCollisions(
           List(
-            AbilityHitsCreatureGameStateEvent(
+            AbilityHitsCreatureEvent(
               abilityBody.abilityId,
               creatureBody.creatureId
             )
@@ -26,7 +26,7 @@ case class PhysicsContactListener(physics: Physics) extends ContactListener {
       case (abilityBody: AbilityBody, terrainBody: TerrainBody) =>
         physics.scheduleCollisions(
           List(
-            AbilityHitsTerrainGameStateEvent(
+            AbilityHitsTerrainEvent(
               abilityBody.abilityId,
               terrainBody.terrainId
             )
@@ -35,7 +35,7 @@ case class PhysicsContactListener(physics: Physics) extends ContactListener {
       case (abilityBody: AbilityBody, borderBody: BorderBody) =>
         physics.scheduleCollisions(
           List(
-            AbilityHitsTerrainGameStateEvent(
+            AbilityHitsTerrainEvent(
               abilityBody.abilityId,
               borderBody.borderId
             )

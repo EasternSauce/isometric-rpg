@@ -15,7 +15,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
   override def show(): Unit = {
     stage = new Stage(new ScreenViewport())
 
-    val nameField = new TextField("", game.skin)
+    val nameField = new TextField("", game.scene2dSkin)
     nameField.setMessageText("name")
     nameField.setX(Gdx.graphics.getWidth / 2 - 100)
     nameField.setY(400)
@@ -23,7 +23,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     nameField.setHeight(50)
     stage.addActor(nameField)
 
-    val hostField = new TextField("", game.skin)
+    val hostField = new TextField("", game.scene2dSkin)
     hostField.setMessageText("host")
     hostField.setX(Gdx.graphics.getWidth / 2 - 100)
     hostField.setY(320)
@@ -31,7 +31,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     hostField.setHeight(50)
     stage.addActor(hostField)
 
-    val portField = new TextField("", game.skin)
+    val portField = new TextField("", game.scene2dSkin)
     portField.setMessageText("port")
     portField.setX(Gdx.graphics.getWidth / 2 + 25)
     portField.setY(320)
@@ -40,7 +40,7 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
     stage.addActor(portField)
 
     val joinButton: TextButton =
-      new TextButton("Join game", game.skin, "default")
+      new TextButton("Join game", game.scene2dSkin, "default")
     joinButton.setX(Gdx.graphics.getWidth / 2 - 100)
     joinButton.setY(240)
     joinButton.setWidth(200)
@@ -66,7 +66,8 @@ case class ClientMenuScreen(game: CoreGameClient) extends Screen {
 
     stage.addActor(joinButton)
 
-    val exitButton: TextButton = new TextButton("Exit", game.skin, "default")
+    val exitButton: TextButton =
+      new TextButton("Exit", game.scene2dSkin, "default")
     exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
     exitButton.setY(160)
     exitButton.setWidth(200)

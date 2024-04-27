@@ -112,4 +112,5 @@ case class CoreGameServer() extends CoreGame {
     server.close()
   }
 
+  override def sendEvent(event: GameStateEvent): Unit = {}
 }

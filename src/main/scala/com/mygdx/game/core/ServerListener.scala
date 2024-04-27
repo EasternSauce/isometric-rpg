@@ -5,7 +5,7 @@ import com.esotericsoftware.kryonet.{Connection, Listener}
 import com.mygdx.game.command.{ActionsPerformCommand, RegisterClientRequestCommand, RegisterClientResponseCommand}
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.broadcast.PlayerDisconnectEvent
+import com.mygdx.game.gamestate.event.gamestate.PlayerDisconnectEvent
 
 case class ServerListener(game: CoreGameServer) extends Listener {
   override def disconnected(connection: Connection): Unit = {

@@ -1,15 +1,16 @@
 package com.mygdx.game.view.inventory
 
-import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent}
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.mygdx.game.{Assets, Constants}
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
+import com.mygdx.game.Constants
+import com.mygdx.game.core.CoreGame
 import com.mygdx.game.view.StageActor
 
 case class EquipmentItemsActor() extends StageActor {
   private var _items: Map[Int, Image] = Map()
 
-  def init(): Unit = {
+  def init(game: CoreGame): Unit = {
     val equipmentItemsGroup: Group = new Group()
 
     var count: Int = 0
@@ -18,7 +19,7 @@ case class EquipmentItemsActor() extends StageActor {
       y <- 0 until Constants.EquipmentSlotCount
     } {
       val image: InventorySlotImage =
-        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), 0, y)
+        InventorySlotImage(null, count)
 
       image.setX(Constants.equipmentSlotPositionX(0))
       image.setY(Constants.equipmentSlotPositionY(y))
@@ -28,7 +29,36 @@ case class EquipmentItemsActor() extends StageActor {
       image.addListener(new ClickListener() {
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
           val image = event.getTarget.asInstanceOf[InventorySlotImage]
-          println("!!!clicked slot " + image.slotX + " " + image.slotY)
+          println("clicked item")
+        }
+
+        override def enter(
+            event: InputEvent,
+            x: Float,
+            y: Float,
+            pointer: Int,
+            fromActor: Actor
+        ): Unit = {
+          val image = event.getTarget.asInstanceOf[InventorySlotImage]
+          val clientCreature = game.clientCreature(game.gameplay.gameState)
+          if (
+            clientCreature.nonEmpty && clientCreature.get.params.equipmentItems
+              .contains(image.id)
+          ) {
+            val itemInfo =
+              clientCreature.get.params.equipmentItems(image.id).info
+            game.gameplay.view.setHoverItemInfoText(itemInfo)
+          }
+        }
+
+        override def exit(
+            event: InputEvent,
+            x: Float,
+            y: Float,
+            pointer: Int,
+            toActor: Actor
+        ): Unit = {
+          game.gameplay.view.setHoverItemInfoText("")
         }
       })
 

@@ -1,4 +1,4 @@
-package com.mygdx.game.gamestate.event.broadcast
+package com.mygdx.game.gamestate.event.gamestate
 
 import com.mygdx.game.gamestate.ability.{Ability, AbilityParams, Arrow}
 import com.mygdx.game.gamestate.creature.Creature

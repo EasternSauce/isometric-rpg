@@ -1,7 +1,7 @@
 package com.mygdx.game.gamestate
 
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
-import com.mygdx.game.gamestate.event.broadcast.CreatureSpawnEvent
+import com.mygdx.game.gamestate.event.gamestate.CreatureSpawnEvent
 import com.mygdx.game.util.Vector2
 
 import scala.util.Random

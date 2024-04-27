@@ -86,20 +86,38 @@ object Constants {
 
   val OfflineMode = true
 
-  val InventoryX: Int = WindowWidth / 2 + 200
-  val InventoryY: Int = WindowHeight / 2 - 150
+  val InventoryX: Int = 0
+  val InventoryY: Int = 200
   val InventoryMargin: Int = 15
   val InventorySlotSize: Int = 45
   val InventoryWidth: Int = 10
   val InventoryHeight: Int = 5
 
-  def inventorySlotPositionX(x: Int): Int = Constants.InventoryMargin + Constants.InventoryX + (Constants.InventorySlotSize + 5) * x
-  def inventorySlotPositionY(y: Int): Int = Constants.InventoryMargin + Constants.InventoryY + (Constants.InventorySlotSize + 5) * (Constants.InventoryHeight - y - 1)
+  def inventorySlotPositionX(x: Int): Int =
+    Constants.InventoryMargin + Constants.InventoryX + (Constants.InventorySlotSize + 5) * x
+  def inventorySlotPositionY(y: Int): Int =
+    Constants.InventoryMargin + Constants.InventoryY + (Constants.InventorySlotSize + 5) * (Constants.InventoryHeight - y - 1)
 
-  def equipmentSlotPositionX(x: Int): Int = Constants.InventoryMargin + Constants.EquipmentX
-  def equipmentSlotPositionY(y: Int): Int = Constants.InventoryMargin + Constants.EquipmentY + (Constants.InventorySlotSize + 5) * (Constants.EquipmentSlotCount - y - 1)
+  def equipmentSlotPositionX(x: Int): Int =
+    Constants.InventoryMargin + Constants.EquipmentX
+  def equipmentSlotPositionY(y: Int): Int =
+    Constants.InventoryMargin + Constants.EquipmentY + (Constants.InventorySlotSize + 5) * (Constants.EquipmentSlotCount - y - 1)
 
-  val EquipmentX: Int = WindowWidth / 2 + 800
-  val EquipmentY: Int = WindowHeight / 2 - 150
+  val EquipmentX: Int = 700
+  val EquipmentY: Int = 200
   val EquipmentSlotCount = 6
+
+  val equipmentSlotNames: Map[Int, String] = Map(
+    0 -> "weapon",
+    1 -> "shield",
+    2 -> "ring",
+    3 -> "body armor",
+    4 -> "gloves",
+    5 -> "boots"
+  )
+
+  val hoverItemInfoX: Int = 30
+  val hoverItemInfoY: Int = 50
+  val hoverItemInfoWidth: Int = 470
+  val hoverItemInfoHeight: Int = 150
 }

@@ -1,16 +1,17 @@
 package com.mygdx.game.view
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.scenes.scene2d.utils.{Drawable, TextureRegionDrawable}
-import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
-import com.badlogic.gdx.utils.ScreenUtils
+import com.badlogic.gdx.scenes.scene2d.ui.{TextArea, TextButton, TextField, Window}
+import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
+import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
+import com.badlogic.gdx.utils.{Align, ScreenUtils}
 import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.gamestate.PlayerToggleInventoryEvent
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
-import com.mygdx.game.util.{Rectangle, Vector2, Vector2Int}
+import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.inventory.{EquipmentItemsActor, EquipmentSlotsActor, InventoryItemsActor, InventorySlotsActor}
 import com.mygdx.game.{Assets, Constants}
 
@@ -25,6 +26,8 @@ case class View() {
   private var equipmentSlotsActor: EquipmentSlotsActor = _
   private var inventoryItemsActor: InventoryItemsActor = _
   private var equipmentItemsActor: EquipmentItemsActor = _
+
+  private var hoverItemInfo: TextField = _
 
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
@@ -62,20 +65,55 @@ case class View() {
 
     inventoryStage = hudViewport.createStage(hudBatch)
 
+    val inventoryWindow = new Window("Inventory", game.scene2dSkin)
+
+    inventoryWindow.setX(800)
+    inventoryWindow.setY(200)
+    inventoryWindow.setWidth(800)
+    inventoryWindow.setHeight(600)
+
+    inventoryWindow.setKeepWithinStage(true)
+
+    hoverItemInfo = new TextArea("", game.scene2dSkin)
+    hoverItemInfo.setX(Constants.hoverItemInfoX)
+    hoverItemInfo.setY(Constants.hoverItemInfoY)
+    hoverItemInfo.setWidth(Constants.hoverItemInfoWidth)
+    hoverItemInfo.setHeight(Constants.hoverItemInfoHeight)
+    hoverItemInfo.setAlignment(Align.topLeft)
+    hoverItemInfo.setTouchable(null)
+
+    inventoryWindow.addActor(hoverItemInfo)
+
+    val exitButton = new TextButton("Exit", game.scene2dSkin)
+    exitButton.setX(650)
+    exitButton.setY(10)
+    exitButton.setWidth(120)
+    exitButton.setHeight(30)
+
+    exitButton.addListener(new ClickListener() {
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        game.sendEvent(PlayerToggleInventoryEvent(game.clientCreatureId.get))
+      }
+    })
+
+    inventoryWindow.addActor(exitButton)
+
     inventorySlotsActor = InventorySlotsActor()
     equipmentSlotsActor = EquipmentSlotsActor()
     inventoryItemsActor = InventoryItemsActor()
     equipmentItemsActor = EquipmentItemsActor()
 
-    inventorySlotsActor.init()
-    equipmentSlotsActor.init()
-    inventoryItemsActor.init()
-    equipmentItemsActor.init()
+    inventorySlotsActor.init(game)
+    equipmentSlotsActor.init(game)
+    inventoryItemsActor.init(game)
+    equipmentItemsActor.init(game)
 
-    inventoryStage.addActor(inventorySlotsActor.scene2dActor)
-    inventoryStage.addActor(equipmentSlotsActor.scene2dActor)
-    inventoryStage.addActor(inventoryItemsActor.scene2dActor)
-    inventoryStage.addActor(equipmentItemsActor.scene2dActor)
+    inventorySlotsActor.addToWindow(inventoryWindow)
+    equipmentSlotsActor.addToWindow(inventoryWindow)
+    inventoryItemsActor.addToWindow(inventoryWindow)
+    equipmentItemsActor.addToWindow(inventoryWindow)
+
+    inventoryStage.addActor(inventoryWindow)
   }
 
   def draw(
@@ -152,7 +190,7 @@ case class View() {
     creatureRenderers.values.foreach(
       _.renderPlayerName(
         worldTextSpriteBatch,
-        game.skin.getFont("default-font"),
+        game.scene2dSkin.getFont("default-font"),
         game.gameplay.gameState
       )
     )
@@ -164,30 +202,7 @@ case class View() {
 
     hudBatch.begin()
 
-    game.clientPlayerState(game.gameplay.gameState) match {
-      case Some(playerState) =>
-        if (playerState.inventoryOpen) {
-          hudBatch.filledRectangle(
-            Rectangle(
-              Constants.InventoryX,
-              Constants.InventoryY,
-              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.InventoryWidth - 5,
-              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.InventoryHeight - 5
-            ),
-            new Color(0.2745f, 0.2314f, 0.2235f, 1f)
-          )
-          hudBatch.filledRectangle(
-            Rectangle(
-              Constants.EquipmentX,
-              Constants.EquipmentY,
-              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) - 5,
-              2 * Constants.InventoryMargin + (Constants.InventorySlotSize + 5) * Constants.EquipmentSlotCount - 5
-            ),
-            new Color(0.2745f, 0.2314f, 0.2235f, 1f)
-          )
-        }
-      case None =>
-    }
+    // ...
 
     hudBatch.end()
 
@@ -231,21 +246,35 @@ case class View() {
       .clientCreature(game.gameplay.gameState)
       .get
       .params
-      .inventoryItems
+      .equipmentItems
 
-    inventoryItemsActor.items.foreach{case (pos, actor) =>
+    inventoryItemsActor.items.foreach { case (pos, actor) =>
       if (inventoryItems.contains(pos)) {
-        actor.setDrawable( new TextureRegionDrawable(Assets.getTexture("tile/water")))
+        val iconPos = inventoryItems(pos).template.iconPos
+        actor.setDrawable(
+          new TextureRegionDrawable(
+            new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
+          )
+        )
       } else {
-        actor.setDrawable(new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot")))
+        actor.setDrawable(
+          new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot"))
+        )
       }
     }
 
     equipmentItemsActor.items.foreach { case (pos, actor) =>
       if (equipmentItems.contains(pos)) {
-        actor.setDrawable(new TextureRegionDrawable(Assets.getTexture("tile/water")))
+        val iconPos = equipmentItems(pos).template.iconPos
+        actor.setDrawable(
+          new TextureRegionDrawable(
+            new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
+          )
+        )
       } else {
-        actor.setDrawable(new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot")))
+        actor.setDrawable(
+          new TextureRegionDrawable(Assets.atlas.findRegion("inventory_slot"))
+        )
       }
     }
   }
@@ -305,5 +334,9 @@ case class View() {
     b2DebugViewport.updateSize(width, height)
     worldTextViewport.updateSize(width, height)
     hudViewport.updateSize(width, height)
+  }
+
+  def setHoverItemInfoText(hoverText: String): Unit = {
+    hoverItemInfo.setText(hoverText)
   }
 }

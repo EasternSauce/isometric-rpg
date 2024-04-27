@@ -16,7 +16,7 @@ case class ServerMenuScreen(game: CoreGameServer) extends Screen {
     stage = new Stage(new ScreenViewport())
 
     val startButton: TextButton =
-      new TextButton("Start server", game.skin, "default")
+      new TextButton("Start server", game.scene2dSkin, "default")
     startButton.setX(Gdx.graphics.getWidth / 2 - 100)
     startButton.setY(400)
     startButton.setWidth(200)
@@ -30,7 +30,8 @@ case class ServerMenuScreen(game: CoreGameServer) extends Screen {
 
     stage.addActor(startButton)
 
-    val exitButton: TextButton = new TextButton("Exit", game.skin, "default")
+    val exitButton: TextButton =
+      new TextButton("Exit", game.scene2dSkin, "default")
     exitButton.setX(Gdx.graphics.getWidth / 2 - 100)
     exitButton.setY(320)
     exitButton.setWidth(200)

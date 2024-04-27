@@ -1,4 +1,4 @@
-package com.mygdx.game.gamestate.event.collision
+package com.mygdx.game.gamestate.event.gamestate
 
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
@@ -8,7 +8,7 @@ import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 import scala.util.chaining.scalaUtilChainingOps
 
-case class AbilityHitsCreatureGameStateEvent(
+case class AbilityHitsCreatureEvent(
     abilityId: EntityId[Ability],
     creatureId: EntityId[Creature]
 ) extends GameStateEvent {

@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.{Game, Gdx, Screen}
 import com.esotericsoftware.kryonet.EndPoint
 import com.mygdx.game.gamestate.creature.Creature
+import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.playerstate.PlayerState
 import com.mygdx.game.gamestate.{EntityId, GameState, Outcome}
 import com.mygdx.game.input.Input
@@ -60,5 +61,7 @@ abstract class CoreGame extends Game {
     setScreen(gameplayScreen)
   }
 
-  def skin: Skin = _skin
+  def sendEvent(event: GameStateEvent): Unit
+
+  def scene2dSkin: Skin = _skin
 }

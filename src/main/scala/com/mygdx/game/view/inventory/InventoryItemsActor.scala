@@ -1,14 +1,16 @@
 package com.mygdx.game.view.inventory
 
-import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.mygdx.game.{Assets, Constants}
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
+import com.mygdx.game.Constants
+import com.mygdx.game.core.CoreGame
 import com.mygdx.game.view.StageActor
 
 case class InventoryItemsActor() extends StageActor {
   private var _items: Map[Int, Image] = Map()
 
-  def init(): Unit = {
+  def init(game: CoreGame): Unit = {
     val inventoryItemsGroup: Group = new Group()
 
     var count: Int = 0
@@ -18,12 +20,48 @@ case class InventoryItemsActor() extends StageActor {
       x <- 0 until Constants.InventoryWidth
     } {
       val image: InventorySlotImage =
-        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), x, y)
+        InventorySlotImage(null, count)
 
       image.setX(Constants.inventorySlotPositionX(x))
       image.setY(Constants.inventorySlotPositionY(y))
       image.setWidth(Constants.InventorySlotSize)
       image.setHeight(Constants.InventorySlotSize)
+
+      image.addListener(new ClickListener() {
+        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+          val image = event.getTarget.asInstanceOf[InventorySlotImage]
+          println("clicked item")
+        }
+
+        override def enter(
+            event: InputEvent,
+            x: Float,
+            y: Float,
+            pointer: Int,
+            fromActor: Actor
+        ): Unit = {
+          val image = event.getTarget.asInstanceOf[InventorySlotImage]
+          val clientCreature = game.clientCreature(game.gameplay.gameState)
+          if (
+            clientCreature.nonEmpty && clientCreature.get.params.inventoryItems
+              .contains(image.id)
+          ) {
+            val itemInfo =
+              clientCreature.get.params.inventoryItems(image.id).info
+            game.gameplay.view.setHoverItemInfoText(itemInfo)
+          }
+        }
+
+        override def exit(
+            event: InputEvent,
+            x: Float,
+            y: Float,
+            pointer: Int,
+            toActor: Actor
+        ): Unit = {
+          game.gameplay.view.setHoverItemInfoText("")
+        }
+      })
 
       _items = _items.updated(count, image)
 
