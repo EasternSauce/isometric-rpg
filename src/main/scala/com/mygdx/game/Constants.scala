@@ -84,7 +84,7 @@ object Constants {
 
   val LastPosMinimumDifference = 0.4f
 
-  val OfflineMode = true
+  val OfflineMode = false
 
   val InventoryX: Int = 0
   val InventoryY: Int = 200

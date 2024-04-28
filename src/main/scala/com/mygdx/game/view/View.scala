@@ -286,47 +286,50 @@ case class View() {
       case None =>
     }
 
-    val inventoryItems = game
-      .clientCreature(game.gameplay.gameState)
-      .get
-      .params
-      .inventoryItems
+    if (game.clientCreature(game.gameplay.gameState).nonEmpty) {
+      val inventoryItems = game
+        .clientCreature(game.gameplay.gameState)
+        .get
+        .params
+        .inventoryItems
 
-    val equipmentItems = game
-      .clientCreature(game.gameplay.gameState)
-      .get
-      .params
-      .equipmentItems
+      val equipmentItems = game
+        .clientCreature(game.gameplay.gameState)
+        .get
+        .params
+        .equipmentItems
 
-    inventoryItemsActor.items.foreach { case (pos, actor) =>
-      val itemIsBeingMoved =
-        itemMove.nonEmpty && itemMove.get.itemMoveLocation == Inventory && itemMove.get.pos == pos
-      if (inventoryItems.contains(pos) && !itemIsBeingMoved) {
-        val iconPos = inventoryItems(pos).template.iconPos
-        actor.setDrawable(
-          new TextureRegionDrawable(
-            new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
+      inventoryItemsActor.items.foreach { case (pos, actor) =>
+        val itemIsBeingMoved =
+          itemMove.nonEmpty && itemMove.get.itemMoveLocation == Inventory && itemMove.get.pos == pos
+        if (inventoryItems.contains(pos) && !itemIsBeingMoved) {
+          val iconPos = inventoryItems(pos).template.iconPos
+          actor.setDrawable(
+            new TextureRegionDrawable(
+              new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
+            )
           )
-        )
-      } else {
-        actor.setDrawable(null)
+        } else {
+          actor.setDrawable(null)
+        }
+      }
+
+      equipmentItemsActor.items.foreach { case (pos, actor) =>
+        val itemIsBeingMoved =
+          itemMove.nonEmpty && itemMove.get.itemMoveLocation == Equipment && itemMove.get.pos == pos
+        if (equipmentItems.contains(pos) && !itemIsBeingMoved) {
+          val iconPos = equipmentItems(pos).template.iconPos
+          actor.setDrawable(
+            new TextureRegionDrawable(
+              new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
+            )
+          )
+        } else {
+          actor.setDrawable(null)
+        }
       }
     }
 
-    equipmentItemsActor.items.foreach { case (pos, actor) =>
-      val itemIsBeingMoved =
-        itemMove.nonEmpty && itemMove.get.itemMoveLocation == Equipment && itemMove.get.pos == pos
-      if (equipmentItems.contains(pos) && !itemIsBeingMoved) {
-        val iconPos = equipmentItems(pos).template.iconPos
-        actor.setDrawable(
-          new TextureRegionDrawable(
-            new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
-          )
-        )
-      } else {
-        actor.setDrawable(null)
-      }
-    }
   }
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
