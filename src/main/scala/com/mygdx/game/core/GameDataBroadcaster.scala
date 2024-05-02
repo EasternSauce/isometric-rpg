@@ -4,6 +4,10 @@ import com.esotericsoftware.kryonet.{Connection, Server}
 import com.mygdx.game.Constants
 
 case class GameDataBroadcaster(game: CoreGameServer) {
+  def stop(): Unit = {
+    broadcastThread.interrupt()
+  }
+
   private var broadcastThread: Thread = _
 
   def start(endPoint: Server): Unit = {

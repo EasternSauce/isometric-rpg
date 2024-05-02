@@ -109,7 +109,9 @@ case class CoreGameServer() extends CoreGame {
 
   override def dispose(): Unit = {
     super.dispose()
-    server.close()
+    server.stop()
+
+    gameDataBroadcaster.stop()
   }
 
   override def sendEvent(event: GameStateEvent): Unit = {}
