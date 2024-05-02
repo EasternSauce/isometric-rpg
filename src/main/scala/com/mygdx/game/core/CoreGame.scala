@@ -68,7 +68,8 @@ abstract class CoreGame extends Game {
   def scene2dSkin: Skin = _skin
 
   def mousePos(): Vector2 = {
-    val screenCoords = new Vector3(Gdx.input.getX.toFloat, Gdx.input.getY.toFloat, 0f)
+    val screenCoords =
+      new Vector3(Gdx.input.getX.toFloat, Gdx.input.getY.toFloat, 0f)
     gameplay.view.unprojectHudCamera(screenCoords)
     Vector2(screenCoords.x, screenCoords.y)
   }

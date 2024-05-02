@@ -1,16 +1,61 @@
 package com.mygdx.game.view.inventory
 
-import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.ui.{Image, TextField, Window}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
-import com.mygdx.game.Constants
+import com.badlogic.gdx.utils.Align
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.view.StageActor
+import com.mygdx.game.{Assets, Constants}
 
-case class EquipmentItemsActorGroup() extends StageActor {
+case class EquipmentActorGroup() {
+  protected var slotsGroup: Actor = _
+  protected var itemsGroup: Actor = _
+
+  private var _slots: Map[Int, Image] = Map()
   private var _items: Map[Int, Image] = Map()
 
   def init(game: CoreGame): Unit = {
+    this.slotsGroup = createSlotsGroup(game)
+    this.itemsGroup = createItemsGroup(game)
+  }
+
+  def createSlotsGroup(game: CoreGame): Actor = {
+    val equipmentSlotsGroup: Group = new Group()
+
+    var count: Int = 0
+
+    for {
+      y <- 0 until Constants.EquipmentSlotCount
+    } {
+      val image: InventorySlotImage =
+        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), count)
+
+      image.setX(Constants.equipmentSlotPositionX(0))
+      image.setY(Constants.equipmentSlotPositionY(y))
+      image.setWidth(Constants.InventorySlotSize)
+      image.setHeight(Constants.InventorySlotSize)
+
+      _slots = _slots.updated(count, image)
+
+      val text: TextField =
+        new TextField(Constants.equipmentSlotNames(count), game.scene2dSkin)
+
+      text.setX(Constants.equipmentSlotPositionX(0) - 120)
+      text.setY(Constants.equipmentSlotPositionY(y) + 10)
+      text.setWidth(110)
+      text.setAlignment(Align.center)
+      text.setTouchable(null)
+
+      count = count + 1
+
+      equipmentSlotsGroup.addActor(image)
+      equipmentSlotsGroup.addActor(text)
+    }
+
+    equipmentSlotsGroup
+  }
+
+  def createItemsGroup(game: CoreGame): Actor = {
     val equipmentItemsGroup: Group = new Group()
 
     var count: Int = 0
@@ -30,7 +75,6 @@ case class EquipmentItemsActorGroup() extends StageActor {
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
           val image = event.getTarget.asInstanceOf[InventorySlotImage]
           println("clicked item")
-
 
         }
 
@@ -71,9 +115,15 @@ case class EquipmentItemsActorGroup() extends StageActor {
       equipmentItemsGroup.addActor(image)
     }
 
-    this._actor = equipmentItemsGroup
+    equipmentItemsGroup
   }
 
+  def slots: Map[Int, Image] = _slots
   def items: Map[Int, Image] = _items
+
+  def addToWindow(window: Window): Unit = {
+    window.addActor(slotsGroup)
+    window.addActor(itemsGroup)
+  }
 
 }

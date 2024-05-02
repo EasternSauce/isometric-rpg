@@ -1,16 +1,26 @@
 package com.mygdx.game.view.inventory
 
-import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.ui.{Image, Window}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
-import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.view.StageActor
+import com.mygdx.game.{Assets, Constants}
 
-case class InventoryItemsActorGroup() extends StageActor {
+case class InventoryActorGroup() {
+  protected var slotsGroup: Actor = _
+  protected var itemsGroup: Actor = _
+
+  private var _slots: Map[Int, Image] = Map()
   private var _items: Map[Int, Image] = Map()
 
   def init(game: CoreGame): Unit = {
+    createSlotsGroup(game)
+
+    this.slotsGroup = createSlotsGroup(game)
+    this.itemsGroup = createItemsGroup(game)
+  }
+
+  private def createItemsGroup(game: CoreGame): Actor = {
     val inventoryItemsGroup: Group = new Group()
 
     var count: Int = 0
@@ -32,7 +42,11 @@ case class InventoryItemsActorGroup() extends StageActor {
           val image = event.getTarget.asInstanceOf[InventorySlotImage]
           println("clicked item")
 
-          game.gameplay.view.inventoryCursorPickUpItem(image.pos, ItemMoveLocation.Inventory, game)
+          game.gameplay.view.inventoryCursorPickUpItem(
+            image.pos,
+            ItemMoveLocation.Inventory,
+            game
+          )
         }
 
         override def enter(
@@ -72,9 +86,41 @@ case class InventoryItemsActorGroup() extends StageActor {
       inventoryItemsGroup.addActor(image)
     }
 
-    this._actor = inventoryItemsGroup
+    inventoryItemsGroup
   }
 
+  def createSlotsGroup(game: CoreGame): Actor = {
+    val inventorySlotsGroup: Group = new Group()
+
+    var count: Int = 0
+
+    for {
+      y <- 0 until Constants.InventoryHeight
+      x <- 0 until Constants.InventoryWidth
+    } {
+      val image: InventorySlotImage =
+        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), count)
+
+      image.setX(Constants.inventorySlotPositionX(x))
+      image.setY(Constants.inventorySlotPositionY(y))
+      image.setWidth(Constants.InventorySlotSize)
+      image.setHeight(Constants.InventorySlotSize)
+
+      _slots = _slots.updated(count, image)
+
+      count = count + 1
+
+      inventorySlotsGroup.addActor(image)
+    }
+
+    inventorySlotsGroup
+  }
+
+  def slots: Map[Int, Image] = _slots
   def items: Map[Int, Image] = _items
 
+  def addToWindow(window: Window): Unit = {
+    window.addActor(slotsGroup)
+    window.addActor(itemsGroup)
+  }
 }
