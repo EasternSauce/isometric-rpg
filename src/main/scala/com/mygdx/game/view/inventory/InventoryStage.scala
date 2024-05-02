@@ -3,8 +3,11 @@ package com.mygdx.game.view.inventory
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.{Actor, Stage}
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.gamestate.event.gamestate.CreatureCursorPickUpItemEvent
-import com.mygdx.game.view.inventory.ItemMoveLocation.{Inventory, ItemMoveLocation}
+import com.mygdx.game.gamestate.event.gamestate.CreaturePutItemOnCursorEvent
+import com.mygdx.game.view.inventory.ItemMoveLocation.{
+  Inventory,
+  ItemMoveLocation
+}
 import com.mygdx.game.view.{SpriteBatch, Viewport}
 import com.mygdx.game.{Assets, Constants}
 
@@ -14,7 +17,7 @@ case class InventoryStage() {
 
   private var window: InventoryWindow = _
 
-  private var itemCursorPickupState: Option[ItemCursorPickupState] = None
+  private var itemPutOnCursorState: Option[ItemCursorPickupState] = None
 
   def init(
       hudViewport: Viewport,
@@ -44,7 +47,7 @@ case class InventoryStage() {
 
   def update(game: CoreGame): Unit = {
     if (game.clientCreature(game.gameplay.gameState).nonEmpty) {
-      window.update(itemCursorPickupState, game)
+      window.update(itemPutOnCursorState, game)
     }
   }
 
@@ -61,17 +64,17 @@ case class InventoryStage() {
       itemMoveLocation: ItemMoveLocation,
       game: CoreGame
   ): Unit = {
-    if (itemCursorPickupState.isDefined) {
+    if (itemPutOnCursorState.isDefined) {
       game.sendEvent(
-        CreatureCursorPickUpItemEvent(
+        CreaturePutItemOnCursorEvent(
           game.clientCreatureId.get,
-          itemCursorPickupState.get.itemMoveLocation,
-          itemCursorPickupState.get.pos,
+          itemPutOnCursorState.get.itemMoveLocation,
+          itemPutOnCursorState.get.pos,
           itemMoveLocation,
           pos
         )
       )
-      itemCursorPickupState = None
+      itemPutOnCursorState = None
     } else {
       if (
         game.gameplay.gameState
@@ -80,7 +83,7 @@ case class InventoryStage() {
           .inventoryItems
           .contains(pos)
       ) {
-        itemCursorPickupState = Some(
+        itemPutOnCursorState = Some(
           ItemCursorPickupState(itemMoveLocation, pos)
         )
       }
@@ -88,15 +91,15 @@ case class InventoryStage() {
   }
 
   def drawItemOnCursor(game: CoreGame): Unit = {
-    if (itemCursorPickupState.nonEmpty) {
+    if (itemPutOnCursorState.nonEmpty) {
       val mousePos = game.mousePos()
       val iconPos =
-        if (itemCursorPickupState.get.itemMoveLocation == Inventory) {
+        if (itemPutOnCursorState.get.itemMoveLocation == Inventory) {
           game
             .clientCreature(game.gameplay.gameState)
             .get
             .params
-            .inventoryItems(itemCursorPickupState.get.pos)
+            .inventoryItems(itemPutOnCursorState.get.pos)
             .template
             .iconPos
         } else {
@@ -104,7 +107,7 @@ case class InventoryStage() {
             .clientCreature(game.gameplay.gameState)
             .get
             .params
-            .equipmentItems(itemCursorPickupState.get.pos)
+            .equipmentItems(itemPutOnCursorState.get.pos)
             .template
             .iconPos
         }

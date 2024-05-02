@@ -3,10 +3,13 @@ package com.mygdx.game.gamestate.event.gamestate
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.{EntityId, GameState}
-import com.mygdx.game.view.inventory.ItemMoveLocation.{Inventory, ItemMoveLocation}
+import com.mygdx.game.view.inventory.ItemMoveLocation.{
+  Inventory,
+  ItemMoveLocation
+}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
-case class CreatureCursorPickUpItemEvent(
+case class CreaturePutItemOnCursorEvent(
     creatureId: EntityId[Creature],
     fromLocation: ItemMoveLocation,
     fromPos: Int,
