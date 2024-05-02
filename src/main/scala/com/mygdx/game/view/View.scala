@@ -1,36 +1,17 @@
 package com.mygdx.game.view
 
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.scenes.scene2d.ui.{
-  TextArea,
-  TextButton,
-  TextField,
-  Window
-}
-import com.badlogic.gdx.scenes.scene2d.utils.{
-  ClickListener,
-  TextureRegionDrawable
-}
-import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
-import com.badlogic.gdx.utils.{Align, ScreenUtils}
+import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.{Gdx, InputAdapter}
+import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.event.gamestate.{
-  CreatureItemMoveEvent,
-  PlayerToggleInventoryEvent
-}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.view.inventory.ItemMoveLocation.{
-  Equipment,
-  Inventory,
-  ItemMoveLocation
-}
+import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
 import com.mygdx.game.view.inventory._
-import com.mygdx.game.{Assets, Constants}
 
 case class View() {
 
@@ -39,19 +20,11 @@ case class View() {
   private val worldTextViewport: Viewport = Viewport()
   private val hudViewport: Viewport = Viewport()
 
-  private var inventoryStage: Stage = _
-  private var inventorySlotsActor: InventorySlotsActor = _
-  private var equipmentSlotsActor: EquipmentSlotsActor = _
-  private var inventoryItemsActor: InventoryItemsActor = _
-  private var equipmentItemsActor: EquipmentItemsActor = _
-
-  private var hoverItemInfo: TextField = _
-
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
   private var levelMap: LevelMap = _
 
-  private var itemMove: Option[ItemMove] = None
+  private var inventoryScene: InventoryStage = _
 
   def init(
       worldSpriteBatch: SpriteBatch,
@@ -83,57 +56,9 @@ case class View() {
       Predef.identity
     )
 
-    inventoryStage = hudViewport.createStage(hudBatch)
+    inventoryScene = InventoryStage()
 
-    val inventoryWindow = new Window("Inventory", game.scene2dSkin)
-
-    inventoryWindow.setX(800)
-    inventoryWindow.setY(200)
-    inventoryWindow.setWidth(800)
-    inventoryWindow.setHeight(600)
-
-    inventoryWindow.setKeepWithinStage(true)
-
-    hoverItemInfo = new TextArea("", game.scene2dSkin)
-    hoverItemInfo.setX(Constants.hoverItemInfoX)
-    hoverItemInfo.setY(Constants.hoverItemInfoY)
-    hoverItemInfo.setWidth(Constants.hoverItemInfoWidth)
-    hoverItemInfo.setHeight(Constants.hoverItemInfoHeight)
-    hoverItemInfo.setAlignment(Align.topLeft)
-    hoverItemInfo.setTouchable(null)
-
-    inventoryWindow.addActor(hoverItemInfo)
-
-    val exitButton = new TextButton("Exit", game.scene2dSkin)
-    exitButton.setX(650)
-    exitButton.setY(10)
-    exitButton.setWidth(120)
-    exitButton.setHeight(30)
-
-    exitButton.addListener(new ClickListener() {
-      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        game.sendEvent(PlayerToggleInventoryEvent(game.clientCreatureId.get))
-      }
-    })
-
-    inventoryWindow.addActor(exitButton)
-
-    inventorySlotsActor = InventorySlotsActor()
-    equipmentSlotsActor = EquipmentSlotsActor()
-    inventoryItemsActor = InventoryItemsActor()
-    equipmentItemsActor = EquipmentItemsActor()
-
-    inventorySlotsActor.init(game)
-    equipmentSlotsActor.init(game)
-    inventoryItemsActor.init(game)
-    equipmentItemsActor.init(game)
-
-    inventorySlotsActor.addToWindow(inventoryWindow)
-    equipmentSlotsActor.addToWindow(inventoryWindow)
-    inventoryItemsActor.addToWindow(inventoryWindow)
-    equipmentItemsActor.addToWindow(inventoryWindow)
-
-    inventoryStage.addActor(inventoryWindow)
+    inventoryScene.init(hudViewport, hudBatch, game)
   }
 
   def draw(
@@ -226,43 +151,7 @@ case class View() {
 
     hudBatch.end()
 
-    game.clientPlayerState(game.gameplay.gameState) match {
-      case Some(playerState) =>
-        if (playerState.inventoryOpen) {
-          inventoryStage.draw()
-
-          inventoryStage.getBatch.begin()
-          if (itemMove.nonEmpty) {
-            val mousePos = game.mousePos()
-            val iconPos = if (itemMove.get.itemMoveLocation == Inventory) {
-              game
-                .clientCreature(game.gameplay.gameState)
-                .get
-                .params
-                .inventoryItems(itemMove.get.pos)
-                .template
-                .iconPos
-            } else {
-              game
-                .clientCreature(game.gameplay.gameState)
-                .get
-                .params
-                .equipmentItems(itemMove.get.pos)
-                .template
-                .iconPos
-            }
-            inventoryStage.getBatch.draw(
-              Assets.getIcon(iconPos.x, iconPos.y),
-              mousePos.x - Constants.InventorySlotSize / 2,
-              mousePos.y - Constants.InventorySlotSize / 2,
-              Constants.InventorySlotSize,
-              Constants.InventorySlotSize
-            )
-          }
-          inventoryStage.getBatch.end()
-        }
-      case None =>
-    }
+    inventoryScene.draw(game)
 
   }
 
@@ -278,57 +167,15 @@ case class View() {
     game.clientPlayerState(game.gameplay.gameState) match {
       case Some(playerState) =>
         if (playerState.inventoryOpen) {
-          Gdx.input.setInputProcessor(inventoryStage)
-          inventoryStage.act(delta)
+          inventoryScene.setStageAsInputProcessor()
+          inventoryScene.actStage(delta)
         } else {
           Gdx.input.setInputProcessor(new InputAdapter())
         }
       case None =>
     }
 
-    if (game.clientCreature(game.gameplay.gameState).nonEmpty) {
-      val inventoryItems = game
-        .clientCreature(game.gameplay.gameState)
-        .get
-        .params
-        .inventoryItems
-
-      val equipmentItems = game
-        .clientCreature(game.gameplay.gameState)
-        .get
-        .params
-        .equipmentItems
-
-      inventoryItemsActor.items.foreach { case (pos, actor) =>
-        val itemIsBeingMoved =
-          itemMove.nonEmpty && itemMove.get.itemMoveLocation == Inventory && itemMove.get.pos == pos
-        if (inventoryItems.contains(pos) && !itemIsBeingMoved) {
-          val iconPos = inventoryItems(pos).template.iconPos
-          actor.setDrawable(
-            new TextureRegionDrawable(
-              new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
-            )
-          )
-        } else {
-          actor.setDrawable(null)
-        }
-      }
-
-      equipmentItemsActor.items.foreach { case (pos, actor) =>
-        val itemIsBeingMoved =
-          itemMove.nonEmpty && itemMove.get.itemMoveLocation == Equipment && itemMove.get.pos == pos
-        if (equipmentItems.contains(pos) && !itemIsBeingMoved) {
-          val iconPos = equipmentItems(pos).template.iconPos
-          actor.setDrawable(
-            new TextureRegionDrawable(
-              new TextureRegionDrawable(Assets.getIcon(iconPos.x, iconPos.y))
-            )
-          )
-        } else {
-          actor.setDrawable(null)
-        }
-      }
-    }
+    inventoryScene.update(game)
 
   }
 
@@ -389,40 +236,18 @@ case class View() {
     hudViewport.updateSize(width, height)
   }
 
-  def setHoverItemInfoText(hoverText: String): Unit = {
-    hoverItemInfo.setText(hoverText)
-  }
-
-  def performItemMove(
-      pos: Int,
-      itemMoveLocation: ItemMoveLocation,
-      game: CoreGame
-  ): Unit = {
-    if (itemMove.isDefined) {
-      game.sendEvent(
-        CreatureItemMoveEvent(
-          game.clientCreatureId.get,
-          itemMove.get.itemMoveLocation,
-          itemMove.get.pos,
-          itemMoveLocation,
-          pos
-        )
-      )
-      itemMove = None
-    } else {
-      if (
-        game.gameplay.gameState
-          .creatures(game.clientCreatureId.get)
-          .params
-          .inventoryItems
-          .contains(pos)
-      ) {
-        itemMove = Some(ItemMove(itemMoveLocation, pos))
-      }
-    }
-  }
-
   def unprojectHudCamera(screenCoords: Vector3): Unit = {
     hudViewport.unprojectCamera(screenCoords)
   }
+
+  def setInventoryHoverItemInfoText(itemInfoText: String): Unit =
+    inventoryScene.setHoverItemInfoText(itemInfoText)
+
+  def inventoryCursorPickUpItem(
+      pos: Int,
+      itemMoveLocation: ItemMoveLocation,
+      game: CoreGame
+  ): Unit =
+    inventoryScene.cursorPickUpItem(pos, itemMoveLocation, game)
+
 }

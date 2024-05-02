@@ -9,7 +9,7 @@ import com.mygdx.game.view.inventory.ItemMoveLocation.{
 }
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
-case class CreatureItemMoveEvent(
+case class CreatureCursorPickUpItemEvent(
     creatureId: EntityId[Creature],
     fromLocation: ItemMoveLocation,
     fromPos: Int,

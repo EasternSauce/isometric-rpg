@@ -7,7 +7,7 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.view.StageActor
 import com.mygdx.game.{Assets, Constants}
 
-case class EquipmentSlotsActor() extends StageActor {
+case class EquipmentSlotsActorGroup() extends StageActor {
   private var _slots: Map[Int, Image] = Map()
 
   def init(game: CoreGame): Unit = {
