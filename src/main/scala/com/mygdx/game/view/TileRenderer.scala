@@ -21,8 +21,8 @@ case class TileRenderer(cell: TiledMapTileLayer.Cell, pos: Vector2)
 
     batch.draw(
       textureRegion,
-      screenPos.x + Constants.TileCenterX,
-      screenPos.y + Constants.TileCenterY,
+      screenPos.x + Constants.TileCenterX + cell.getTile.getOffsetX,
+      screenPos.y + Constants.TileCenterY + cell.getTile.getOffsetY,
       (textureWidth * Constants.MapTextureScale).toInt,
       (textureHeight * Constants.MapTextureScale).toInt
     )

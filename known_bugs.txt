@@ -1,0 +1,1 @@
+03/05 - can no longer cancel shooting an arrow with movement (use to be possible), now it shoots even if movement direction changed during the animation
