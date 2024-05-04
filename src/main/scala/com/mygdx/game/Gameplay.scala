@@ -8,16 +8,16 @@ import com.mygdx.game.input.Input
 import com.mygdx.game.physics.Physics
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.{Rectangle, Vector2}
-import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
+import com.mygdx.game.view.{IsometricProjection, View}
 
 case class Gameplay(game: CoreGame) {
 
   private var _tiledMap: TiledMap = _
+
   private var _physics: Physics = _
   private var _view: View = _
-  private var worldSpriteBatch: SpriteBatch = _
-  private var worldTextSpriteBatch: SpriteBatch = _
-  private var hudBatch: SpriteBatch = _
+
+  private var spriteBatches: SpriteBatches = _
 
   private var _gameState: GameState = _
 
@@ -31,17 +31,14 @@ case class Gameplay(game: CoreGame) {
     _tiledMap = TiledMap()
     _tiledMap.init()
 
-    worldSpriteBatch = SpriteBatch()
-    worldSpriteBatch.init()
+    spriteBatches = SpriteBatches()
 
-    worldTextSpriteBatch = SpriteBatch()
-    worldTextSpriteBatch.init()
-
-    hudBatch = SpriteBatch()
-    hudBatch.init()
+    spriteBatches.worldSpriteBatch.init()
+    spriteBatches.worldTextSpriteBatch.init()
+    spriteBatches.hudBatch.init()
 
     _view = View()
-    _view.init(worldSpriteBatch, worldTextSpriteBatch, hudBatch, game)
+    _view.init(spriteBatches, game)
 
     _physics = Physics()
     _physics.init(_tiledMap, _gameState)
@@ -61,12 +58,7 @@ case class Gameplay(game: CoreGame) {
   def render(delta: Float, input: Input): Unit = {
     view.update(delta, game)
 
-    view.draw(
-      worldSpriteBatch,
-      worldTextSpriteBatch,
-      hudBatch,
-      game
-    )
+    view.draw(spriteBatches, game)
 
     if (Constants.EnableDebug) drawMouseAimDebug(input)
   }
@@ -86,13 +78,13 @@ case class Gameplay(game: CoreGame) {
     val mouseWorldPos = cameraPos
       .add(isoMousePos)
 
-    worldSpriteBatch.begin()
+    spriteBatches.worldSpriteBatch.begin()
 
     gameState.creatures.values
       .map(_.pos)
       .foreach(pos => {
         val worldPos = IsometricProjection.translatePosIsoToScreen(pos)
-        worldSpriteBatch.filledRectangle(
+        spriteBatches.worldSpriteBatch.filledRectangle(
           Rectangle(worldPos.x - 5, worldPos.y - 5, 10, 10),
           Color.CYAN
         )
@@ -101,11 +93,11 @@ case class Gameplay(game: CoreGame) {
     val mouseScreenPos =
       IsometricProjection.translatePosIsoToScreen(mouseWorldPos)
 
-    worldSpriteBatch.filledRectangle(
+    spriteBatches.worldSpriteBatch.filledRectangle(
       Rectangle(mouseScreenPos.x - 5, mouseScreenPos.y - 5, 10, 10),
       Color.CYAN
     )
-    worldSpriteBatch.end()
+    spriteBatches.worldSpriteBatch.end()
   }
 
   private def updateGameState(
@@ -120,8 +112,9 @@ case class Gameplay(game: CoreGame) {
   }
 
   def dispose(): Unit = {
-    worldSpriteBatch.dispose()
-    worldTextSpriteBatch.dispose()
+    spriteBatches.hudBatch.dispose()
+    spriteBatches.worldSpriteBatch.dispose()
+    spriteBatches.worldTextSpriteBatch.dispose()
   }
 
   def resize(width: Int, height: Int): Unit = _view.resize(width, height)
@@ -154,8 +147,8 @@ case class Gameplay(game: CoreGame) {
     _scheduledPlayersToCreate = List()
   }
 
-  def gameState: GameState = _gameState
   def tiledMap: TiledMap = _tiledMap
+  def gameState: GameState = _gameState
   def physics: Physics = _physics
   def view: View = _view
 }

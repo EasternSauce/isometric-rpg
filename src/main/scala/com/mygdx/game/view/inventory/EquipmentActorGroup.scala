@@ -86,7 +86,7 @@ case class EquipmentActorGroup() {
             fromActor: Actor
         ): Unit = {
           val image = event.getTarget.asInstanceOf[InventorySlotImage]
-          val clientCreature = game.clientCreature(game.gameplay.gameState)
+          val clientCreature = game.clientCreature(game.gameState)
           if (
             clientCreature.nonEmpty && clientCreature.get.params.equipmentItems
               .contains(image.pos)

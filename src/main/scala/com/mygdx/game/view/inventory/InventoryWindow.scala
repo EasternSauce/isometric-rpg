@@ -79,13 +79,13 @@ case class InventoryWindow() {
       game: CoreGame
   ): Unit = {
     val inventoryItems = game
-      .clientCreature(game.gameplay.gameState)
+      .clientCreature(game.gameState)
       .get
       .params
       .inventoryItems
 
     val equipmentItems = game
-      .clientCreature(game.gameplay.gameState)
+      .clientCreature(game.gameState)
       .get
       .params
       .equipmentItems

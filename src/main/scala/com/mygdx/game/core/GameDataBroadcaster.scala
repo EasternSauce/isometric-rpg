@@ -36,6 +36,6 @@ case class GameDataBroadcaster(game: CoreGameServer) {
   }
 
   def broadcastToConnection(connection: Connection): Unit = {
-    connection.sendTCP(GameStateHolder(game.gameplay.gameState))
+    connection.sendTCP(GameStateHolder(game.gameState))
   }
 }

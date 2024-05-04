@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.mygdx.game.SpriteBatches
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.gamestate.creature.Creature
@@ -32,25 +33,19 @@ case class ViewportManager() {
     )
   }
 
-  def draw(
-      worldSpriteBatch: SpriteBatch,
-      worldTextSpriteBatch: SpriteBatch,
-      hudBatch: SpriteBatch
-  ): Unit = {
-    worldViewport.setProjectionMatrix(worldSpriteBatch)
-
-    worldTextViewport.setProjectionMatrix(worldTextSpriteBatch)
-
-    hudViewport.setProjectionMatrix(hudBatch)
+  def setProjectionMatrices(spriteBatches: SpriteBatches): Unit = {
+    worldViewport.setProjectionMatrix(spriteBatches.worldSpriteBatch)
+    worldTextViewport.setProjectionMatrix(spriteBatches.worldTextSpriteBatch)
+    hudViewport.setProjectionMatrix(spriteBatches.hudBatch)
   }
 
-  def updateCamera(
+  def updateCameras(
       creatureId: Option[EntityId[Creature]],
       game: CoreGame
   ): Unit = {
-    worldViewport.updateCamera(creatureId, game.gameplay.gameState)
-    b2DebugViewport.updateCamera(creatureId, game.gameplay.gameState)
-    worldTextViewport.updateCamera(creatureId, game.gameplay.gameState)
+    worldViewport.updateCamera(creatureId, game.gameState)
+    b2DebugViewport.updateCamera(creatureId, game.gameState)
+    worldTextViewport.updateCamera(creatureId, game.gameState)
   }
 
   def resize(width: Int, height: Int): Unit = {

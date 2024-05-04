@@ -73,4 +73,6 @@ abstract class CoreGame extends Game {
     gameplay.view.unprojectHudCamera(screenCoords)
     Vector2(screenCoords.x, screenCoords.y)
   }
+
+  def gameState: GameState = gameplay.gameState
 }

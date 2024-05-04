@@ -5,26 +5,26 @@ import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.TileRenderer
 
 case class TiledMap() {
-  private var tiledMap: GdxTiledMap = _
+  private var gdxTiledMap: GdxTiledMap = _
 
   def init(): Unit = {
     val params = new TmxMapLoader.Parameters()
 
-    tiledMap = new TmxMapLoader().load("assets/maps/map1.tmx", params)
+    gdxTiledMap = new TmxMapLoader().load("assets/maps/map1.tmx", params)
 
   }
 
   def getMapWidth: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
+    gdxTiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getWidth
   }
 
   def getMapHeight: Int = {
-    tiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
+    gdxTiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
   def getLayerCells(layerId: Int): List[TileRenderer] = {
     val layer: TiledMapTileLayer =
-      tiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
+      gdxTiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
     val cells: List[Option[TileRenderer]] = for {
       x <- (0 until layer.getWidth).toList

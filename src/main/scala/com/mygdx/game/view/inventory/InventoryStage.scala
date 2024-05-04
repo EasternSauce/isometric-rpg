@@ -29,28 +29,24 @@ case class InventoryStage() {
   }
 
   def draw(game: CoreGame): Unit = {
-    game.clientPlayerState(game.gameplay.gameState) match {
+    stage.draw()
+    drawItemOnCursor(game)
+  }
+
+  def update(delta: Float, game: CoreGame): Unit = {
+    game.clientPlayerState(game.gameState) match {
       case Some(playerState) =>
         if (playerState.inventoryOpen) {
-          stage.draw()
-
-          stage.getBatch.begin()
-          drawItemOnCursor(game)
-          stage.getBatch.end()
+          stage.act(delta)
+          if (game.clientCreature(game.gameState).nonEmpty) {
+            window.update(itemPutOnCursorState, game)
+          }
         }
       case None =>
     }
   }
 
-  def update(game: CoreGame): Unit = {
-    if (game.clientCreature(game.gameplay.gameState).nonEmpty) {
-      window.update(itemPutOnCursorState, game)
-    }
-  }
-
   def setStageAsInputProcessor(): Unit = Gdx.input.setInputProcessor(stage)
-
-  def actStage(delta: Float): Unit = stage.act(delta)
 
   def setHoverItemInfoText(hoverText: String): Unit = {
     window.setHoverItemInfoText(hoverText)
@@ -74,7 +70,7 @@ case class InventoryStage() {
       itemPutOnCursorState = None
     } else {
       if (
-        game.gameplay.gameState
+        game.gameState
           .creatures(game.clientCreatureId.get)
           .params
           .inventoryItems
@@ -88,12 +84,14 @@ case class InventoryStage() {
   }
 
   def drawItemOnCursor(game: CoreGame): Unit = {
+    stage.getBatch.begin()
+
     if (itemPutOnCursorState.nonEmpty) {
       val mousePos = game.mousePos()
       val iconPos =
         if (itemPutOnCursorState.get.itemMoveLocation == Inventory) {
           game
-            .clientCreature(game.gameplay.gameState)
+            .clientCreature(game.gameState)
             .get
             .params
             .inventoryItems(itemPutOnCursorState.get.pos)
@@ -101,7 +99,7 @@ case class InventoryStage() {
             .iconPos
         } else {
           game
-            .clientCreature(game.gameplay.gameState)
+            .clientCreature(game.gameState)
             .get
             .params
             .equipmentItems(itemPutOnCursorState.get.pos)
@@ -116,6 +114,8 @@ case class InventoryStage() {
         Constants.InventorySlotSize
       )
     }
+
+    stage.getBatch.end()
   }
 
   def addActor(actor: Actor): Unit = stage.addActor(actor)
