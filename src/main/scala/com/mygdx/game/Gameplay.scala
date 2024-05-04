@@ -5,14 +5,14 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.input.Input
-import com.mygdx.game.levelmap.LevelMap
 import com.mygdx.game.physics.Physics
+import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.{IsometricProjection, SpriteBatch, View}
 
 case class Gameplay(game: CoreGame) {
 
-  private var _levelMap: LevelMap = _
+  private var _tiledMap: TiledMap = _
   private var _physics: Physics = _
   private var _view: View = _
   private var worldSpriteBatch: SpriteBatch = _
@@ -28,8 +28,8 @@ case class Gameplay(game: CoreGame) {
   def init(): Unit = {
     _gameState = GameState.initialState()
 
-    _levelMap = LevelMap()
-    _levelMap.init()
+    _tiledMap = TiledMap()
+    _tiledMap.init()
 
     worldSpriteBatch = SpriteBatch()
     worldSpriteBatch.init()
@@ -44,7 +44,7 @@ case class Gameplay(game: CoreGame) {
     _view.init(worldSpriteBatch, worldTextSpriteBatch, hudBatch, game)
 
     _physics = Physics()
-    _physics.init(_levelMap, _gameState)
+    _physics.init(_tiledMap, _gameState)
 
   }
 
@@ -155,7 +155,7 @@ case class Gameplay(game: CoreGame) {
   }
 
   def gameState: GameState = _gameState
-  def levelMap: LevelMap = _levelMap
+  def tiledMap: TiledMap = _tiledMap
   def physics: Physics = _physics
   def view: View = _view
 }

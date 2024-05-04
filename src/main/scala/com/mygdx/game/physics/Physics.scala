@@ -6,7 +6,7 @@ import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
 import com.mygdx.game.gamestate.{EntityId, GameState}
-import com.mygdx.game.levelmap.LevelMap
+import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
 case class Physics() {
@@ -18,7 +18,7 @@ case class Physics() {
   private var collisionQueue: List[GameStateEvent] = _
 
   def init(
-      levelMap: LevelMap,
+      tiledMap: TiledMap,
       gameState: GameState
   ): Unit = {
     world = World()
@@ -27,16 +27,16 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
-    val cells = levelMap.getLayerCells(0) ++ levelMap.getLayerCells(1)
+    val cells = tiledMap.getLayerCells(0) ++ tiledMap.getLayerCells(1)
 
     val borders =
-      ((1 until levelMap.getMapWidth - 1).zip(LazyList.continually(0)) ++
-        LazyList.continually(0).zip(1 until levelMap.getMapHeight - 1) ++
+      ((1 until tiledMap.getMapWidth - 1).zip(LazyList.continually(0)) ++
+        LazyList.continually(0).zip(1 until tiledMap.getMapHeight - 1) ++
         LazyList
-          .continually(levelMap.getMapWidth - 1)
-          .zip(1 until levelMap.getMapHeight - 1) ++
-        (1 until levelMap.getMapWidth - 1).zip(
-          LazyList.continually(levelMap.getMapHeight - 1)
+          .continually(tiledMap.getMapWidth - 1)
+          .zip(1 until tiledMap.getMapHeight - 1) ++
+        (1 until tiledMap.getMapWidth - 1).zip(
+          LazyList.continually(tiledMap.getMapHeight - 1)
         ))
         .map { case (x, y) => Vector2(x, y) }
 

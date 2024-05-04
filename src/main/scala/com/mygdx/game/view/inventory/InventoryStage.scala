@@ -4,11 +4,8 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.{Actor, Stage}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.event.gamestate.CreaturePutItemOnCursorEvent
-import com.mygdx.game.view.inventory.ItemMoveLocation.{
-  Inventory,
-  ItemMoveLocation
-}
-import com.mygdx.game.view.{SpriteBatch, Viewport}
+import com.mygdx.game.view.inventory.ItemMoveLocation.{Inventory, ItemMoveLocation}
+import com.mygdx.game.view.{SpriteBatch, ViewportManager}
 import com.mygdx.game.{Assets, Constants}
 
 case class InventoryStage() {
@@ -20,11 +17,11 @@ case class InventoryStage() {
   private var itemPutOnCursorState: Option[ItemCursorPickupState] = None
 
   def init(
-      hudViewport: Viewport,
+      viewportManager: ViewportManager,
       hudBatch: SpriteBatch,
       game: CoreGame
   ): Unit = {
-    stage = hudViewport.createStage(hudBatch)
+    stage = viewportManager.createHudStage(hudBatch)
 
     window = InventoryWindow()
 

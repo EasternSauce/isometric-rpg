@@ -8,23 +8,21 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
-import com.mygdx.game.levelmap.LevelMap
+import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
 import com.mygdx.game.view.inventory._
 
 case class View() {
 
-  private val worldViewport: Viewport = Viewport()
-  private val b2DebugViewport: Viewport = Viewport()
-  private val worldTextViewport: Viewport = Viewport()
-  private val hudViewport: Viewport = Viewport()
-
   private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
   private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
-  private var levelMap: LevelMap = _
+
+  private var tiledMap: TiledMap = _
 
   private var inventoryScene: InventoryStage = _
+
+  private var viewportManager: ViewportManager = _
 
   def init(
       worldSpriteBatch: SpriteBatch,
@@ -32,7 +30,7 @@ case class View() {
       hudBatch: SpriteBatch,
       game: CoreGame
   ): Unit = {
-    this.levelMap = game.gameplay.levelMap
+    this.tiledMap = game.gameplay.tiledMap
 
     creatureRenderers = Map()
 
@@ -40,25 +38,12 @@ case class View() {
 
     abilityRenderers = Map()
 
-    worldViewport.init(
-      1,
-      pos => IsometricProjection.translatePosIsoToScreen(pos)
-    )
-    b2DebugViewport.init(0.02f, Predef.identity)
-
-    worldTextViewport.init(
-      1,
-      pos => IsometricProjection.translatePosIsoToScreen(pos)
-    )
-
-    hudViewport.init(
-      1,
-      Predef.identity
-    )
+    viewportManager = ViewportManager()
+    viewportManager.init()
 
     inventoryScene = InventoryStage()
 
-    inventoryScene.init(hudViewport, hudBatch, game)
+    inventoryScene.init(viewportManager, hudBatch, game)
   }
 
   def draw(
@@ -69,56 +54,11 @@ case class View() {
   ): Unit = {
     ScreenUtils.clear(0.7f, 0.7f, 0.7f, 1)
 
-    worldViewport.setProjectionMatrix(worldSpriteBatch)
-
-    worldTextViewport.setProjectionMatrix(worldTextSpriteBatch)
-
-    hudViewport.setProjectionMatrix(hudBatch)
+    viewportManager.draw(worldSpriteBatch, worldTextSpriteBatch, hudBatch)
 
     worldSpriteBatch.begin()
 
-    val layer0Cells = levelMap.getLayerCells(0)
-    val layer1Cells = levelMap.getLayerCells(1)
-
-    layer0Cells.foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
-
-    val aliveCreatureRenderables =
-      game.gameplay.gameState.creatures
-        .filter { case (_, creature) =>
-          creature.alive && creatureRenderers.contains(creature.id)
-        }
-        .keys
-        .toList
-        .map(creatureId => creatureRenderers(creatureId))
-
-    val deadCreatureRenderables =
-      game.gameplay.gameState.creatures
-        .filter { case (_, creature) =>
-          !creature.alive && creatureRenderers.contains(creature.id)
-        }
-        .keys
-        .toList
-        .map(creatureId => creatureRenderers(creatureId))
-
-    def distanceFromCameraPlane(pos: Vector2): Float = {
-      Math.abs(-pos.x + pos.y + levelMap.getMapWidth) / Math.sqrt(2).toFloat
-    }
-
-    val sortFunction: Ordering[Renderable] =
-      (renderableA: Renderable, renderableB: Renderable) => {
-        val posA = renderableA.pos(game.gameplay.gameState)
-        val posB = renderableB.pos(game.gameplay.gameState)
-
-        distanceFromCameraPlane(posB).compare(distanceFromCameraPlane(posA))
-      }
-
-    deadCreatureRenderables
-      .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
-
-    (layer1Cells ++ aliveCreatureRenderables)
-      .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
+    renderWorldElementsByPriority(worldSpriteBatch, game)
 
     abilityRenderers.values.foreach(
       _.render(worldSpriteBatch, game.gameplay.gameState)
@@ -142,8 +82,9 @@ case class View() {
 
     worldTextSpriteBatch.end()
 
-    if (Constants.EnableDebug)
-      game.gameplay.physics.getWorld.renderDebug(b2DebugViewport)
+    if (Constants.EnableDebug) {
+      viewportManager.renderDebug(game.gameplay.physics.getWorld)
+    }
 
     hudBatch.begin()
 
@@ -155,14 +96,60 @@ case class View() {
 
   }
 
+  private def renderWorldElementsByPriority(
+      worldSpriteBatch: SpriteBatch,
+      game: CoreGame
+  ): Unit = {
+    val layer0Cells = tiledMap.getLayerCells(0)
+    val layer1Cells = tiledMap.getLayerCells(1)
+
+    layer0Cells.foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
+
+    def distanceFromCameraPlane(pos: Vector2): Float = {
+      Math.abs(-pos.x + pos.y + tiledMap.getMapWidth) / Math.sqrt(2).toFloat
+    }
+
+    val sortFunction: Ordering[Renderable] =
+      (renderableA: Renderable, renderableB: Renderable) => {
+        val posA = renderableA.pos(game.gameplay.gameState)
+        val posB = renderableB.pos(game.gameplay.gameState)
+
+        distanceFromCameraPlane(posB).compare(distanceFromCameraPlane(posA))
+      }
+
+    val aliveCreatureRenderables =
+      game.gameplay.gameState.creatures
+        .filter { case (_, creature) =>
+          creature.alive && creatureRenderers.contains(creature.id)
+        }
+        .keys
+        .toList
+        .map(creatureId => creatureRenderers(creatureId))
+
+    val deadCreatureRenderables =
+      game.gameplay.gameState.creatures
+        .filter { case (_, creature) =>
+          !creature.alive && creatureRenderers.contains(creature.id)
+        }
+        .keys
+        .toList
+        .map(creatureId => creatureRenderers(creatureId))
+
+    deadCreatureRenderables
+      .sorted(sortFunction)
+      .foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
+
+    (layer1Cells ++ aliveCreatureRenderables)
+      .sorted(sortFunction)
+      .foreach(_.render(worldSpriteBatch, game.gameplay.gameState))
+  }
+
   def update(delta: Float, game: CoreGame): Unit = {
     synchronizeWithGameState(game.gameplay.gameState)
 
     val creatureId = game.clientCreatureId
 
-    worldViewport.updateCamera(creatureId, game.gameplay.gameState)
-    b2DebugViewport.updateCamera(creatureId, game.gameplay.gameState)
-    worldTextViewport.updateCamera(creatureId, game.gameplay.gameState)
+    viewportManager.updateCamera(creatureId, game)
 
     game.clientPlayerState(game.gameplay.gameState) match {
       case Some(playerState) =>
@@ -176,7 +163,6 @@ case class View() {
     }
 
     inventoryScene.update(game)
-
   }
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
@@ -230,15 +216,11 @@ case class View() {
   }
 
   def resize(width: Int, height: Int): Unit = {
-    worldViewport.updateSize(width, height)
-    b2DebugViewport.updateSize(width, height)
-    worldTextViewport.updateSize(width, height)
-    hudViewport.updateSize(width, height)
+    viewportManager.resize(width, height)
   }
 
-  def unprojectHudCamera(screenCoords: Vector3): Unit = {
-    hudViewport.unprojectCamera(screenCoords)
-  }
+  def unprojectHudCamera(screenCoords: Vector3): Unit =
+    viewportManager.unprojectHudCamera(screenCoords)
 
   def setInventoryHoverItemInfoText(itemInfoText: String): Unit =
     inventoryScene.setHoverItemInfoText(itemInfoText)
@@ -247,7 +229,6 @@ case class View() {
       pos: Int,
       itemMoveLocation: ItemMoveLocation,
       game: CoreGame
-  ): Unit =
-    inventoryScene.cursorPickUpItem(pos, itemMoveLocation, game)
+  ): Unit = inventoryScene.cursorPickUpItem(pos, itemMoveLocation, game)
 
 }
