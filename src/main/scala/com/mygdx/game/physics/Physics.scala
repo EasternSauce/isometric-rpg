@@ -27,7 +27,7 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
-    val cells = tiledMap.getLayerCells(0) ++ tiledMap.getLayerCells(1)
+    val cells = tiledMap.getLayerCells(0) ++ tiledMap.getLayerCells(1) ++ tiledMap.getLayerCells(2) ++ tiledMap.getLayerCells(3)
 
     val borders =
       ((1 until tiledMap.getMapWidth - 1).zip(LazyList.continually(0)) ++

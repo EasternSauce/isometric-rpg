@@ -59,8 +59,12 @@ case class WorldRenderer() {
 
     val layer0Cells = tiledMap.getLayerCells(0)
     val layer1Cells = tiledMap.getLayerCells(1)
+    val layer2Cells = tiledMap.getLayerCells(2)
+    val layer3Cells = tiledMap.getLayerCells(3)
 
     layer0Cells.foreach(_.render(worldSpriteBatch, game.gameState))
+    layer1Cells.foreach(_.render(worldSpriteBatch, game.gameState))
+    layer2Cells.foreach(_.render(worldSpriteBatch, game.gameState))
 
     def distanceFromCameraPlane(pos: Vector2): Float = {
       Math.abs(-pos.x + pos.y + tiledMap.getMapWidth) / Math.sqrt(2).toFloat
@@ -96,7 +100,7 @@ case class WorldRenderer() {
       .sorted(sortFunction)
       .foreach(_.render(worldSpriteBatch, game.gameState))
 
-    (layer1Cells ++ aliveCreatureRenderables)
+    (layer3Cells ++ aliveCreatureRenderables)
       .sorted(sortFunction)
       .foreach(_.render(worldSpriteBatch, game.gameState))
   }

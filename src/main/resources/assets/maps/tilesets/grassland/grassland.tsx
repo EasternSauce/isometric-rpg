@@ -483,102 +483,102 @@
  </tile>
  <tile id="96">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="97">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="98">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="99">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="100">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="101">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="102">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="103">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="104">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="105">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="106">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="107">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="108">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="109">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="110">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="111">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="112">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="113">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="114">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="115">
   <properties>
-   <property name="walkable" type="bool" value="false"/>
+   <property name="walkable" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="116">
