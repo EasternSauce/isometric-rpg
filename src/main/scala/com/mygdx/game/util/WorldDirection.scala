@@ -15,10 +15,10 @@ object WorldDirection extends Enumeration {
       case angle if angle >= 247.5 && angle < 292.5 => WorldDirection.West
       case angle if angle >= 292.5 && angle < 337.5 => WorldDirection.SouthWest
       case angle
-          if (angle >= 337.5 && angle < 360) || (angle >= 0 && angle < 22.5) =>
+          if (angle >= 337.5 && angle <= 360) || (angle >= 0 && angle < 22.5) =>
         WorldDirection.South
       case angle if angle >= 22.5 && angle < 67.5 => WorldDirection.SouthEast
-      case _                                      => throw new RuntimeException("unreachable")
+      case angle                                  => throw new RuntimeException("out of range angle: " + angle)
     }
   }
 }

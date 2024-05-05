@@ -63,8 +63,8 @@ case class GameState(
                   .male1(
                     creatureId,
                     Vector2(
-                      3f + 3f * Math.random().toFloat,
-                      3f + 3f * Math.random().toFloat
+                      15f + 3f * Math.random().toFloat,
+                      15f + 3f * Math.random().toFloat
                     ),
                     player = true,
                     8f

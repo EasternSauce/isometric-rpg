@@ -32,7 +32,7 @@ case class View() {
       spriteBatches: SpriteBatches,
       game: CoreGame
   ): Unit = {
-    ScreenUtils.clear(0.7f, 0.7f, 0.7f, 1)
+    ScreenUtils.clear(0f, 0f, 0f, 1)
 
     viewportManager.setProjectionMatrices(spriteBatches)
 
