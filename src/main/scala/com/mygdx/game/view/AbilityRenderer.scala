@@ -21,7 +21,11 @@ case class AbilityRenderer(abilityId: EntityId[Ability]) extends Renderable {
     )
   }
 
-  def render(batch: SpriteBatch, gameState: GameState): Unit = {
+  def render(
+      batch: SpriteBatch,
+      worldCameraPos: Vector2,
+      gameState: GameState
+  ): Unit = {
     if (gameState.abilities.contains(abilityId)) {
       val ability = gameState.abilities(abilityId)
 

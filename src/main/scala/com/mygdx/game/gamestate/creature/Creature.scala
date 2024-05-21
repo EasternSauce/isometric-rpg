@@ -30,7 +30,7 @@ case class Creature(
         Outcome(creature)
           .withBroadcastEvents(
             List(
-              CreatureDeathGameStateEvent(creature.id)
+              CreatureDeathEvent(creature.id)
             )
           )
           .withPhysicsEvents(List(MakeBodySensorEvent(creature.id)))

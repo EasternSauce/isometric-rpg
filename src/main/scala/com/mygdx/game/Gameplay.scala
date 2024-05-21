@@ -56,6 +56,8 @@ case class Gameplay(game: CoreGame) {
   }
 
   def render(delta: Float, input: Input): Unit = {
+//    println(Gdx.graphics.getFramesPerSecond)
+
     view.update(delta, game)
 
     view.draw(spriteBatches, game)

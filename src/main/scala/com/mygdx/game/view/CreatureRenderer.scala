@@ -37,7 +37,11 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
     creature.pos
   }
 
-  override def render(batch: SpriteBatch, gameState: GameState): Unit = {
+  override def render(
+      batch: SpriteBatch,
+      worldCameraPos: Vector2,
+      gameState: GameState
+  ): Unit = {
     val creature = gameState.creatures(creatureId)
 
     if (creature.invisible) {

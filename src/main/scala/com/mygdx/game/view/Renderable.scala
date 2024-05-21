@@ -8,5 +8,9 @@ trait Renderable {
 
   def renderPriority(gameState: GameState): Boolean
 
-  def render(batch: SpriteBatch, gameState: GameState): Unit
+  def render(
+      batch: SpriteBatch,
+      worldCameraPos: Vector2,
+      gameState: GameState
+  ): Unit
 }

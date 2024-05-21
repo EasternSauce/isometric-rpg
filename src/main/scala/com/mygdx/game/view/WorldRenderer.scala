@@ -22,14 +22,19 @@ case class WorldRenderer() {
 
   def drawWorld(
       spriteBatches: SpriteBatches,
+      worldCameraPos: Vector2,
       game: CoreGame
   ): Unit = {
     spriteBatches.worldSpriteBatch.begin()
 
-    renderWorldElementsByPriority(spriteBatches.worldSpriteBatch, game)
+    renderWorldElementsByPriority(
+      spriteBatches.worldSpriteBatch,
+      worldCameraPos,
+      game
+    )
 
     abilityRenderers.values.foreach(
-      _.render(spriteBatches.worldSpriteBatch, game.gameState)
+      _.render(spriteBatches.worldSpriteBatch, worldCameraPos, game.gameState)
     )
 
     creatureRenderers.values.foreach(
@@ -53,6 +58,7 @@ case class WorldRenderer() {
 
   private def renderWorldElementsByPriority(
       worldSpriteBatch: SpriteBatch,
+      worldCameraPos: Vector2,
       game: CoreGame
   ): Unit = {
     val tiledMap = game.gameplay.tiledMap
@@ -60,11 +66,17 @@ case class WorldRenderer() {
     val layer0Cells = tiledMap.getLayerCells(0)
     val layer1Cells = tiledMap.getLayerCells(1)
     val layer2Cells = tiledMap.getLayerCells(2)
-    val layer3Cells = tiledMap.getLayerCells(3)
+//    val layer3Cells = tiledMap.getLayerCells(3)
 
-    layer0Cells.foreach(_.render(worldSpriteBatch, game.gameState))
-    layer1Cells.foreach(_.render(worldSpriteBatch, game.gameState))
-    layer2Cells.foreach(_.render(worldSpriteBatch, game.gameState))
+    layer0Cells.foreach(
+      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+    )
+    layer1Cells.foreach(
+      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+    )
+    layer2Cells.foreach(
+      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+    )
 
     def distanceFromCameraPlane(pos: Vector2): Float = {
       Math.abs(-pos.x + pos.y + tiledMap.getMapWidth) / Math.sqrt(2).toFloat
@@ -98,11 +110,11 @@ case class WorldRenderer() {
 
     deadCreatureRenderables
       .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, game.gameState))
+      .foreach(_.render(worldSpriteBatch, worldCameraPos, game.gameState))
 
-    (layer3Cells ++ aliveCreatureRenderables)
+    aliveCreatureRenderables
       .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, game.gameState))
+      .foreach(_.render(worldSpriteBatch, worldCameraPos, game.gameState))
   }
 
   def update(gameState: GameState): Unit = {

@@ -7,6 +7,7 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.physics.World
+import com.mygdx.game.util.Vector2
 
 case class ViewportManager() {
 
@@ -62,5 +63,7 @@ case class ViewportManager() {
 
   def unprojectHudCamera(screenCoords: Vector3): Unit =
     hudViewport.unprojectCamera(screenCoords)
+
+  def getWorldCameraPos: Vector2 = worldViewport.getCameraPos
 
 }

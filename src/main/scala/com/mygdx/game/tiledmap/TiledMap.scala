@@ -10,7 +10,7 @@ case class TiledMap() {
   def init(): Unit = {
     val params = new TmxMapLoader.Parameters()
 
-    gdxTiledMap = new TmxMapLoader().load("assets/maps/map1.tmx", params)
+    gdxTiledMap = new TmxMapLoader().load("assets/maps/map2/map2.tmx", params)
 
   }
 

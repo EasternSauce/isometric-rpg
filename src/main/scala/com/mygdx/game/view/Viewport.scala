@@ -65,8 +65,8 @@ case class Viewport() {
     debugRenderer.render(b2World, camera.combined)
   }
 
-  def getCameraPos: (Float, Float) = {
-    (camera.position.x, camera.position.y)
+  def getCameraPos: Vector2 = {
+    Vector2(camera.position.x, camera.position.y)
   }
 
   def createStage(batch: SpriteBatch): Stage =

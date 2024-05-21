@@ -36,7 +36,11 @@ case class View() {
 
     viewportManager.setProjectionMatrices(spriteBatches)
 
-    worldRenderer.drawWorld(spriteBatches, game)
+    worldRenderer.drawWorld(
+      spriteBatches,
+      viewportManager.getWorldCameraPos,
+      game
+    )
 
     if (Constants.EnableDebug) {
       viewportManager.renderDebug(game.gameplay.physics.getWorld)
