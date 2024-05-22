@@ -4,7 +4,12 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
-import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
+import com.mygdx.game.gamestate.event.physics.{
+  MakeBodyNonSensorEvent,
+  MakeBodySensorEvent,
+  PhysicsEvent,
+  TeleportEvent
+}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
@@ -27,7 +32,7 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
-    val cells = tiledMap.getLayerCells(2)
+    val cells = tiledMap.getLayer(2)
 
     val borders =
       ((1 until tiledMap.getMapWidth - 1).zip(LazyList.continually(0)) ++

@@ -1,16 +1,28 @@
 package com.mygdx.game.tiledmap
 
-import com.badlogic.gdx.maps.tiled.{TiledMapTileLayer, TmxMapLoader, TiledMap => GdxTiledMap}
+import com.badlogic.gdx.maps.tiled.{
+  TiledMapTileLayer,
+  TmxMapLoader,
+  TiledMap => GdxTiledMap
+}
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.TileRenderer
 
 case class TiledMap() {
   private var gdxTiledMap: GdxTiledMap = _
 
+  private var layers: Map[Int, List[TileRenderer]] = _
+
   def init(): Unit = {
     val params = new TmxMapLoader.Parameters()
 
     gdxTiledMap = new TmxMapLoader().load("assets/maps/map2/map2.tmx", params)
+
+    layers = Map(
+      0 -> loadLayerCells(0),
+      1 -> loadLayerCells(1),
+      2 -> loadLayerCells(2)
+    )
 
   }
 
@@ -22,7 +34,7 @@ case class TiledMap() {
     gdxTiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
-  def getLayerCells(layerId: Int): List[TileRenderer] = {
+  private def loadLayerCells(layerId: Int): List[TileRenderer] = {
     val layer: TiledMapTileLayer =
       gdxTiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
 
@@ -35,4 +47,6 @@ case class TiledMap() {
 
     cells.flatten
   }
+
+  def getLayer(layerId: Int): List[TileRenderer] = layers(layerId)
 }

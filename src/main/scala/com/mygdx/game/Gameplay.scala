@@ -1,5 +1,6 @@
 package com.mygdx.game
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
@@ -56,8 +57,6 @@ case class Gameplay(game: CoreGame) {
   }
 
   def render(delta: Float, input: Input): Unit = {
-//    println(Gdx.graphics.getFramesPerSecond)
-
     view.update(delta, game)
 
     view.draw(spriteBatches, game)

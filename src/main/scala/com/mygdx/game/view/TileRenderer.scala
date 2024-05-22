@@ -23,7 +23,7 @@ case class TileRenderer(cell: TiledMapTileLayer.Cell, pos: Vector2)
         Vector2(pos.x + 0.75f, pos.y - 0.85f)
       )
 
-    if (worldCameraPos.distance(screenPos) < 1200f) {
+    if (worldCameraPos.distance(screenPos) < 1000f) {
       batch.draw(
         textureRegion,
         screenPos.x + Constants.TileCenterX + cell.getTile.getOffsetX,

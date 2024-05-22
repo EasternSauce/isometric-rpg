@@ -63,9 +63,9 @@ case class WorldRenderer() {
   ): Unit = {
     val tiledMap = game.gameplay.tiledMap
 
-    val layer0Cells = tiledMap.getLayerCells(0)
-    val layer1Cells = tiledMap.getLayerCells(1)
-    val layer2Cells = tiledMap.getLayerCells(2)
+    val layer0Cells = tiledMap.getLayer(0)
+    val layer1Cells = tiledMap.getLayer(1)
+    val layer2Cells = tiledMap.getLayer(2)
 //    val layer3Cells = tiledMap.getLayerCells(3)
 
     layer0Cells.foreach(
