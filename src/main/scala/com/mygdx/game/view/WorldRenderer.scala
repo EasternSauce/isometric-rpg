@@ -5,6 +5,7 @@ import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.{EntityId, GameState}
+import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
 case class WorldRenderer() {
@@ -61,12 +62,12 @@ case class WorldRenderer() {
       worldCameraPos: Vector2,
       game: CoreGame
   ): Unit = {
-    val tiledMap = game.gameplay.tiledMap
+    val tiledMap: TiledMap = game.gameplay.tiledMap
 
-    val layer0Cells = tiledMap.getLayer(0)
-    val layer1Cells = tiledMap.getLayer(1)
-    val layer2Cells = tiledMap.getLayer(2)
-//    val layer3Cells = tiledMap.getLayerCells(3)
+    val layer0Cells = tiledMap.getLayer("fill")
+    val layer1Cells = tiledMap.getLayer("background")
+    val layer2Cells = tiledMap.getLayer("object")
+    val layer3Cells = tiledMap.getLayer("manual")
 
     layer0Cells.foreach(
       _.render(worldSpriteBatch, worldCameraPos, game.gameState)
@@ -75,6 +76,9 @@ case class WorldRenderer() {
       _.render(worldSpriteBatch, worldCameraPos, game.gameState)
     )
     layer2Cells.foreach(
+      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+    )
+    layer3Cells.foreach(
       _.render(worldSpriteBatch, worldCameraPos, game.gameState)
     )
 

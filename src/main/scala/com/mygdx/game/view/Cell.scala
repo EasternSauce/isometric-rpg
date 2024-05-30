@@ -5,8 +5,7 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
-case class TileRenderer(cell: TiledMapTileLayer.Cell, pos: Vector2)
-    extends Renderable {
+case class Cell(cell: TiledMapTileLayer.Cell, pos: Vector2) extends Renderable {
   override def pos(gameState: GameState): Vector2 = pos
 
   override def render(

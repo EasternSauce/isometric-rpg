@@ -27,7 +27,9 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
-    val cells = tiledMap.getLayer(2)
+    val objects = tiledMap.getLayer("object")
+    val collisions =
+      tiledMap.getLayer("collision").filter(_.cell.getTile.getId == 2)
 
     val borders =
       ((1 until tiledMap.getMapWidth - 1).zip(LazyList.continually(0)) ++
@@ -40,15 +42,16 @@ case class Physics() {
         ))
         .map { case (x, y) => Vector2(x, y) }
 
-    staticBodies = cells.map(_.pos(gameState)).distinct.map { pos =>
-      val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-      terrainBody.init(world, pos, gameState)
-      terrainBody
-    } ++ borders.map { pos =>
-      val borderBody = BorderBody("borderBody_" + pos.x + "_" + pos.y)
-      borderBody.init(world, pos, gameState)
-      borderBody
-    }
+    staticBodies =
+      (objects ++ collisions).map(_.pos(gameState)).distinct.map { pos =>
+        val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
+        terrainBody.init(world, pos, gameState)
+        terrainBody
+      } ++ borders.map { pos =>
+        val borderBody = BorderBody("borderBody_" + pos.x + "_" + pos.y)
+        borderBody.init(world, pos, gameState)
+        borderBody
+      }
 
     eventQueue = List()
     collisionQueue = List()

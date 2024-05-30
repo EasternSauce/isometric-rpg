@@ -2,12 +2,12 @@ package com.mygdx.game.tiledmap
 
 import com.badlogic.gdx.maps.tiled.{TiledMapTileLayer, TmxMapLoader, TiledMap => GdxTiledMap}
 import com.mygdx.game.util.Vector2
-import com.mygdx.game.view.TileRenderer
+import com.mygdx.game.view.Cell
 
 case class TiledMap() {
   private var gdxTiledMap: GdxTiledMap = _
 
-  private var layers: Map[Int, List[TileRenderer]] = _
+  private var layers: Map[String, List[Cell]] = _
 
   def init(): Unit = {
     val params = new TmxMapLoader.Parameters()
@@ -15,11 +15,12 @@ case class TiledMap() {
     gdxTiledMap = new TmxMapLoader().load("assets/maps/map2/map2.tmx", params)
 
     layers = Map(
-      0 -> loadLayerCells(0),
-      1 -> loadLayerCells(1),
-      2 -> loadLayerCells(2)
+      "fill" -> loadLayerCells("fill"),
+      "background" -> loadLayerCells("background"),
+      "object" -> loadLayerCells("object"),
+      "manual" -> loadLayerCells("manual"),
+      "collision" -> loadLayerCells("collision")
     )
-
   }
 
   def getMapWidth: Int = {
@@ -30,19 +31,19 @@ case class TiledMap() {
     gdxTiledMap.getLayers.get(0).asInstanceOf[TiledMapTileLayer].getHeight
   }
 
-  private def loadLayerCells(layerId: Int): List[TileRenderer] = {
+  private def loadLayerCells(layerName: String): List[Cell] = {
     val layer: TiledMapTileLayer =
-      gdxTiledMap.getLayers.get(layerId).asInstanceOf[TiledMapTileLayer]
+      gdxTiledMap.getLayers.get(layerName).asInstanceOf[TiledMapTileLayer]
 
-    val cells: List[Option[TileRenderer]] = for {
+    val cells: List[Option[Cell]] = for {
       x <- (0 until layer.getWidth).toList
       y <- (0 until layer.getHeight).reverse
     } yield {
-      Option(layer.getCell(x, y)).map(TileRenderer(_, Vector2(x, y)))
+      Option(layer.getCell(x, y)).map(Cell(_, Vector2(x, y)))
     }
 
     cells.flatten
   }
 
-  def getLayer(layerId: Int): List[TileRenderer] = layers(layerId)
+  def getLayer(layerName: String): List[Cell] = layers(layerName)
 }
