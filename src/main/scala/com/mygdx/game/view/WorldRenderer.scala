@@ -67,7 +67,7 @@ case class WorldRenderer() {
     val layer0Cells = tiledMap.getLayer("fill")
     val layer1Cells = tiledMap.getLayer("background")
     val layer2Cells = tiledMap.getLayer("object")
-    val layer3Cells = tiledMap.getLayer("manual")
+    val layer3Cells = tiledMap.getLayer("manual_object")
 
     layer0Cells.foreach(
       _.render(worldSpriteBatch, worldCameraPos, game.gameState)

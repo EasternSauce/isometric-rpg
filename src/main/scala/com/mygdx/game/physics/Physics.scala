@@ -27,31 +27,36 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
-    val objects = tiledMap.getLayer("object")
-    val collisions =
-      tiledMap.getLayer("collision").filter(_.cell.getTile.getId == 2)
+    val bigObjects = tiledMap.getLayer("object")
 
-    val borders =
-      ((1 until tiledMap.getMapWidth - 1).zip(LazyList.continually(0)) ++
-        LazyList.continually(0).zip(1 until tiledMap.getMapHeight - 1) ++
-        LazyList
-          .continually(tiledMap.getMapWidth - 1)
-          .zip(1 until tiledMap.getMapHeight - 1) ++
-        (1 until tiledMap.getMapWidth - 1).zip(
-          LazyList.continually(tiledMap.getMapHeight - 1)
-        ))
-        .map { case (x, y) => Vector2(x, y) }
+    val terrainCollisions =
+      tiledMap
+        .getLayer("collision")
+        .filter(_.cell.getTile.getId == 2) ++
+        tiledMap
+          .getLayer("manual_collision")
+          .filter(_.cell.getTile.getId == 2)
+
+    val objectCollisions =
+      tiledMap
+        .getLayer("collision")
+        .filter(_.cell.getTile.getId == 4) ++
+        tiledMap
+          .getLayer("manual_collision")
+          .filter(_.cell.getTile.getId == 4)
 
     staticBodies =
-      (objects ++ collisions).map(_.pos(gameState)).distinct.map { pos =>
-        val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-        terrainBody.init(world, pos, gameState)
-        terrainBody
-      } ++ borders.map { pos =>
-        val borderBody = BorderBody("borderBody_" + pos.x + "_" + pos.y)
-        borderBody.init(world, pos, gameState)
-        borderBody
-      }
+      (bigObjects ++ terrainCollisions).map(_.pos(gameState)).distinct.map {
+        pos =>
+          val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
+          terrainBody.init(world, pos, gameState)
+          terrainBody
+      } ++
+        objectCollisions.map(_.pos(gameState)).distinct.map { pos =>
+          val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
+          objectBody.init(world, pos, gameState)
+          objectBody
+        }
 
     eventQueue = List()
     collisionQueue = List()

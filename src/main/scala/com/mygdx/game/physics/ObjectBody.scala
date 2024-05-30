@@ -5,7 +5,7 @@ import com.badlogic.gdx.physics.box2d.{BodyDef, FixtureDef, PolygonShape}
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
-case class BorderBody(borderId: String) extends PhysicsBody {
+case class ObjectBody(objectBodyId: String) extends PhysicsBody {
   def init(world: World, pos: Vector2, gameState: GameState): Unit = {
     val bodyDef = new BodyDef()
     bodyDef.`type` = BodyType.StaticBody
@@ -15,8 +15,10 @@ case class BorderBody(borderId: String) extends PhysicsBody {
     body.setUserData(this)
 
     val fixtureDef = new FixtureDef()
+
     val shape = new PolygonShape()
-    shape.setAsBox(0.5f, 0.5f)
+
+    shape.set(Array(-0.5f, -0.25f, 0.5f, -0.75f, 0.5f, 0.25f, -0.5f, 0.75f))
 
     fixtureDef.shape = shape
 

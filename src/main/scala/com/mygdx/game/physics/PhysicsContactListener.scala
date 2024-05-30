@@ -32,12 +32,12 @@ case class PhysicsContactListener(physics: Physics) extends ContactListener {
             )
           )
         )
-      case (abilityBody: AbilityBody, borderBody: BorderBody) =>
+      case (abilityBody: AbilityBody, objectBody: ObjectBody) =>
         physics.scheduleCollisions(
           List(
             AbilityHitsTerrainEvent(
               abilityBody.abilityId,
-              borderBody.borderId
+              objectBody.objectBodyId
             )
           )
         )

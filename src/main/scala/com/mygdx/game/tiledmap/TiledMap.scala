@@ -18,8 +18,9 @@ case class TiledMap() {
       "fill" -> loadLayerCells("fill"),
       "background" -> loadLayerCells("background"),
       "object" -> loadLayerCells("object"),
-      "manual" -> loadLayerCells("manual"),
-      "collision" -> loadLayerCells("collision")
+      "manual_object" -> loadLayerCells("manual_object"),
+      "collision" -> loadLayerCells("collision"),
+      "manual_collision" -> loadLayerCells("manual_collision")
     )
   }
 
