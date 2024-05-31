@@ -2,23 +2,20 @@ package com.mygdx.game.view
 
 import com.mygdx.game.SpriteBatches
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.gamestate.ability.Ability
-import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.gamestate.{EntityId, GameState}
+import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
 case class WorldRenderer() {
-
-  private var creatureRenderers: Map[EntityId[Creature], CreatureRenderer] = _
-  private var abilityRenderers: Map[EntityId[Ability], AbilityRenderer] = _
+  private var creatureRenderers: CreatureRenderers = _
+  private var abilityRenderers: AbilityRenderers = _
 
   def init(game: CoreGame): Unit = {
-    creatureRenderers = Map()
+    creatureRenderers = CreatureRenderers()
+    creatureRenderers.init(game.gameState)
 
-    creatureRenderers.values.foreach(_.init(game.gameState))
-
-    abilityRenderers = Map()
+    abilityRenderers = AbilityRenderers()
+    abilityRenderers.init(game.gameState)
   }
 
   def drawWorld(
@@ -34,24 +31,22 @@ case class WorldRenderer() {
       game
     )
 
-    abilityRenderers.values.foreach(
-      _.render(spriteBatches.worldSpriteBatch, worldCameraPos, game.gameState)
+    abilityRenderers.renderAbilities(
+      spriteBatches,
+      worldCameraPos,
+      game.gameState
     )
 
-    creatureRenderers.values.foreach(
-      _.renderLifeBar(spriteBatches.worldSpriteBatch, game.gameState)
-    )
+    creatureRenderers.renderLifeBars(spriteBatches, game.gameState)
 
     spriteBatches.worldSpriteBatch.end()
 
     spriteBatches.worldTextSpriteBatch.begin()
 
-    creatureRenderers.values.foreach(
-      _.renderPlayerName(
-        spriteBatches.worldTextSpriteBatch,
-        game.scene2dSkin.getFont("default-font"),
-        game.gameState
-      )
+    creatureRenderers.renderPlayerNames(
+      spriteBatches,
+      game.scene2dSkin,
+      game.gameState
     )
 
     spriteBatches.worldTextSpriteBatch.end()
@@ -95,22 +90,10 @@ case class WorldRenderer() {
       }
 
     val aliveCreatureRenderables =
-      game.gameState.creatures
-        .filter { case (_, creature) =>
-          creature.alive && creatureRenderers.contains(creature.id)
-        }
-        .keys
-        .toList
-        .map(creatureId => creatureRenderers(creatureId))
+      creatureRenderers.getRenderersForAliveCreatures(game.gameState)
 
     val deadCreatureRenderables =
-      game.gameState.creatures
-        .filter { case (_, creature) =>
-          !creature.alive && creatureRenderers.contains(creature.id)
-        }
-        .keys
-        .toList
-        .map(creatureId => creatureRenderers(creatureId))
+      creatureRenderers.getRenderersForDeadCreatures(game.gameState)
 
     deadCreatureRenderables
       .sorted(sortFunction)
@@ -122,53 +105,7 @@ case class WorldRenderer() {
   }
 
   def update(gameState: GameState): Unit = {
-    val creatureRenderersToCreate =
-      gameState.activeCreatureIds -- creatureRenderers.keys.toSet
-    val creatureRenderersToDestroy =
-      creatureRenderers.keys.toSet -- gameState.activeCreatureIds
-
-    creatureRenderersToCreate.foreach(createCreatureRenderer(_, gameState))
-    creatureRenderersToDestroy.foreach(destroyCreatureRenderer(_, gameState))
-
-    val abilityRenderersToCreate =
-      gameState.abilities.keys.toSet -- abilityRenderers.keys.toSet
-    val abilityRenderersToDestroy =
-      abilityRenderers.keys.toSet -- gameState.abilities.keys.toSet
-
-    abilityRenderersToCreate.foreach(createAbilityRenderer(_, gameState))
-    abilityRenderersToDestroy.foreach(destroyAbilityRenderer(_, gameState))
+    creatureRenderers.update(gameState)
+    abilityRenderers.update(gameState)
   }
-
-  private def createCreatureRenderer(
-      creatureId: EntityId[Creature],
-      gameState: GameState
-  ): Unit = {
-    val creatureRenderer = CreatureRenderer(creatureId)
-    creatureRenderer.init(gameState)
-    creatureRenderers = creatureRenderers.updated(creatureId, creatureRenderer)
-  }
-
-  private def destroyCreatureRenderer(
-      creatureId: EntityId[Creature],
-      gameState: GameState
-  ): Unit = {
-    creatureRenderers = creatureRenderers.removed(creatureId)
-  }
-
-  private def createAbilityRenderer(
-      abilityId: EntityId[Ability],
-      gameState: GameState
-  ): Unit = {
-    val abilityRenderer = AbilityRenderer(abilityId)
-    abilityRenderer.init(gameState)
-    abilityRenderers = abilityRenderers.updated(abilityId, abilityRenderer)
-  }
-
-  private def destroyAbilityRenderer(
-      abilityId: EntityId[Ability],
-      gameState: GameState
-  ): Unit = {
-    abilityRenderers = abilityRenderers.removed(abilityId)
-  }
-
 }
