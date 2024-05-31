@@ -10,9 +10,9 @@ import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
 case class Physics() {
-  private var world: World = _
+  private var _world: World = _
   private var creatureBodyPhysics: CreatureBodyPhysics = _
-  private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
+  private var abilityBodyPhysics: AbilityBodyPhysics = _
   private var staticBodies: List[PhysicsBody] = _
   private var eventQueue: List[PhysicsEvent] = _
   private var collisionQueue: List[GameStateEvent] = _
@@ -21,13 +21,14 @@ case class Physics() {
       tiledMap: TiledMap,
       gameState: GameState
   ): Unit = {
-    world = World()
-    world.init(PhysicsContactListener(this))
+    _world = World()
+    _world.init(PhysicsContactListener(this))
 
     creatureBodyPhysics = CreatureBodyPhysics()
-    creatureBodyPhysics.init(world)
+    creatureBodyPhysics.init(_world)
 
-    abilityBodies = Map()
+    abilityBodyPhysics = AbilityBodyPhysics()
+    abilityBodyPhysics.init(_world)
 
     staticBodies = createStaticBodies(tiledMap, gameState)
 
@@ -60,18 +61,18 @@ case class Physics() {
     (bigObjects ++ terrainCollisions).map(_.pos(gameState)).distinct.map {
       pos =>
         val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-        terrainBody.init(world, pos, gameState)
+        terrainBody.init(_world, pos, gameState)
         terrainBody
     } ++
       objectCollisions.map(_.pos(gameState)).distinct.map { pos =>
         val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
-        objectBody.init(world, pos, gameState)
+        objectBody.init(_world, pos, gameState)
         objectBody
       }
   }
 
   def update(gameState: GameState): Unit = {
-    world.update()
+    _world.update()
 
     handleEvents(eventQueue, gameState)
 
@@ -80,32 +81,17 @@ case class Physics() {
     synchronizeWithGameState(gameState)
 
     creatureBodyPhysics.update(gameState)
-    abilityBodies.values.foreach(_.update(gameState))
+    abilityBodyPhysics.update(gameState)
   }
 
   private def synchronizeWithGameState(gameState: GameState): Unit = {
     creatureBodyPhysics.synchronizeWithGameState(gameState)
-
-    val abilityBodiesToCreate =
-      gameState.abilities.keys.toSet -- abilityBodies.keys.toSet
-    val abilityBodiesToDestroy =
-      abilityBodies.keys.toSet -- gameState.abilities.keys.toSet
-
-    abilityBodiesToCreate.foreach(createAbilityBody(_, gameState))
-    abilityBodiesToDestroy.foreach(destroyAbilityBody(_, gameState))
+    abilityBodyPhysics.symchronizeWithGameState(gameState)
   }
 
   private def correctBodyPositions(gameState: GameState): Unit = {
     creatureBodyPhysics.correctBodyPositions(gameState)
-
-    gameState.abilities.values.foreach(ability =>
-      if (
-        abilityBodies.contains(ability.id) && abilityBodies(ability.id).pos
-          .distance(ability.pos) > Constants.PhysicalBodyCorrectionDistance
-      ) {
-        abilityBodies(ability.id).setPos(ability.pos)
-      }
-    )
+    abilityBodyPhysics.correctBodyPositions(gameState)
   }
 
   private def handleEvents(
@@ -115,17 +101,14 @@ case class Physics() {
     eventsToBeProcessed.foreach {
       case TeleportEvent(creatureId, pos) =>
         if (gameState.creatures.contains(creatureId)) {
-          val creature = gameState.creatures(creatureId)
           creatureBodyPhysics.setBodyPos(creatureId, pos)
         }
       case MakeBodySensorEvent(creatureId) =>
         if (gameState.creatures.contains(creatureId)) {
-          val creature = gameState.creatures(creatureId)
           creatureBodyPhysics.setSensor(creatureId)
         }
       case MakeBodyNonSensorEvent(creatureId) =>
         if (gameState.creatures.contains(creatureId)) {
-          val creature = gameState.creatures(creatureId)
           creatureBodyPhysics.setNonSensor(creatureId)
         }
       case _ =>
@@ -150,40 +133,11 @@ case class Physics() {
     collisionQueue = collisionQueue.appendedAll(collisions)
   }
 
-  def abilityBodyPositions: Map[EntityId[Ability], Vector2] = {
-    abilityBodies.values
-      .map(abilityBody => {
-        val pos = abilityBody.pos
-        (abilityBody.abilityId, pos)
-      })
-      .toMap
-  }
-
-  def getWorld: World = world
-
-  private def createAbilityBody(
-      abilityId: EntityId[Ability],
-      gameState: GameState
-  ): Unit = {
-    val creature = gameState.abilities(abilityId)
-
-    val abilityBody = AbilityBody(abilityId)
-
-    abilityBody.init(world, creature.pos, gameState)
-
-    abilityBodies = abilityBodies.updated(abilityId, abilityBody)
-  }
-
-  private def destroyAbilityBody(
-      abilityId: EntityId[Ability],
-      gameState: GameState
-  ): Unit = {
-    if (abilityBodies.contains(abilityId)) {
-      abilityBodies(abilityId).onRemove()
-      abilityBodies = abilityBodies.removed(abilityId)
-    }
-  }
+  def world: World = _world
 
   def creatureBodyPositions: Map[EntityId[Creature], Vector2] =
     creatureBodyPhysics.creatureBodyPositions
+
+  def abilityBodyPositions: Map[EntityId[Ability], Vector2] =
+    abilityBodyPhysics.abilityBodyPositions
 }

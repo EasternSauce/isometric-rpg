@@ -43,7 +43,7 @@ case class View() {
     )
 
     if (Constants.EnableDebug) {
-      viewportManager.renderDebug(game.gameplay.physics.getWorld)
+      viewportManager.renderDebug(game.gameplay.physics.world)
     }
 
     drawHud(spriteBatches.hudBatch)
