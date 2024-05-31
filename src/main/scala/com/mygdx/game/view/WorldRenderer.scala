@@ -28,7 +28,8 @@ case class WorldRenderer() {
     renderWorldElementsByPriority(
       spriteBatches.worldSpriteBatch,
       worldCameraPos,
-      game
+      game.gameplay.tiledMap,
+      game.gameState
     )
 
     abilityRenderers.renderAbilities(
@@ -52,56 +53,66 @@ case class WorldRenderer() {
     spriteBatches.worldTextSpriteBatch.end()
   }
 
+  private def distanceFromCameraPlane(mapWidth: Int, pos: Vector2): Float = {
+    Math.abs(-pos.x + pos.y + mapWidth) / Math.sqrt(2).toFloat
+  }
+
   private def renderWorldElementsByPriority(
       worldSpriteBatch: SpriteBatch,
       worldCameraPos: Vector2,
-      game: CoreGame
+      tiledMap: TiledMap,
+      gameState: GameState
   ): Unit = {
-    val tiledMap: TiledMap = game.gameplay.tiledMap
+    renderLowPriorityMapTiles(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
+    renderDeadCreatures(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
+    renderAliveCreatures(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
+    renderHighPriorityMapTiles(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
+  }
 
-    val layer0Cells = tiledMap.getLayer("fill")
-    val layer1Cells = tiledMap.getLayer("background")
-    val layer2Cells = tiledMap.getLayer("object")
-    val layer3Cells = tiledMap.getLayer("manual_object")
+  private def renderLowPriorityMapTiles(worldSpriteBatch: SpriteBatch, worldCameraPos: Vector2, tiledMap: TiledMap, gameState: GameState): Unit = {
+    val fillCells = tiledMap.getLayer("fill")
+    val backgroundCells = tiledMap.getLayer("background")
+    val manualObjectCells = tiledMap.getLayer("manual_object")
 
-    layer0Cells.foreach(
-      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+    (fillCells ++ backgroundCells ++ manualObjectCells).foreach(
+      _.render(worldSpriteBatch, worldCameraPos, gameState)
     )
-    layer1Cells.foreach(
-      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
+  }
+
+  private def renderHighPriorityMapTiles(worldSpriteBatch: SpriteBatch, worldCameraPos: Vector2, tiledMap: TiledMap, gameState: GameState): Unit = {
+    val objectCells = tiledMap.getLayer("object")
+
+    objectCells.foreach(
+      _.render(worldSpriteBatch, worldCameraPos, gameState)
     )
-    layer2Cells.foreach(
-      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
-    )
-    layer3Cells.foreach(
-      _.render(worldSpriteBatch, worldCameraPos, game.gameState)
-    )
-
-    def distanceFromCameraPlane(pos: Vector2): Float = {
-      Math.abs(-pos.x + pos.y + tiledMap.getMapWidth) / Math.sqrt(2).toFloat
-    }
-
-    val sortFunction: Ordering[Renderable] =
-      (renderableA: Renderable, renderableB: Renderable) => {
-        val posA = renderableA.pos(game.gameState)
-        val posB = renderableB.pos(game.gameState)
-
-        distanceFromCameraPlane(posB).compare(distanceFromCameraPlane(posA))
-      }
-
+  }
+  private def renderAliveCreatures(worldSpriteBatch: SpriteBatch, worldCameraPos: Vector2, tiledMap: TiledMap, gameState: GameState): Unit = {
     val aliveCreatureRenderables =
-      creatureRenderers.getRenderersForAliveCreatures(game.gameState)
-
-    val deadCreatureRenderables =
-      creatureRenderers.getRenderersForDeadCreatures(game.gameState)
-
-    deadCreatureRenderables
-      .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, worldCameraPos, game.gameState))
+      creatureRenderers.getRenderersForAliveCreatures(gameState)
 
     aliveCreatureRenderables
-      .sorted(sortFunction)
-      .foreach(_.render(worldSpriteBatch, worldCameraPos, game.gameState))
+      .sorted(worldElementSortFunction(tiledMap.getMapWidth, gameState))
+      .foreach(_.render(worldSpriteBatch, worldCameraPos, gameState))
+  }
+
+  private def renderDeadCreatures(worldSpriteBatch: SpriteBatch, worldCameraPos: Vector2, tiledMap: TiledMap, gameState: GameState): Unit = {
+    val deadCreatureRenderables =
+      creatureRenderers.getRenderersForDeadCreatures(gameState)
+
+    deadCreatureRenderables
+      .sorted(worldElementSortFunction(tiledMap.getMapWidth, gameState))
+      .foreach(_.render(worldSpriteBatch, worldCameraPos, gameState))
+  }
+
+  private def worldElementSortFunction(mapWidth: Int, gameState: GameState) = {
+    val sortFunction: Ordering[Renderable] =
+      (renderableA: Renderable, renderableB: Renderable) => {
+        val posA = renderableA.pos(gameState)
+        val posB = renderableB.pos(gameState)
+
+        distanceFromCameraPlane(mapWidth, posB).compare(distanceFromCameraPlane(mapWidth, posA))
+      }
+    sortFunction
   }
 
   def update(gameState: GameState): Unit = {
