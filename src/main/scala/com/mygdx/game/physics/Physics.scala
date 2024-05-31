@@ -1,6 +1,5 @@
 package com.mygdx.game.physics
 
-import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
@@ -13,7 +12,7 @@ case class Physics() {
   private var _world: World = _
   private var creatureBodyPhysics: CreatureBodyPhysics = _
   private var abilityBodyPhysics: AbilityBodyPhysics = _
-  private var staticBodies: List[PhysicsBody] = _
+  private var staticBodyPhysics: StaticBodyPhysics = _
   private var eventQueue: List[PhysicsEvent] = _
   private var collisionQueue: List[GameStateEvent] = _
 
@@ -30,45 +29,11 @@ case class Physics() {
     abilityBodyPhysics = AbilityBodyPhysics()
     abilityBodyPhysics.init(_world)
 
-    staticBodies = createStaticBodies(tiledMap, gameState)
+    staticBodyPhysics = StaticBodyPhysics()
+    staticBodyPhysics.init(tiledMap, world, gameState)
 
     eventQueue = List()
     collisionQueue = List()
-  }
-
-  private def createStaticBodies(
-      tiledMap: TiledMap,
-      gameState: GameState
-  ): List[PhysicsBody] = {
-    val bigObjects = tiledMap.getLayer("object")
-
-    val terrainCollisions =
-      tiledMap
-        .getLayer("collision")
-        .filter(_.cell.getTile.getId == Constants.waterGroundCollisionCellId) ++
-        tiledMap
-          .getLayer("manual_collision")
-          .filter(_.cell.getTile.getId == Constants.waterGroundCollisionCellId)
-
-    val objectCollisions =
-      tiledMap
-        .getLayer("collision")
-        .filter(_.cell.getTile.getId == Constants.objectCollisionCellId) ++
-        tiledMap
-          .getLayer("manual_collision")
-          .filter(_.cell.getTile.getId == Constants.objectCollisionCellId)
-
-    (bigObjects ++ terrainCollisions).map(_.pos(gameState)).distinct.map {
-      pos =>
-        val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-        terrainBody.init(_world, pos, gameState)
-        terrainBody
-    } ++
-      objectCollisions.map(_.pos(gameState)).distinct.map { pos =>
-        val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
-        objectBody.init(_world, pos, gameState)
-        objectBody
-      }
   }
 
   def update(gameState: GameState): Unit = {
@@ -80,6 +45,10 @@ case class Physics() {
 
     synchronizeWithGameState(gameState)
 
+    updateBodies(gameState)
+  }
+
+  private def updateBodies(gameState: GameState): Unit = {
     creatureBodyPhysics.update(gameState)
     abilityBodyPhysics.update(gameState)
   }
