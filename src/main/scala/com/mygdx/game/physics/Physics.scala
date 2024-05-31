@@ -4,7 +4,12 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
-import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
+import com.mygdx.game.gamestate.event.physics.{
+  MakeBodyNonSensorEvent,
+  MakeBodySensorEvent,
+  PhysicsEvent,
+  TeleportEvent
+}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
@@ -27,39 +32,45 @@ case class Physics() {
     creatureBodies = Map()
     abilityBodies = Map()
 
+    staticBodies = createStaticBodies(tiledMap, gameState)
+
+    eventQueue = List()
+    collisionQueue = List()
+  }
+
+  private def createStaticBodies(
+      tiledMap: TiledMap,
+      gameState: GameState
+  ): List[PhysicsBody] = {
     val bigObjects = tiledMap.getLayer("object")
 
     val terrainCollisions =
       tiledMap
         .getLayer("collision")
-        .filter(_.cell.getTile.getId == 2) ++
+        .filter(_.cell.getTile.getId == Constants.waterGroundCollisionCellId) ++
         tiledMap
           .getLayer("manual_collision")
-          .filter(_.cell.getTile.getId == 2)
+          .filter(_.cell.getTile.getId == Constants.waterGroundCollisionCellId)
 
     val objectCollisions =
       tiledMap
         .getLayer("collision")
-        .filter(_.cell.getTile.getId == 4) ++
+        .filter(_.cell.getTile.getId == Constants.objectCollisionCellId) ++
         tiledMap
           .getLayer("manual_collision")
-          .filter(_.cell.getTile.getId == 4)
+          .filter(_.cell.getTile.getId == Constants.objectCollisionCellId)
 
-    staticBodies =
-      (bigObjects ++ terrainCollisions).map(_.pos(gameState)).distinct.map {
-        pos =>
-          val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
-          terrainBody.init(world, pos, gameState)
-          terrainBody
-      } ++
-        objectCollisions.map(_.pos(gameState)).distinct.map { pos =>
-          val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
-          objectBody.init(world, pos, gameState)
-          objectBody
-        }
-
-    eventQueue = List()
-    collisionQueue = List()
+    (bigObjects ++ terrainCollisions).map(_.pos(gameState)).distinct.map {
+      pos =>
+        val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
+        terrainBody.init(world, pos, gameState)
+        terrainBody
+    } ++
+      objectCollisions.map(_.pos(gameState)).distinct.map { pos =>
+        val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
+        objectBody.init(world, pos, gameState)
+        objectBody
+      }
   }
 
   def update(gameState: GameState): Unit = {

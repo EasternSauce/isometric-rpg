@@ -120,4 +120,7 @@ object Constants {
   val hoverItemInfoY: Int = 50
   val hoverItemInfoWidth: Int = 470
   val hoverItemInfoHeight: Int = 150
+
+  val waterGroundCollisionCellId = 2
+  val objectCollisionCellId = 4
 }
