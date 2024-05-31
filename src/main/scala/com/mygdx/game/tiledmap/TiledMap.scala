@@ -1,10 +1,6 @@
 package com.mygdx.game.tiledmap
 
-import com.badlogic.gdx.maps.tiled.{
-  TiledMapTileLayer,
-  TmxMapLoader,
-  TiledMap => GdxTiledMap
-}
+import com.badlogic.gdx.maps.tiled.{TiledMapTileLayer, TmxMapLoader, TiledMap => GdxTiledMap}
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.Cell
 

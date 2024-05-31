@@ -121,6 +121,8 @@ object Constants {
   val hoverItemInfoWidth: Int = 470
   val hoverItemInfoHeight: Int = 150
 
+  val bigObjectCollisionCellId = 1
   val waterGroundCollisionCellId = 2
-  val objectCollisionCellId = 4
+  val smallObjectCollisionCellId = 4
+  val wallCollisionCellId = 6
 }

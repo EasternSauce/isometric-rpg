@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="isometric" renderorder="right-down" width="17" height="27" tilewidth="64" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="1">
+<map version="1.10" tiledversion="1.10.2" orientation="isometric" renderorder="right-down" width="17" height="27" tilewidth="64" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
  <properties>
   <property name="AutomappingRadius" value="1"/>
  </properties>
@@ -28,14 +28,14 @@
    eJxjYKASYKSQHnXHqDtG3THqjlF3jLqDEnfQEAAAe5oAZg==
   </data>
  </layer>
- <layer id="4" name="input_manual_object_top" width="17" height="27">
+ <layer id="5" name="input_object" width="17" height="27">
   <data encoding="base64" compression="zlib">
    eJytzjVOBFAUhtFZEu7uuofBHbaAu2wNdwhOi7s1h4aQTCa5f3OKl7z7JRIxy2Ams5jNHOYyj/lB939XwEIWsZglLGUZy4M7KljJKlazhrWsY31wRwMb2cRmtrCVSbYFd7Szg53sYjd72Mu+4I5+DnCQQxzmCEc5FtwxzglOcorTnOEs54I75rnARS5xmSu84W1wxx3v+cBHPvGZL3xN8853ivc3vvODn/z6888q19LsSLV1bnCTW9zmDne5F9yxzwMe8ojHPOEpz4I7znnBS17xOvjef/sBzeY6cA==
   </data>
  </layer>
  <layer id="3" name="output_collision" width="17" height="27">
   <data encoding="base64" compression="zlib">
-   eJxjYKAOYKSQphYYdQcqYKGQHnUHfdxBKD3Qyh2E7CHkTlq5Y6TnW1LtZaaxO9DNJyQ+UOFBSwAAIeUAzA==
+   eJxjYKAOYKOQphYYdQcqYKGQHnUHfdzBSICmlTsI2UPInbRyB6n0SHcHM43dgW4+IfGBCg9aAgAQEgFE
   </data>
  </layer>
 </map>

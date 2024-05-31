@@ -69,8 +69,18 @@ case class WorldRenderer() {
       tiledMap,
       gameState
     )
-    renderDeadCreatures(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
-    renderDynamicElements(worldSpriteBatch, worldCameraPos, tiledMap, gameState)
+    renderDeadCreatures(
+      worldSpriteBatch,
+      worldCameraPos,
+      tiledMap,
+      gameState
+    )
+    renderDynamicElements(
+      worldSpriteBatch,
+      worldCameraPos,
+      tiledMap,
+      gameState
+    )
   }
 
   private def renderLowPriorityMapTiles(
