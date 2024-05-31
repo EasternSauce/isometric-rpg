@@ -1,6 +1,10 @@
 package com.mygdx.game.tiledmap
 
-import com.badlogic.gdx.maps.tiled.{TiledMapTileLayer, TmxMapLoader, TiledMap => GdxTiledMap}
+import com.badlogic.gdx.maps.tiled.{
+  TiledMapTileLayer,
+  TmxMapLoader,
+  TiledMap => GdxTiledMap
+}
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.Cell
 
@@ -18,7 +22,8 @@ case class TiledMap() {
       "fill" -> loadLayerCells("fill"),
       "background" -> loadLayerCells("background"),
       "object" -> loadLayerCells("object"),
-      "manual_object" -> loadLayerCells("manual_object"),
+      "manual_object_top" -> loadLayerCells("manual_object_top"),
+      "manual_object_bottom" -> loadLayerCells("manual_object_bottom"),
       "collision" -> loadLayerCells("collision"),
       "manual_collision" -> loadLayerCells("manual_collision")
     )
