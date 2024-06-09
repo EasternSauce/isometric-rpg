@@ -10,13 +10,15 @@ case class InventoryActorGroup() {
   protected var slotsGroup: Actor = _
   protected var itemsGroup: Actor = _
 
-  private var _slots: Map[Int, Image] = Map()
   private var _items: Map[Int, Image] = Map()
 
-  def init(game: CoreGame): Unit = {
-    createSlotsGroup(game)
+  private var inventorySlots: InventorySlots = _
 
-    this.slotsGroup = createSlotsGroup(game)
+  def init(game: CoreGame): Unit = {
+    this.inventorySlots = InventorySlots()
+    inventorySlots.init()
+
+    this.slotsGroup = createSlotsGroup()
     this.itemsGroup = createItemsGroup(game)
   }
 
@@ -89,34 +91,17 @@ case class InventoryActorGroup() {
     inventoryItemsGroup
   }
 
-  def createSlotsGroup(game: CoreGame): Actor = {
+  def createSlotsGroup(): Actor = {
     val inventorySlotsGroup: Group = new Group()
 
-    var count: Int = 0
-
-    for {
-      y <- 0 until Constants.InventoryHeight
-      x <- 0 until Constants.InventoryWidth
-    } {
-      val image: InventorySlotImage =
-        InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), count)
-
-      image.setX(Constants.inventorySlotPositionX(x))
-      image.setY(Constants.inventorySlotPositionY(y))
-      image.setWidth(Constants.InventorySlotSize)
-      image.setHeight(Constants.InventorySlotSize)
-
-      _slots = _slots.updated(count, image)
-
-      count = count + 1
-
-      inventorySlotsGroup.addActor(image)
+    inventorySlots.slots.foreach {
+      case (_, slot) => inventorySlotsGroup.addActor(slot)
     }
 
     inventorySlotsGroup
   }
 
-  def slots: Map[Int, Image] = _slots
+  def slots: Map[Int, Image] = inventorySlots.slots
   def items: Map[Int, Image] = _items
 
   def addToWindow(window: Window): Unit = {
