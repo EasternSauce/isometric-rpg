@@ -16,12 +16,11 @@ case class MeleeAttackHitsCreatureEvent(
     if (gameState.creatures.contains(targetCreatureId)) {
       gameState
         .modify(_.creatures.at(targetCreatureId))
-        .using(creature =>
-          creature
-            .pipe(
-              DamageDealingUtils
-                .registerLastAttackedByCreature(sourceCreatureId)
-            )
+        .using(
+          _.pipe(
+            DamageDealingUtils
+              .registerLastAttackedByCreature(sourceCreatureId)
+          )
             .pipe(DamageDealingUtils.dealDamageToCreature(damage))
         )
     } else {
