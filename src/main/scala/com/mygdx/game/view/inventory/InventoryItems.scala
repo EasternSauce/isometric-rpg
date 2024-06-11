@@ -23,7 +23,7 @@ case class InventoryItems() {
       item.setWidth(Constants.InventorySlotSize)
       item.setHeight(Constants.InventorySlotSize)
 
-      item.addListener(InventorySlotClickListener(game))
+      item.addListener(InventoryItemClickListener(game))
 
       items = items.updated(counter, item)
 

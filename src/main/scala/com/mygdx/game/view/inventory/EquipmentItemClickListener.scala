@@ -9,6 +9,11 @@ case class EquipmentItemClickListener(game: CoreGame) extends ClickListener {
     val image = event.getTarget.asInstanceOf[InventorySlotImage]
     println("clicked item")
 
+    game.gameplay.view.onSlotClick(
+      image.pos,
+      ItemMoveLocation.Equipment,
+      game
+    )
   }
 
   override def enter(

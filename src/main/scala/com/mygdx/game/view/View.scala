@@ -100,10 +100,10 @@ case class View() {
   def setInventoryHoverItemInfoText(itemInfoText: String): Unit =
     inventoryStage.setHoverItemInfoText(itemInfoText)
 
-  def inventoryCursorPickUpItem(
+  def onSlotClick(
       pos: Int,
       itemMoveLocation: ItemMoveLocation,
       game: CoreGame
-  ): Unit = inventoryStage.cursorPickUpItem(pos, itemMoveLocation, game)
+  ): Unit = inventoryStage.onSlotClick(pos, itemMoveLocation, game)
 
 }

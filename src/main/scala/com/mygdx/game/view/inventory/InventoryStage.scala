@@ -3,8 +3,8 @@ package com.mygdx.game.view.inventory
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.{Actor, Stage}
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.gamestate.event.gamestate.CreaturePutItemOnCursorEvent
-import com.mygdx.game.view.inventory.ItemMoveLocation.{Inventory, ItemMoveLocation}
+import com.mygdx.game.gamestate.event.gamestate.CreaturePlaceItemIntoSlotEvent
+import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
 import com.mygdx.game.view.{SpriteBatch, ViewportManager}
 import com.mygdx.game.{Assets, Constants}
 
@@ -52,14 +52,16 @@ case class InventoryStage() {
     window.setHoverItemInfoText(hoverText)
   }
 
-  def cursorPickUpItem(
+  def onSlotClick(
       pos: Int,
       itemMoveLocation: ItemMoveLocation,
       game: CoreGame
   ): Unit = {
-    if (itemPutOnCursorState.isDefined) {
+    val isItemCurrentlyOnCursor = itemPutOnCursorState.isDefined
+
+    if (isItemCurrentlyOnCursor) {
       game.sendEvent(
-        CreaturePutItemOnCursorEvent(
+        CreaturePlaceItemIntoSlotEvent(
           game.clientCreatureId.get,
           itemPutOnCursorState.get.itemMoveLocation,
           itemPutOnCursorState.get.pos,
@@ -69,13 +71,16 @@ case class InventoryStage() {
       )
       itemPutOnCursorState = None
     } else {
-      if (
-        game.gameState
-          .creatures(game.clientCreatureId.get)
-          .params
-          .inventoryItems
-          .contains(pos)
-      ) {
+      val creature = game.gameState.creatures(game.clientCreatureId.get)
+
+      val items = if (itemMoveLocation == ItemMoveLocation.Inventory) {
+        creature.params.inventoryItems
+      } else {
+        creature.params.equipmentItems
+      }
+
+      if (items.contains(pos)) {
+        println("put on cursor?")
         itemPutOnCursorState = Some(
           ItemCursorPickupState(itemMoveLocation, pos)
         )
@@ -88,24 +93,19 @@ case class InventoryStage() {
 
     if (itemPutOnCursorState.nonEmpty) {
       val mousePos = game.mousePos()
-      val iconPos =
-        if (itemPutOnCursorState.get.itemMoveLocation == Inventory) {
-          game
-            .clientCreature(game.gameState)
-            .get
-            .params
-            .inventoryItems(itemPutOnCursorState.get.pos)
-            .template
-            .iconPos
-        } else {
-          game
-            .clientCreature(game.gameState)
-            .get
-            .params
-            .equipmentItems(itemPutOnCursorState.get.pos)
-            .template
-            .iconPos
-        }
+
+      val creature = game.gameState.creatures(game.clientCreatureId.get)
+
+      val items = if (
+        itemPutOnCursorState.get.itemMoveLocation == ItemMoveLocation.Inventory
+      ) {
+        creature.params.inventoryItems
+      } else {
+        creature.params.equipmentItems
+      }
+
+      val iconPos = items(itemPutOnCursorState.get.pos).template.iconPos
+
       stage.getBatch.draw(
         Assets.getIcon(iconPos.x, iconPos.y),
         mousePos.x - Constants.InventorySlotSize / 2,
