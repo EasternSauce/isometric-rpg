@@ -1,12 +1,12 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.scenes.scene2d.ui.{Image, Window}
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 import com.mygdx.game.core.CoreGame
 
-case class InventoryActorGroup() {
-  protected var slotsGroup: Actor = _
-  protected var itemsGroup: Actor = _
+case class InventoryActor() {
+  private var slotsActor: Actor = _
+  private var itemsActor: Actor = _
 
   private var inventorySlots: InventorySlots = _
   private var inventoryItems: InventoryItems = _
@@ -18,17 +18,17 @@ case class InventoryActorGroup() {
     this.inventoryItems = InventoryItems()
     inventoryItems.init(game)
 
-    this.slotsGroup = createSlotsGroup()
-    this.itemsGroup = createItemsGroup()
+    this.slotsActor = createSlotsActor()
+    this.itemsActor = createItemsActor()
   }
 
-  private def createItemsGroup(): Actor = {
+  private def createItemsActor(): Actor = {
     val inventoryItemsGroup: Group = new Group()
     inventoryItems.items.values.foreach(inventoryItemsGroup.addActor(_))
     inventoryItemsGroup
   }
 
-  def createSlotsGroup(): Actor = {
+  private def createSlotsActor(): Actor = {
     val inventorySlotsGroup: Group = new Group()
     inventorySlots.slots.values.foreach(inventorySlotsGroup.addActor(_))
     inventorySlotsGroup
@@ -38,7 +38,7 @@ case class InventoryActorGroup() {
   def items: Map[Int, Image] = inventoryItems.items
 
   def addToWindow(window: Window): Unit = {
-    window.addActor(slotsGroup)
-    window.addActor(itemsGroup)
+    window.addActor(slotsActor)
+    window.addActor(itemsActor)
   }
 }

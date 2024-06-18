@@ -1,4 +1,4 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.{TextArea, TextButton, TextField, Window}
@@ -6,19 +6,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawab
 import com.badlogic.gdx.utils.Align
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.event.gamestate.PlayerToggleInventoryEvent
-import com.mygdx.game.view.inventory.ItemMoveLocation._
+import com.mygdx.game.view.inventorywindow.ItemMoveLocation._
 import com.mygdx.game.{Assets, Constants}
 
 case class InventoryWindow() {
 
   private var window: Window = _
 
-  private var inventory: InventoryActorGroup = _
-  private var equipment: EquipmentActorGroup = _
+  private var inventory: InventoryActor = _
+  private var equipment: EquipmentActor = _
 
   private var hoverItemInfo: TextField = _
 
-  def init(stage: InventoryStage, game: CoreGame): Unit = {
+  def init(stage: InventoryWindowStage, game: CoreGame): Unit = {
     window = new Window("Inventory", game.scene2dSkin)
 
     window.setX(800)
@@ -35,8 +35,8 @@ case class InventoryWindow() {
 
     window.addActor(exitButton)
 
-    inventory = InventoryActorGroup()
-    equipment = EquipmentActorGroup()
+    inventory = InventoryActor()
+    equipment = EquipmentActor()
 
     inventory.init(game)
     equipment.init(game)

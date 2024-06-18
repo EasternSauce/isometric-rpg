@@ -1,14 +1,14 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.{Actor, Stage}
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.event.gamestate.CreaturePlaceItemIntoSlotEvent
-import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
+import com.mygdx.game.view.inventorywindow.ItemMoveLocation.ItemMoveLocation
 import com.mygdx.game.view.{SpriteBatch, ViewportManager}
 import com.mygdx.game.{Assets, Constants}
 
-case class InventoryStage() {
+case class InventoryWindowStage() {
 
   private var stage: Stage = _
 
@@ -80,7 +80,6 @@ case class InventoryStage() {
       }
 
       if (items.contains(pos)) {
-        println("put on cursor?")
         itemPutOnCursorState = Some(
           ItemCursorPickupState(itemMoveLocation, pos)
         )

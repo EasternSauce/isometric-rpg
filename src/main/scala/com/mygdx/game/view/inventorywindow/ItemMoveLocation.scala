@@ -1,4 +1,4 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 object ItemMoveLocation extends Enumeration {
   type ItemMoveLocation = Value

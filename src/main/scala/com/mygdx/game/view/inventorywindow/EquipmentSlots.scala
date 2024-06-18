@@ -1,9 +1,9 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.scenes.scene2d.ui.{Image, TextField}
 import com.badlogic.gdx.utils.Align
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.{Assets, Constants}
+import com.mygdx.game.{Assets, Constants, EquipmentSlotType}
 
 case class EquipmentSlots() {
   var slots: Map[Int, Image] = Map()
@@ -12,13 +12,15 @@ case class EquipmentSlots() {
   def init(game: CoreGame): Unit = {
     var counter: Int = 0
 
+    val x = 0
+
     for {
       y <- 0 until Constants.EquipmentSlotCount
     } {
       val slot: InventorySlotImage =
         InventorySlotImage(Assets.atlas.findRegion("inventory_slot"), counter)
 
-      slot.setX(Constants.equipmentSlotPositionX(0))
+      slot.setX(Constants.equipmentSlotPositionX(x))
       slot.setY(Constants.equipmentSlotPositionY(y))
       slot.setWidth(Constants.InventorySlotSize)
       slot.setHeight(Constants.InventorySlotSize)
@@ -26,9 +28,9 @@ case class EquipmentSlots() {
       slots = slots.updated(counter, slot)
 
       val text: TextField =
-        new TextField(Constants.equipmentSlotNames(counter), game.scene2dSkin)
+        new TextField(EquipmentSlotType(counter).displayName, game.scene2dSkin)
 
-      text.setX(Constants.equipmentSlotPositionX(0) - 120)
+      text.setX(Constants.equipmentSlotPositionX(x) - 120)
       text.setY(Constants.equipmentSlotPositionY(y) + 10)
       text.setWidth(110)
       text.setAlignment(Align.center)

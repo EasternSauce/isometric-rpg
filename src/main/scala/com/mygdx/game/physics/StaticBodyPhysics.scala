@@ -75,23 +75,29 @@ case class StaticBodyPhysics() {
   private def getObjectCollisionCells(tiledMap: TiledMap) = {
     tiledMap
       .getLayer("collision")
-      .filter(_.cell.getTile.getId == Constants.smallObjectCollisionCellId) ++
+      .filter(
+        _.tiledCell.getTile.getId == Constants.smallObjectCollisionCellId
+      ) ++
       tiledMap
         .getLayer("manual_collision")
-        .filter(_.cell.getTile.getId == Constants.smallObjectCollisionCellId)
+        .filter(
+          _.tiledCell.getTile.getId == Constants.smallObjectCollisionCellId
+        )
   }
 
   private def getTerrainCollisionCells(tiledMap: TiledMap) = {
     tiledMap
       .getLayer("collision")
       .filter(cell => {
-        val cellId = cell.cell.getTile.getId
+        val cellId = cell.tiledCell.getTile.getId
         cellId == Constants.waterGroundCollisionCellId ||
         cellId == Constants.bigObjectCollisionCellId ||
         cellId == Constants.wallCollisionCellId
       }) ++
       tiledMap
         .getLayer("manual_collision")
-        .filter(_.cell.getTile.getId == Constants.waterGroundCollisionCellId)
+        .filter(
+          _.tiledCell.getTile.getId == Constants.waterGroundCollisionCellId
+        )
   }
 }

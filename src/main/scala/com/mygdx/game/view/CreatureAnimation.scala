@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.{Animation, TextureRegion}
+import com.mygdx.game.EquipmentSlotType.{EquipmentSlotType, Weapon}
 import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.{Vector2, WorldDirection}
@@ -21,6 +22,8 @@ case class CreatureAnimation(
   private var texture: Texture = _
 
   def init(gameState: GameState): Unit = {
+    val slotType: EquipmentSlotType = Weapon
+
     val creature: Creature = gameState.creatures(creatureId)
 
     standstillAnimations =

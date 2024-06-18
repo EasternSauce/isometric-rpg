@@ -1,165 +1,206 @@
 package com.mygdx.game.gamestate.event.gamestate
 
+import com.mygdx.game.EquipmentSlotType
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event.GameStateEvent
+import com.mygdx.game.gamestate.item.Item
 import com.mygdx.game.gamestate.{EntityId, GameState}
-import com.mygdx.game.view.inventory.ItemMoveLocation.{Inventory, ItemMoveLocation}
+import com.mygdx.game.view.inventorywindow.ItemMoveLocation
+import com.mygdx.game.view.inventorywindow.ItemMoveLocation.{Inventory, ItemMoveLocation}
 import com.softwaremill.quicklens.{ModifyPimp, QuicklensMapAt}
 
 case class CreaturePlaceItemIntoSlotEvent(
     creatureId: EntityId[Creature],
-    fromLocation: ItemMoveLocation,
-    fromPos: Int,
-    toLocation: ItemMoveLocation,
-    toPos: Int
+    sourceLocation: ItemMoveLocation,
+    sourcePos: Int,
+    destinationLocation: ItemMoveLocation,
+    destinationPos: Int
 ) extends GameStateEvent {
   def applyToGameState(gameState: GameState): GameState = {
-    println("running event")
-    if (fromLocation == Inventory) {
-      if (toLocation == Inventory) {
-        moveInventoryToInventory(gameState)
+    val sourceItem = getLocationItems(sourceLocation, gameState)(sourcePos)
+    val destinationItem =
+      getLocationItems(destinationLocation, gameState).get(destinationPos)
+
+    moveItem(sourceItem, destinationItem, gameState)
+  }
+
+  private def moveItem(
+      sourceItem: Item,
+      destinationItem: Option[Item],
+      gameState: GameState
+  ): GameState = {
+    if (sourceLocation == Inventory) {
+      if (destinationLocation == Inventory) {
+        moveInventoryToInventory(
+          sourcePos,
+          sourceItem,
+          destinationPos,
+          destinationItem,
+          gameState
+        )
       } else {
-        moveInventoryToEquipment(gameState)
+        moveInventoryToEquipment(
+          sourcePos,
+          sourceItem,
+          destinationPos,
+          destinationItem,
+          gameState
+        )
       }
     } else {
-      if (toLocation == Inventory) {
-        moveEquipmentToInventory(gameState)
+      if (destinationLocation == Inventory) {
+        moveEquipmentToInventory(
+          sourcePos,
+          sourceItem,
+          destinationPos,
+          destinationItem,
+          gameState
+        )
       } else {
-        moveEquipmentToEquipment(gameState)
+        moveEquipmentToEquipment(
+          sourcePos,
+          sourceItem,
+          destinationPos,
+          destinationItem,
+          gameState
+        )
       }
     }
   }
 
-  private def moveEquipmentToEquipment(gameState: GameState): GameState = {
-    val itemSource =
-      gameState.creatures(creatureId).params.equipmentItems(fromPos)
+  private def getLocationItems(
+      location: ItemMoveLocation,
+      gameState: GameState
+  ): Map[Int, Item] = {
+    if (location == ItemMoveLocation.Inventory) {
+      gameState.creatures(creatureId).params.inventoryItems
+    } else {
+      gameState.creatures(creatureId).params.equipmentItems
+    }
+  }
 
-    val destinationItemExists = gameState
-      .creatures(creatureId)
-      .params
-      .equipmentItems
-      .contains(toPos)
+  private def moveEquipmentToEquipment(
+      sourcePos: Int,
+      sourceItem: Item,
+      destinationPos: Int,
+      destinationItem: Option[Item],
+      gameState: GameState
+  ): GameState = {
+    val moveAllowed: Boolean = sourceItem.template.equipmentSlotType.contains(
+      EquipmentSlotType(destinationPos)
+    )
 
-    if (destinationItemExists) {
-      val itemDestination =
-        gameState.creatures(creatureId).params.equipmentItems(toPos)
+    if (moveAllowed) {
+      if (destinationItem.nonEmpty) {
+        gameState
+          .modify(_.creatures.at(creatureId))
+          .using(creature =>
+            creature
+              .modify(_.params.equipmentItems)
+              .using(_.updated(destinationPos, sourceItem))
+              .modify(_.params.equipmentItems)
+              .using(_.updated(sourcePos, destinationItem.get))
+          )
+      } else {
+        gameState
+          .modify(_.creatures.at(creatureId))
+          .using(creature =>
+            creature
+              .modify(_.params.equipmentItems)
+              .using(_.updated(destinationPos, sourceItem))
+              .modify(_.params.equipmentItems)
+              .using(_.removed(sourcePos))
+          )
+      }
+    } else {
+      gameState
+    }
+  }
 
+  private def moveEquipmentToInventory(
+      sourcePos: Int,
+      sourceItem: Item,
+      destinationPos: Int,
+      destinationItem: Option[Item],
+      gameState: GameState
+  ): GameState = {
+    if (destinationItem.nonEmpty) {
       gameState
         .modify(_.creatures.at(creatureId))
         .using(creature =>
           creature
+            .modify(_.params.inventoryItems)
+            .using(_.updated(destinationPos, sourceItem))
             .modify(_.params.equipmentItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.equipmentItems)
-            .using(_.updated(fromPos, itemDestination))
+            .using(_.updated(sourcePos, destinationItem.get))
         )
     } else {
       gameState
         .modify(_.creatures.at(creatureId))
         .using(creature =>
           creature
+            .modify(_.params.inventoryItems)
+            .using(_.updated(destinationPos, sourceItem))
             .modify(_.params.equipmentItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.equipmentItems)
-            .using(_.removed(fromPos))
+            .using(_.removed(sourcePos))
         )
     }
   }
 
-  private def moveEquipmentToInventory(gameState: GameState): GameState = {
-    val itemSource =
-      gameState.creatures(creatureId).params.equipmentItems(fromPos)
+  private def moveInventoryToEquipment(
+      sourcePos: Int,
+      sourceItem: Item,
+      destinationPos: Int,
+      destinationItem: Option[Item],
+      gameState: GameState
+  ): GameState = {
+    val moveAllowed: Boolean = sourceItem.template.equipmentSlotType.contains(
+      EquipmentSlotType(destinationPos)
+    )
 
-    val destinationItemExists = gameState
-      .creatures(creatureId)
-      .params
-      .inventoryItems
-      .contains(toPos)
-
-    if (destinationItemExists) {
-      val itemDestination =
-        gameState.creatures(creatureId).params.inventoryItems(toPos)
-
-      gameState
-        .modify(_.creatures.at(creatureId))
-        .using(creature =>
-          creature
-            .modify(_.params.inventoryItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.equipmentItems)
-            .using(_.updated(fromPos, itemDestination))
-        )
+    if (moveAllowed) {
+      if (destinationItem.nonEmpty) {
+        gameState
+          .modify(_.creatures.at(creatureId))
+          .using(creature =>
+            creature
+              .modify(_.params.equipmentItems)
+              .using(_.updated(destinationPos, sourceItem))
+              .modify(_.params.inventoryItems)
+              .using(_.updated(sourcePos, destinationItem.get))
+          )
+      } else {
+        gameState
+          .modify(_.creatures.at(creatureId))
+          .using(creature =>
+            creature
+              .modify(_.params.equipmentItems)
+              .using(_.updated(destinationPos, sourceItem))
+              .modify(_.params.inventoryItems)
+              .using(_.removed(sourcePos))
+          )
+      }
     } else {
       gameState
-        .modify(_.creatures.at(creatureId))
-        .using(creature =>
-          creature
-            .modify(_.params.inventoryItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.equipmentItems)
-            .using(_.removed(fromPos))
-        )
     }
   }
 
-  private def moveInventoryToEquipment(gameState: GameState): GameState = {
-    val itemSource =
-      gameState.creatures(creatureId).params.inventoryItems(fromPos)
-
-    val destinationItemExists = gameState
-      .creatures(creatureId)
-      .params
-      .equipmentItems
-      .contains(toPos)
-
-    if (destinationItemExists) {
-      val itemDestination =
-        gameState.creatures(creatureId).params.equipmentItems(toPos)
-
-      gameState
-        .modify(_.creatures.at(creatureId))
-        .using(creature =>
-          creature
-            .modify(_.params.equipmentItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.inventoryItems)
-            .using(_.updated(fromPos, itemDestination))
-        )
-    } else {
-      gameState
-        .modify(_.creatures.at(creatureId))
-        .using(creature =>
-          creature
-            .modify(_.params.equipmentItems)
-            .using(_.updated(toPos, itemSource))
-            .modify(_.params.inventoryItems)
-            .using(_.removed(fromPos))
-        )
-    }
-  }
-
-  private def moveInventoryToInventory(gameState: GameState): GameState = {
-    val itemSource =
-      gameState.creatures(creatureId).params.inventoryItems(fromPos)
-
-    val destinationItemExists = gameState
-      .creatures(creatureId)
-      .params
-      .inventoryItems
-      .contains(toPos)
-
-    if (destinationItemExists) {
-      val itemDestination =
-        gameState.creatures(creatureId).params.inventoryItems(toPos)
-
+  private def moveInventoryToInventory(
+      sourcePos: Int,
+      sourceItem: Item,
+      destinationPos: Int,
+      destinationItem: Option[Item],
+      gameState: GameState
+  ): GameState = {
+    if (destinationItem.nonEmpty) {
       gameState
         .modify(_.creatures.at(creatureId))
         .using(creature =>
           creature
             .modify(_.params.inventoryItems)
-            .using(_.updated(toPos, itemSource))
+            .using(_.updated(destinationPos, sourceItem))
             .modify(_.params.inventoryItems)
-            .using(_.updated(fromPos, itemDestination))
+            .using(_.updated(sourcePos, destinationItem.get))
         )
     } else {
       gameState
@@ -167,9 +208,9 @@ case class CreaturePlaceItemIntoSlotEvent(
         .using(creature =>
           creature
             .modify(_.params.inventoryItems)
-            .using(_.updated(toPos, itemSource))
+            .using(_.updated(destinationPos, sourceItem))
             .modify(_.params.inventoryItems)
-            .using(_.removed(fromPos))
+            .using(_.removed(sourcePos))
         )
     }
   }

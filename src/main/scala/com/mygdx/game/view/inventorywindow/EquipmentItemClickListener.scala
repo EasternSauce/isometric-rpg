@@ -1,4 +1,4 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{Actor, InputEvent}
@@ -7,7 +7,6 @@ import com.mygdx.game.core.CoreGame
 case class EquipmentItemClickListener(game: CoreGame) extends ClickListener {
   override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
     val image = event.getTarget.asInstanceOf[InventorySlotImage]
-    println("clicked item")
 
     game.gameplay.view.onSlotClick(
       image.pos,

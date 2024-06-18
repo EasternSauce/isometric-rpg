@@ -1,4 +1,4 @@
-package com.mygdx.game.view.inventory
+package com.mygdx.game.view.inventorywindow
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.mygdx.game.core.CoreGame

@@ -4,13 +4,13 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.{Gdx, InputAdapter}
 import com.mygdx.game.core.CoreGame
-import com.mygdx.game.view.inventory.ItemMoveLocation.ItemMoveLocation
-import com.mygdx.game.view.inventory._
+import com.mygdx.game.view.inventorywindow.ItemMoveLocation.ItemMoveLocation
+import com.mygdx.game.view.inventorywindow._
 import com.mygdx.game.{Constants, SpriteBatches}
 
 case class View() {
 
-  private var inventoryStage: InventoryStage = _
+  private var inventoryWindowStage: InventoryWindowStage = _
   private var viewportManager: ViewportManager = _
   private var worldRenderer: WorldRenderer = _
 
@@ -24,8 +24,8 @@ case class View() {
     viewportManager = ViewportManager()
     viewportManager.init()
 
-    inventoryStage = InventoryStage()
-    inventoryStage.init(viewportManager, spriteBatches.hudBatch, game)
+    inventoryWindowStage = InventoryWindowStage()
+    inventoryWindowStage.init(viewportManager, spriteBatches.hudBatch, game)
   }
 
   def draw(
@@ -51,7 +51,7 @@ case class View() {
     game.clientPlayerState(game.gameState) match {
       case Some(playerState) =>
         if (playerState.inventoryOpen) {
-          inventoryStage.draw(game)
+          inventoryWindowStage.draw(game)
         }
       case None =>
     }
@@ -75,14 +75,14 @@ case class View() {
 
     updateInputProcessor(game)
 
-    inventoryStage.update(delta, game)
+    inventoryWindowStage.update(delta, game)
   }
 
   private def updateInputProcessor(game: CoreGame): Unit = {
     game.clientPlayerState(game.gameState) match {
       case Some(playerState) =>
         if (playerState.inventoryOpen) {
-          inventoryStage.setStageAsInputProcessor()
+          inventoryWindowStage.setStageAsInputProcessor()
         } else {
           Gdx.input.setInputProcessor(new InputAdapter())
         }
@@ -98,12 +98,12 @@ case class View() {
     viewportManager.unprojectHudCamera(screenCoords)
 
   def setInventoryHoverItemInfoText(itemInfoText: String): Unit =
-    inventoryStage.setHoverItemInfoText(itemInfoText)
+    inventoryWindowStage.setHoverItemInfoText(itemInfoText)
 
   def onSlotClick(
       pos: Int,
       itemMoveLocation: ItemMoveLocation,
       game: CoreGame
-  ): Unit = inventoryStage.onSlotClick(pos, itemMoveLocation, game)
+  ): Unit = inventoryWindowStage.onSlotClick(pos, itemMoveLocation, game)
 
 }

@@ -5,7 +5,8 @@ import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
-case class Cell(cell: TiledMapTileLayer.Cell, pos: Vector2) extends Renderable {
+case class Cell(tiledCell: TiledMapTileLayer.Cell, pos: Vector2)
+    extends Renderable {
   override def pos(gameState: GameState): Vector2 = pos
 
   override def render(
@@ -13,7 +14,7 @@ case class Cell(cell: TiledMapTileLayer.Cell, pos: Vector2) extends Renderable {
       worldCameraPos: Vector2,
       gameState: GameState
   ): Unit = {
-    val textureRegion = cell.getTile.getTextureRegion
+    val textureRegion = tiledCell.getTile.getTextureRegion
     val textureWidth = textureRegion.getRegionWidth
     val textureHeight = textureRegion.getRegionHeight
 
@@ -25,8 +26,8 @@ case class Cell(cell: TiledMapTileLayer.Cell, pos: Vector2) extends Renderable {
     if (worldCameraPos.distance(screenPos) < 1000f) {
       batch.draw(
         textureRegion,
-        screenPos.x + Constants.TileCenterX + cell.getTile.getOffsetX,
-        screenPos.y + Constants.TileCenterY + cell.getTile.getOffsetY,
+        screenPos.x + Constants.TileCenterX + tiledCell.getTile.getOffsetX,
+        screenPos.y + Constants.TileCenterY + tiledCell.getTile.getOffsetY,
         (textureWidth * Constants.MapTextureScale).toInt,
         (textureHeight * Constants.MapTextureScale).toInt
       )
@@ -34,7 +35,7 @@ case class Cell(cell: TiledMapTileLayer.Cell, pos: Vector2) extends Renderable {
   }
 
   def walkable: Boolean = {
-    cell.getTile.getProperties.get("walkable").asInstanceOf[Boolean]
+    tiledCell.getTile.getProperties.get("walkable").asInstanceOf[Boolean]
   }
 
   override def renderPriority(gameState: GameState): Boolean = false

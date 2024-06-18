@@ -107,15 +107,6 @@ object Constants {
   val EquipmentY: Int = 200
   val EquipmentSlotCount = 6
 
-  val equipmentSlotNames: Map[Int, String] = Map(
-    0 -> "weapon",
-    1 -> "shield",
-    2 -> "ring",
-    3 -> "body armor",
-    4 -> "gloves",
-    5 -> "boots"
-  )
-
   val hoverItemInfoX: Int = 30
   val hoverItemInfoY: Int = 50
   val hoverItemInfoWidth: Int = 470
