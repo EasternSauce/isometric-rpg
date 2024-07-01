@@ -36,14 +36,16 @@ case class View() {
 
     viewportManager.setProjectionMatrices(spriteBatches)
 
-    worldRenderer.drawWorld(
+    worldRenderer.drawCurrentWorld(
       spriteBatches,
       viewportManager.getWorldCameraPos,
       game
     )
 
-    if (Constants.EnableDebug) {
-      viewportManager.renderDebug(game.gameplay.physics.world)
+    val areaId = game.clientAreaId(game.gameState)
+
+    if (Constants.EnableDebug && areaId.nonEmpty) {
+      viewportManager.renderDebug(game.gameplay.physics.areaWorlds(areaId.get))
     }
 
     drawHud(spriteBatches.hudBatch)

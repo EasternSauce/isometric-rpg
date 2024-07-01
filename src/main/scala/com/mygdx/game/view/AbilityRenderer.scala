@@ -3,6 +3,7 @@ package com.mygdx.game.view
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.mygdx.game.Assets
 import com.mygdx.game.gamestate.ability.Ability
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
@@ -52,5 +53,12 @@ case class AbilityRenderer(abilityId: EntityId[Ability]) extends Renderable {
     ability.pos
   }
 
+  override def areaId(gameState: GameState): AreaId = {
+    val ability = gameState.abilities(abilityId)
+
+    ability.params.currentAreaId
+  }
+
   override def renderPriority(gameState: GameState): Boolean = true
+
 }

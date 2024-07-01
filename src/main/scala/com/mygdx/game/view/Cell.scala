@@ -3,11 +3,14 @@ package com.mygdx.game.view
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.util.Vector2
 
-case class Cell(tiledCell: TiledMapTileLayer.Cell, pos: Vector2)
+case class Cell(tiledCell: TiledMapTileLayer.Cell, areaId: AreaId, pos: Vector2)
     extends Renderable {
   override def pos(gameState: GameState): Vector2 = pos
+
+  override def areaId(gameState: GameState): AreaId = areaId
 
   override def render(
       batch: SpriteBatch,

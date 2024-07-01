@@ -2,35 +2,53 @@ package com.mygdx.game.physics
 
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.ability.Ability
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class AbilityBodyPhysics() {
   private var abilityBodies: Map[EntityId[Ability], AbilityBody] = _
-  private var world: World = _
+  private var areaWorlds: Map[AreaId, AreaWorld] = _
 
-  def init(world: World): Unit = {
+  def init(areaWorlds: Map[AreaId, AreaWorld]): Unit = {
     abilityBodies = Map()
-    this.world = world
+    this.areaWorlds = areaWorlds
   }
 
-  def update(gameState: GameState): Unit = {
-    abilityBodies.values.foreach(_.update(gameState))
+  def update(areaId: AreaId, gameState: GameState): Unit = {
+    abilityBodies
+      .filter { case (abilityId, _) =>
+        gameState.abilities(abilityId).params.currentAreaId == areaId
+      }
+      .values
+      .foreach(_.update(gameState))
   }
 
-  def symchronizeWithGameState(gameState: GameState): Unit = {
+  def synchronizeWithGameState(areaId: AreaId, gameState: GameState): Unit = {
     val abilityBodiesToCreate =
       gameState.abilities.keys.toSet -- abilityBodies.keys.toSet
     val abilityBodiesToDestroy =
       abilityBodies.keys.toSet -- gameState.abilities.keys.toSet
 
-    abilityBodiesToCreate.foreach(createAbilityBody(_, gameState))
-    abilityBodiesToDestroy.foreach(destroyAbilityBody(_, gameState))
+    abilityBodiesToCreate
+      .filter(abilityId =>
+        gameState.abilities(abilityId).params.currentAreaId == areaId
+      )
+      .foreach(createAbilityBody(_, gameState))
+    abilityBodiesToDestroy
+      .filter(abilityId =>
+        !gameState.abilities.contains(abilityId) || gameState
+          .abilities(abilityId)
+          .params
+          .currentAreaId == areaId
+      )
+      .foreach(destroyAbilityBody(_, gameState))
   }
 
-  def correctBodyPositions(gameState: GameState): Unit = {
+  def correctBodyPositions(areaId: AreaId, gameState: GameState): Unit = {
     gameState.abilities.values.foreach(ability =>
       if (
+        ability.params.currentAreaId == areaId &&
         abilityBodies.contains(ability.id) && abilityBodies(ability.id).pos
           .distance(ability.pos) > Constants.PhysicalBodyCorrectionDistance
       ) {
@@ -52,11 +70,13 @@ case class AbilityBodyPhysics() {
       abilityId: EntityId[Ability],
       gameState: GameState
   ): Unit = {
-    val creature = gameState.abilities(abilityId)
+    val ability = gameState.abilities(abilityId)
 
     val abilityBody = AbilityBody(abilityId)
 
-    abilityBody.init(world, creature.pos, gameState)
+    val areaWorld = areaWorlds(ability.params.currentAreaId)
+
+    abilityBody.init(areaWorld, ability.pos, gameState)
 
     abilityBodies = abilityBodies.updated(abilityId, abilityBody)
   }

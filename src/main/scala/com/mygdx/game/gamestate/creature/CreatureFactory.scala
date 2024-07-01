@@ -1,6 +1,7 @@
 package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.gamestate.EntityId
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.creature.PrimaryWeaponType.PrimaryWeaponType
 import com.mygdx.game.gamestate.creature.SecondaryWeaponType.SecondaryWeaponType
 import com.mygdx.game.util.Vector2
@@ -11,12 +12,14 @@ import com.mygdx.game.{AnimationDefinition, Constants}
 object CreatureFactory {
   def male1(
       creatureId: EntityId[Creature],
+      currentAreaId: AreaId,
       pos: Vector2,
       player: Boolean,
       baseSpeed: Float
   ): Creature = {
     CreatureFactory.produce(
       creatureId = creatureId,
+      currentAreaId = currentAreaId,
       pos = pos,
       player = player,
       baseSpeed = baseSpeed,
@@ -41,12 +44,14 @@ object CreatureFactory {
 
   def rat(
       creatureId: EntityId[Creature],
+      currentAreaId: AreaId,
       pos: Vector2,
       player: Boolean,
       baseSpeed: Float
   ): Creature = {
     CreatureFactory.produce(
       creatureId = creatureId,
+      currentAreaId = currentAreaId,
       pos = pos,
       player = player,
       baseSpeed = baseSpeed,
@@ -68,12 +73,14 @@ object CreatureFactory {
 
   def zombie( // TODO: add random chances for alternate attack/death animation
       creatureId: EntityId[Creature],
+      currentAreaId: AreaId,
       pos: Vector2,
       player: Boolean,
       baseSpeed: Float
   ): Creature = {
     CreatureFactory.produce(
       creatureId = creatureId,
+      currentAreaId = currentAreaId,
       pos = pos,
       player = player,
       baseSpeed = baseSpeed,
@@ -95,12 +102,14 @@ object CreatureFactory {
 
   def wyvern( // TODO: add random chances for alternate attack/death animation
       creatureId: EntityId[Creature],
+      currentAreaId: AreaId,
       pos: Vector2,
       player: Boolean,
       baseSpeed: Float
   ): Creature = {
     CreatureFactory.produce(
       creatureId = creatureId,
+      currentAreaId = currentAreaId,
       pos = pos,
       player = player,
       baseSpeed = baseSpeed,
@@ -122,6 +131,7 @@ object CreatureFactory {
 
   private def produce(
       creatureId: EntityId[Creature],
+      currentAreaId: AreaId,
       pos: Vector2,
       player: Boolean,
       baseSpeed: Float,
@@ -140,6 +150,7 @@ object CreatureFactory {
     Creature(
       CreatureParams(
         id = creatureId,
+        currentAreaId = currentAreaId,
         pos = pos,
         destination = pos,
         lastPos = pos,

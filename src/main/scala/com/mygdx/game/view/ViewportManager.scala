@@ -6,7 +6,7 @@ import com.mygdx.game.SpriteBatches
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.EntityId
 import com.mygdx.game.gamestate.creature.Creature
-import com.mygdx.game.physics.World
+import com.mygdx.game.physics.AreaWorld
 import com.mygdx.game.util.Vector2
 
 case class ViewportManager() {
@@ -59,7 +59,8 @@ case class ViewportManager() {
   def createHudStage(hudBatch: SpriteBatch): Stage =
     hudViewport.createStage(hudBatch)
 
-  def renderDebug(world: World): Unit = world.renderDebug(b2DebugViewport)
+  def renderDebug(areaWorld: AreaWorld): Unit =
+    areaWorld.renderDebug(b2DebugViewport)
 
   def unprojectHudCamera(screenCoords: Vector3): Unit =
     hudViewport.unprojectCamera(screenCoords)

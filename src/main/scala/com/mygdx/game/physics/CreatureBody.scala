@@ -6,9 +6,8 @@ import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
 case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
-  var world: World = _
 
-  def init(world: World, pos: Vector2, gameState: GameState): Unit = {
+  def init(areaWorld: AreaWorld, pos: Vector2, gameState: GameState): Unit = {
     this.b2Body = {
       val creature = gameState.creatures(creatureId)
 
@@ -18,7 +17,7 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       bodyDef.`type` = BodyType.DynamicBody
       bodyDef.position.set(pos.x, pos.y)
 
-      val body = world.createBody(bodyDef)
+      val body = areaWorld.createBody(bodyDef)
       body.setUserData(this)
 
       val fixtureDef = new FixtureDef()
@@ -37,7 +36,7 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
       body
     }
 
-    this.world = world
+    this.areaWorld = areaWorld
   }
 
   override def update(gameState: GameState): Unit = {
@@ -52,6 +51,6 @@ case class CreatureBody(creatureId: EntityId[Creature]) extends PhysicsBody {
   }
 
   override def onRemove(): Unit = {
-    world.b2World.destroyBody(b2Body)
+    areaWorld.b2World.destroyBody(b2Body)
   }
 }

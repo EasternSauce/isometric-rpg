@@ -6,12 +6,12 @@ import com.mygdx.game.gamestate.GameState
 import com.mygdx.game.util.Vector2
 
 case class ObjectBody(objectBodyId: String) extends PhysicsBody {
-  def init(world: World, pos: Vector2, gameState: GameState): Unit = {
+  def init(areaWorld: AreaWorld, pos: Vector2, gameState: GameState): Unit = {
     val bodyDef = new BodyDef()
     bodyDef.`type` = BodyType.StaticBody
     bodyDef.position.set(pos.x + 0.5f, pos.y + 0.5f)
 
-    val body = world.createBody(bodyDef)
+    val body = areaWorld.createBody(bodyDef)
     body.setUserData(this)
 
     val fixtureDef = new FixtureDef()
@@ -25,6 +25,8 @@ case class ObjectBody(objectBodyId: String) extends PhysicsBody {
     body.createFixture(fixtureDef)
 
     this.b2Body = body
+
+    this.areaWorld = areaWorld
   }
 
   override def update(gameState: GameState): Unit = {}

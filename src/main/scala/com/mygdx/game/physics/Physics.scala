@@ -1,6 +1,7 @@
 package com.mygdx.game.physics
 
 import com.mygdx.game.gamestate.ability.Ability
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event._
 import com.mygdx.game.gamestate.event.physics.{MakeBodyNonSensorEvent, MakeBodySensorEvent, PhysicsEvent, TeleportEvent}
@@ -9,7 +10,7 @@ import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
 case class Physics() {
-  private var _world: World = _
+  private var _areaWorlds: Map[AreaId, AreaWorld] = _
   private var creatureBodyPhysics: CreatureBodyPhysics = _
   private var abilityBodyPhysics: AbilityBodyPhysics = _
   private var staticBodyPhysics: StaticBodyPhysics = _
@@ -17,67 +18,91 @@ case class Physics() {
   private var collisionQueue: List[GameStateEvent] = _
 
   def init(
-      tiledMap: TiledMap,
+      tiledMaps: Map[AreaId, TiledMap],
       gameState: GameState
   ): Unit = {
-    _world = World()
-    _world.init(PhysicsContactListener(this))
+    _areaWorlds = tiledMaps.map { case (areaId: AreaId, _) =>
+      (areaId, AreaWorld(areaId))
+    }
+    _areaWorlds.values.foreach(_.init(PhysicsContactListener(this)))
 
     creatureBodyPhysics = CreatureBodyPhysics()
-    creatureBodyPhysics.init(_world)
+    creatureBodyPhysics.init(_areaWorlds)
 
     abilityBodyPhysics = AbilityBodyPhysics()
-    abilityBodyPhysics.init(_world)
+    abilityBodyPhysics.init(_areaWorlds)
 
     staticBodyPhysics = StaticBodyPhysics()
-    staticBodyPhysics.init(tiledMap, world, gameState)
+    staticBodyPhysics.init(tiledMaps, _areaWorlds, gameState)
 
     eventQueue = List()
     collisionQueue = List()
   }
 
-  def update(gameState: GameState): Unit = {
-    _world.update()
+  def updateForArea(areaId: AreaId, gameState: GameState): Unit = {
+    _areaWorlds(areaId).update()
 
-    handleEvents(eventQueue, gameState)
+    handleEvents(eventQueue, areaId, gameState)
 
-    correctBodyPositions(gameState)
+    correctBodyPositions(areaId, gameState)
 
-    synchronizeWithGameState(gameState)
+    synchronizeWithGameState(areaId, gameState)
 
-    updateBodies(gameState)
+    updateBodies(areaId, gameState)
   }
 
-  private def updateBodies(gameState: GameState): Unit = {
-    creatureBodyPhysics.update(gameState)
-    abilityBodyPhysics.update(gameState)
+  private def updateBodies(areaId: AreaId, gameState: GameState): Unit = {
+    creatureBodyPhysics.update(areaId, gameState)
+    abilityBodyPhysics.update(areaId, gameState)
   }
 
-  private def synchronizeWithGameState(gameState: GameState): Unit = {
-    creatureBodyPhysics.synchronizeWithGameState(gameState)
-    abilityBodyPhysics.symchronizeWithGameState(gameState)
+  private def synchronizeWithGameState(
+      areaId: AreaId,
+      gameState: GameState
+  ): Unit = {
+    creatureBodyPhysics.synchronizeWithGameState(areaId, gameState)
+    abilityBodyPhysics.synchronizeWithGameState(areaId, gameState)
   }
 
-  private def correctBodyPositions(gameState: GameState): Unit = {
-    creatureBodyPhysics.correctBodyPositions(gameState)
-    abilityBodyPhysics.correctBodyPositions(gameState)
+  private def correctBodyPositions(
+      areaId: AreaId,
+      gameState: GameState
+  ): Unit = {
+    creatureBodyPhysics.correctBodyPositions(areaId, gameState)
+    abilityBodyPhysics.correctBodyPositions(areaId, gameState)
   }
 
   private def handleEvents(
       eventsToBeProcessed: List[PhysicsEvent],
+      areaId: AreaId,
       gameState: GameState
   ): Unit = {
     eventsToBeProcessed.foreach {
       case TeleportEvent(creatureId, pos) =>
-        if (gameState.creatures.contains(creatureId)) {
+        if (
+          gameState.creatures.contains(creatureId) && gameState
+            .creatures(creatureId)
+            .params
+            .currentAreaId == areaId
+        ) {
           creatureBodyPhysics.setBodyPos(creatureId, pos)
         }
       case MakeBodySensorEvent(creatureId) =>
-        if (gameState.creatures.contains(creatureId)) {
+        if (
+          gameState.creatures.contains(creatureId) && gameState
+            .creatures(creatureId)
+            .params
+            .currentAreaId == areaId
+        ) {
           creatureBodyPhysics.setSensor(creatureId)
         }
       case MakeBodyNonSensorEvent(creatureId) =>
-        if (gameState.creatures.contains(creatureId)) {
+        if (
+          gameState.creatures.contains(creatureId) && gameState
+            .creatures(creatureId)
+            .params
+            .currentAreaId == areaId
+        ) {
           creatureBodyPhysics.setNonSensor(creatureId)
         }
       case _ =>
@@ -87,7 +112,7 @@ case class Physics() {
   }
 
   def pollCollisionEvents(): List[GameStateEvent] = {
-    val collisionEvents = collisionQueue
+    val collisionEvents = List().appendedAll(collisionQueue)
 
     collisionQueue = List()
 
@@ -102,7 +127,7 @@ case class Physics() {
     collisionQueue = collisionQueue.appendedAll(collisions)
   }
 
-  def world: World = _world
+  def areaWorlds: Map[AreaId, AreaWorld] = _areaWorlds
 
   def creatureBodyPositions: Map[EntityId[Creature], Vector2] =
     creatureBodyPhysics.creatureBodyPositions

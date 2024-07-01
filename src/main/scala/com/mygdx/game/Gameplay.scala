@@ -3,6 +3,7 @@ package com.mygdx.game
 import com.badlogic.gdx.graphics.Color
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.input.Input
 import com.mygdx.game.physics.Physics
@@ -10,9 +11,9 @@ import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.{Rectangle, Vector2}
 import com.mygdx.game.view.{IsometricProjection, View}
 
-case class Gameplay(game: CoreGame) {
+case class Gameplay(private val game: CoreGame) {
 
-  private var _tiledMap: TiledMap = _
+  private var _tiledMaps: Map[AreaId, TiledMap] = _
 
   private var _physics: Physics = _
   private var _view: View = _
@@ -26,10 +27,11 @@ case class Gameplay(game: CoreGame) {
   private var _scheduledPlayersToCreate: List[String] = List()
 
   def init(): Unit = {
-    _gameState = GameState.initialState()
+    _tiledMaps =
+      Constants.areaIds.map(areaId => (areaId, TiledMap(areaId))).toMap
+    _tiledMaps.values.foreach(_.init())
 
-    _tiledMap = TiledMap()
-    _tiledMap.init()
+    _gameState = GameState.initialState()
 
     spriteBatches = SpriteBatches()
 
@@ -41,18 +43,15 @@ case class Gameplay(game: CoreGame) {
     _view.init(spriteBatches, game)
 
     _physics = Physics()
-    _physics.init(_tiledMap, _gameState)
-
+    _physics.init(_tiledMaps, _gameState)
   }
 
   def update(delta: Float, input: Input): Unit = {
     game.handleInput(input)
 
-    physics.update(gameState)
+    game.updatePhysics()
 
-    updateGameState(
-      delta
-    )
+    updateGameState(delta)
   }
 
   def render(delta: Float, input: Input): Unit = {
@@ -136,8 +135,9 @@ case class Gameplay(game: CoreGame) {
     _scheduledExternalEvents = List()
   }
 
-  def schedulePlayerToCreate(clientId: String): Unit = {
-    _scheduledPlayersToCreate = _scheduledPlayersToCreate.appended(clientId)
+  def schedulePlayerToCreate(playerToCreate: String): Unit = {
+    _scheduledPlayersToCreate =
+      _scheduledPlayersToCreate.appended(playerToCreate)
   }
 
   def scheduledPlayersToCreate: List[String] =
@@ -147,7 +147,7 @@ case class Gameplay(game: CoreGame) {
     _scheduledPlayersToCreate = List()
   }
 
-  def tiledMap: TiledMap = _tiledMap
+  def tiledMaps: Map[AreaId, TiledMap] = _tiledMaps
   def gameState: GameState = _gameState
   def physics: Physics = _physics
   def view: View = _view

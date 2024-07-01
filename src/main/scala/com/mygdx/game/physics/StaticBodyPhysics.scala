@@ -2,6 +2,7 @@ package com.mygdx.game.physics
 
 import com.mygdx.game.Constants
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 import com.mygdx.game.view.Cell
@@ -9,66 +10,88 @@ import com.mygdx.game.view.Cell
 case class StaticBodyPhysics() {
 
   private var staticBodies: List[PhysicsBody] = _
-  private var world: World = _
+  private var areaWorlds: Map[AreaId, AreaWorld] = _
 
-  def init(tiledMap: TiledMap, world: World, gameState: GameState): Unit = {
-    this.world = world
+  def init(
+      tiledMaps: Map[AreaId, TiledMap],
+      areaWorlds: Map[AreaId, AreaWorld],
+      gameState: GameState
+  ): Unit = {
 
-    val terrainCollisions =
-      getTerrainCollisionCells(tiledMap) ++ getBigObjectCells(tiledMap)
+    staticBodies = List()
 
-    val objectCollisions = getObjectCollisionCells(tiledMap)
+    areaWorlds.foreach { case (areaId, world) =>
+      val tiledMap = tiledMaps(areaId)
 
-    staticBodies =
-      createStaticBodies(terrainCollisions, objectCollisions, gameState)
+      val terrainCollisions =
+        getTerrainCollisionCells(tiledMap) ++ getBigObjectCells(tiledMap)
+
+      val objectCollisions = getObjectCollisionCells(tiledMap)
+
+      staticBodies ++= createStaticBodies(
+        terrainCollisions,
+        objectCollisions,
+        world,
+        gameState
+      )
+    }
+
+    this.areaWorlds = areaWorlds
   }
 
   private def createStaticBodies(
       terrainCollisions: List[Cell],
       objectCollisions: List[Cell],
+      world: AreaWorld,
       gameState: GameState
   ): List[PhysicsBody] = {
-    createTerrainBodies(terrainCollisions, gameState) ++ createObjectBodies(
-      objectCollisions,
-      gameState
-    )
+    createTerrainBodies(terrainCollisions, world, gameState) ++
+      createObjectBodies(objectCollisions, world, gameState)
   }
 
   private def createObjectBodies(
       objectCollisions: List[Cell],
+      world: AreaWorld,
       gameState: GameState
   ): List[ObjectBody] = {
     objectCollisions
       .map(_.pos(gameState))
       .distinct
-      .map(createObjectBody(gameState, _))
+      .map(createObjectBody(_, world, gameState))
   }
 
   private def createTerrainBodies(
       terrainCollisions: List[Cell],
+      world: AreaWorld,
       gameState: GameState
   ): List[TerrainBody] = {
     terrainCollisions
       .map(_.pos(gameState))
       .distinct
-      .map(
-        createTerrainBody(gameState, _)
-      )
+      .map(createTerrainBody(_, world, gameState))
   }
 
-  private def createObjectBody(gameState: GameState, pos: Vector2) = {
+  private def createObjectBody(
+      pos: Vector2,
+      world: AreaWorld,
+      gameState: GameState
+  ) = {
     val objectBody = ObjectBody("objectBody_" + pos.x + "_" + pos.y)
     objectBody.init(world, pos, gameState)
     objectBody
   }
 
-  private def createTerrainBody(gameState: GameState, pos: Vector2) = {
+  private def createTerrainBody(
+      pos: Vector2,
+      world: AreaWorld,
+      gameState: GameState
+  ) = {
     val terrainBody = TerrainBody("terrainBody_" + pos.x + "_" + pos.y)
     terrainBody.init(world, pos, gameState)
     terrainBody
   }
 
-  private def getBigObjectCells(tiledMap: TiledMap) = {
+  private def getBigObjectCells(tiledMap: TiledMap): List[Cell] = {
     tiledMap.getLayer("object")
   }
 
@@ -85,7 +108,7 @@ case class StaticBodyPhysics() {
         )
   }
 
-  private def getTerrainCollisionCells(tiledMap: TiledMap) = {
+  private def getTerrainCollisionCells(tiledMap: TiledMap): List[Cell] = {
     tiledMap
       .getLayer("collision")
       .filter(cell => {

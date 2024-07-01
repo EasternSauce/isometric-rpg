@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.mygdx.game.SpriteBatches
 import com.mygdx.game.gamestate.ability.Ability
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.Vector2
 
@@ -16,11 +17,16 @@ case class AbilityRenderers() {
   def renderAbilities(
       spriteBatches: SpriteBatches,
       worldCameraPos: Vector2,
+      currentAreaId: Option[AreaId],
       gameState: GameState
   ): Unit = {
-    abilityRenderers.values.foreach(
-      _.render(spriteBatches.worldSpriteBatch, worldCameraPos, gameState)
-    )
+    abilityRenderers.values
+      .filter(abilityRenderer =>
+        currentAreaId.contains(abilityRenderer.areaId(gameState))
+      )
+      .foreach(
+        _.render(spriteBatches.worldSpriteBatch, worldCameraPos, gameState)
+      )
   }
 
   def update(gameState: GameState): Unit = {

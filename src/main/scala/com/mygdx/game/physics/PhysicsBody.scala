@@ -6,9 +6,10 @@ import com.mygdx.game.util.Vector2
 
 trait PhysicsBody {
   protected var b2Body: Body = _
+  protected var areaWorld: AreaWorld = _
   protected var _sensor: Boolean = false
 
-  def init(world: World, pos: Vector2, gameState: GameState): Unit
+  def init(areaWorld: AreaWorld, pos: Vector2, gameState: GameState): Unit
 
   def update(gameState: GameState): Unit
 

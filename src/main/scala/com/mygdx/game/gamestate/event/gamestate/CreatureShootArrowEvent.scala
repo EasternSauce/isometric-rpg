@@ -25,6 +25,7 @@ case class CreatureShootArrowEvent(
           Arrow(
             AbilityParams(
               abilityId,
+              creature.params.currentAreaId,
               sourceCreatureId,
               creature.params.pos,
               creature.params.facingVector,

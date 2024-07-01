@@ -2,6 +2,7 @@ package com.mygdx.game.view
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.creature.{Creature, PrimaryWeaponType, SecondaryWeaponType}
 import com.mygdx.game.gamestate.{EntityId, GameState}
 import com.mygdx.game.util.{Rectangle, Vector2}
@@ -35,6 +36,12 @@ case class CreatureRenderer(creatureId: EntityId[Creature]) extends Renderable {
     val creature = gameState.creatures(creatureId)
 
     creature.pos
+  }
+
+  override def areaId(gameState: GameState): AreaId = {
+    val creature = gameState.creatures(creatureId)
+
+    creature.params.currentAreaId
   }
 
   override def render(

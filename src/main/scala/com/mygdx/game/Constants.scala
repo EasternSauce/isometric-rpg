@@ -1,5 +1,7 @@
 package com.mygdx.game
 
+import com.mygdx.game.gamestate.area.AreaId
+
 object Constants {
 
   val WindowWidth = 1360
@@ -116,4 +118,7 @@ object Constants {
   val waterGroundCollisionCellId = 2
   val smallObjectCollisionCellId = 4
   val wallCollisionCellId = 6
+
+  val areaIds: List[AreaId] = List(AreaId("map2"), AreaId("map3"))
+  val defaultAreaId: AreaId = AreaId("map2")
 }

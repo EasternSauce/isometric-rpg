@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.{Game, Gdx, Screen}
 import com.esotericsoftware.kryonet.EndPoint
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.creature.Creature
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.playerstate.PlayerState
@@ -57,6 +58,10 @@ abstract class CoreGame extends Game {
     } yield playerState
   }
 
+  def clientAreaId(gameState: GameState): Option[AreaId] = {
+    clientCreature(gameState).map(_.params.currentAreaId)
+  }
+
   def handleInput(input: Input): Unit
 
   def setGameplayScreen(): Unit = {
@@ -75,4 +80,6 @@ abstract class CoreGame extends Game {
   }
 
   def gameState: GameState = gameplay.gameState
+
+  def updatePhysics(): Unit
 }

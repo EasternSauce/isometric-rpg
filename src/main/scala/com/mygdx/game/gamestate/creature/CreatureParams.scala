@@ -2,6 +2,7 @@ package com.mygdx.game.gamestate.creature
 
 import com.mygdx.game.AnimationDefinition
 import com.mygdx.game.gamestate.EntityId
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.gamestate.creature.PrimaryWeaponType.PrimaryWeaponType
 import com.mygdx.game.gamestate.creature.SecondaryWeaponType.SecondaryWeaponType
 import com.mygdx.game.gamestate.item.{Item, ItemTemplate}
@@ -10,6 +11,7 @@ import com.mygdx.game.view.CreatureAnimationType.CreatureAnimationType
 
 case class CreatureParams(
     id: EntityId[Creature],
+    currentAreaId: AreaId,
     pos: Vector2,
     velocity: Vector2 = Vector2(0, 0),
     destination: Vector2,

@@ -109,4 +109,11 @@ case class CoreGameClient() extends CoreGame {
       client.close()
     }
   }
+
+  override def updatePhysics(): Unit = {
+    gameplay.physics.updateForArea(
+      clientAreaId(gameplay.gameState).getOrElse(Constants.defaultAreaId),
+      gameState
+    )
+  }
 }

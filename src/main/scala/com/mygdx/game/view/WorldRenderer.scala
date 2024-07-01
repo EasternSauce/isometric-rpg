@@ -3,6 +3,7 @@ package com.mygdx.game.view
 import com.mygdx.game.SpriteBatches
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.GameState
+import com.mygdx.game.gamestate.area.AreaId
 import com.mygdx.game.tiledmap.TiledMap
 import com.mygdx.game.util.Vector2
 
@@ -18,7 +19,7 @@ case class WorldRenderer() {
     abilityRenderers.init(game.gameState)
   }
 
-  def drawWorld(
+  def drawCurrentWorld(
       spriteBatches: SpriteBatches,
       worldCameraPos: Vector2,
       game: CoreGame
@@ -28,13 +29,15 @@ case class WorldRenderer() {
     renderWorldElementsByPriority(
       spriteBatches.worldSpriteBatch,
       worldCameraPos,
-      game.gameplay.tiledMap,
+      game.clientAreaId(game.gameState),
+      game.gameplay.tiledMaps,
       game.gameState
     )
 
     abilityRenderers.renderAbilities(
       spriteBatches,
       worldCameraPos,
+      game.clientAreaId(game.gameState),
       game.gameState
     )
 
@@ -60,27 +63,33 @@ case class WorldRenderer() {
   private def renderWorldElementsByPriority(
       worldSpriteBatch: SpriteBatch,
       worldCameraPos: Vector2,
-      tiledMap: TiledMap,
+      currentAreaId: Option[AreaId],
+      tiledMaps: Map[AreaId, TiledMap],
       gameState: GameState
   ): Unit = {
-    renderLowPriorityMapTiles(
-      worldSpriteBatch,
-      worldCameraPos,
-      tiledMap,
-      gameState
-    )
-    renderDeadCreatures(
-      worldSpriteBatch,
-      worldCameraPos,
-      tiledMap,
-      gameState
-    )
-    renderDynamicElements(
-      worldSpriteBatch,
-      worldCameraPos,
-      tiledMap,
-      gameState
-    )
+    if (currentAreaId.isDefined) {
+      val tiledMap = tiledMaps(currentAreaId.get)
+
+      renderLowPriorityMapTiles(
+        worldSpriteBatch,
+        worldCameraPos,
+        tiledMap,
+        gameState
+      )
+      renderDeadCreatures(
+        worldSpriteBatch,
+        worldCameraPos,
+        tiledMap,
+        gameState
+      )
+      renderDynamicElements(
+        worldSpriteBatch,
+        worldCameraPos,
+        tiledMap,
+        gameState
+      )
+    }
+
   }
 
   private def renderLowPriorityMapTiles(

@@ -115,4 +115,9 @@ case class CoreGameServer() extends CoreGame {
   }
 
   override def sendEvent(event: GameStateEvent): Unit = {}
+
+  override def updatePhysics(): Unit = {
+    gameplay.physics.areaWorlds.keys
+      .foreach(gameplay.physics.updateForArea(_, gameState))
+  }
 }

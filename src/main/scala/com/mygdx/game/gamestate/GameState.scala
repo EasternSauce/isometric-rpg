@@ -1,7 +1,9 @@
 package com.mygdx.game.gamestate
 
+import com.mygdx.game.Constants
 import com.mygdx.game.core.CoreGame
 import com.mygdx.game.gamestate.ability.Ability
+import com.mygdx.game.gamestate.area.{Area, AreaId}
 import com.mygdx.game.gamestate.creature.{Creature, CreatureFactory}
 import com.mygdx.game.gamestate.event.GameStateEvent
 import com.mygdx.game.gamestate.playerstate.PlayerState
@@ -13,6 +15,7 @@ case class GameState(
     activeCreatureIds: Set[EntityId[Creature]],
     playerStates: Map[EntityId[Creature], PlayerState],
     abilities: Map[EntityId[Ability], Ability],
+    areas: Map[AreaId, Area],
     creatureCounter: Int = 0,
     abilityCounter: Int = 0
 ) {
@@ -46,36 +49,38 @@ case class GameState(
       scheduledPlayerCreaturesToCreate: List[String]
   ): Outcome[GameState] =
     Outcome(
-      scheduledPlayerCreaturesToCreate.foldLeft(this) { case (gameState, id) =>
-        val creatureId = EntityId[Creature](id)
+      scheduledPlayerCreaturesToCreate.foldLeft(this) {
+        case (gameState, name) =>
+          val creatureId = EntityId[Creature](name)
 
-        if (gameState.creatures.contains(creatureId)) {
-          gameState
-            .modify(_.activeCreatureIds)
-            .using(_ + creatureId)
-        } else {
-          gameState
-            .modify(_.creatures)
-            .using(
-              _.updated(
-                creatureId,
-                CreatureFactory
-                  .male1(
-                    creatureId,
-                    Vector2(
-                      5f + 3f * Math.random().toFloat,
-                      415f + 3f * Math.random().toFloat
-                    ),
-                    player = true,
-                    8f
-                  )
+          if (gameState.creatures.contains(creatureId)) {
+            gameState
+              .modify(_.activeCreatureIds)
+              .using(_ + creatureId)
+          } else {
+            gameState
+              .modify(_.creatures)
+              .using(
+                _.updated(
+                  creatureId,
+                  CreatureFactory
+                    .male1(
+                      creatureId,
+                      Constants.defaultAreaId,
+                      Vector2(
+                        5f + 3f * Math.random().toFloat,
+                        415f + 3f * Math.random().toFloat
+                      ),
+                      player = true,
+                      8f
+                    )
+                )
               )
-            )
-            .modify(_.activeCreatureIds)
-            .using(_ + creatureId)
-            .modify(_.playerStates)
-            .using(_.updated(creatureId, PlayerState()))
-        }
+              .modify(_.activeCreatureIds)
+              .using(_ + creatureId)
+              .modify(_.playerStates)
+              .using(_.updated(creatureId, PlayerState()))
+          }
       }
     )
 
@@ -144,6 +149,7 @@ object GameState {
 //          player
       ),
       abilities = Map(),
+      areas = Map(),
       activeCreatureIds = Set(),
       playerStates = Map()
     )
